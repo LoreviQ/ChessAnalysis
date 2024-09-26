@@ -1,4 +1,4 @@
-let moveList = "";
+let moves = "";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "getTabUrl") {
@@ -7,8 +7,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
         return true;
     } else if (request.action === "updateMoveList") {
-        moveList = request.moves;
+        moves = request.moves;
     } else if (request.action === "getMoveList") {
-        sendResponse({ moves: moveList });
+        sendResponse({ moves: moves });
     }
 });
