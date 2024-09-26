@@ -2,7 +2,9 @@
 function handleChanges(mutationsList, observer) {
     const moveListElement = document.querySelector("wc-simple-move-list");
     if (moveListElement) {
-        console.log("moveListElement content:", moveListElement.textContent.trim());
+        moves = moveListElement.textContent.trim();
+        moves = moves.replace(/\n+/g, " ").replace(/\s+/g, " ");
+        console.log("moveListElement content:", moves);
     }
 }
 
