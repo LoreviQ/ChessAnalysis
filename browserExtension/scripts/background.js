@@ -12,3 +12,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ moves: moves });
     }
 });
+
+// Function to send moves to the local server
+function sendMovesToServer(moves) {
+    fetch("http://localhost:5000/update_moves", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ moves: moves }),
+    })
+        .then((response) => response.json())
+        .then((data) => console.log("Success:", data))
+        .catch((error) => console.error("Error:", error));
+}

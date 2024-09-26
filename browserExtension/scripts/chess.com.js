@@ -4,7 +4,7 @@ function handleChanges(mutationsList, observer) {
     if (moveListElement) {
         // Send the move list to the background script
         moves = moveListElement.textContent.trim();
-        moves = moves.replace(/\n+/g, " ").replace(/\s+/g, " ");
+        moves = moves.replace(/\n+/g, " ").replace(/\s+/g, " ").replace(/\./g, "");
         moves = moves.split(" ");
         chrome.runtime.sendMessage({ action: "updateMoveList", moves: moves });
     }
