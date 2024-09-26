@@ -5,6 +5,12 @@
     "version": "1.0",
     "action": {
       "default_popup": "chess_analysis.html",
-      "default_icon": "micro_kingu.png"
+      "default_icon": "images/kingu-16.png"
+    },
+    "icons": {
+      "16": "images/kingu-16.png",
+      "32": "images/kingu-32.png",
+      "48": "images/kingu-48.png",
+      "128": "images/kingu-128.png"
     }
   }
