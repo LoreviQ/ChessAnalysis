@@ -1,14 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
     chrome.runtime.sendMessage({ action: "getTabUrl" }, function (response) {
         const url = response.url;
-        const moveListDiv = document.getElementById("move-list");
+        const connectionStatusDiv = document.getElementById("connection-status");
 
         if (url.includes("chess.com")) {
-            moveListDiv.textContent = "Connected to chess.com";
+            connectionStatusDiv.textContent = "Connected to chess.com";
         } else if (url.includes("lichess.org")) {
-            moveListDiv.textContent = "Lichess not yet supported";
+            connectionStatusDiv.textContent = "Lichess not yet supported";
         } else {
-            moveListDiv.textContent = "Unsupported website";
+            connectionStatusDiv.textContent = "Unsupported website";
         }
     });
 });
