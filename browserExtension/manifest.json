@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "ChessAnalysis",
+    "description": "Reads input from various chess websites to pass to the chess analysis engine",
+    "version": "1.0",
+    "action": {
+      "default_popup": "chess_analysis.html",
+      "default_icon": "micro_kingu.png"
+    }
+  }
