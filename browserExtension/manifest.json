@@ -3,6 +3,12 @@
     "name": "ChessAnalysis",
     "description": "Reads input from various chess websites to pass to the chess analysis engine",
     "version": "1.0",
+    "permissions": [
+        "tabs"
+    ],
+    "background": {
+        "service_worker": "scripts/background.js"
+    },
     "action": {
       "default_popup": "chess_analysis.html",
       "default_icon": "images/kingu-16.png"
@@ -15,7 +21,7 @@
     },
     "content_scripts": [
     {
-      "js": ["scripts/content.js"],
+      "js": ["scripts/chess.com.js"],
       "matches": [
         "https://www.chess.com/play/*"
       ]
