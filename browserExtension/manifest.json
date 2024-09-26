@@ -23,7 +23,7 @@
     {
       "js": ["scripts/chess.com.js"],
       "matches": [
-        "https://www.chess.com/play/*"
+        "*://www.chess.com/play/*"
       ]
     }
   ]

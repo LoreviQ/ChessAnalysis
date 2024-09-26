@@ -5,6 +5,9 @@ function handleChanges(mutationsList, observer) {
         moves = moveListElement.textContent.trim();
         moves = moves.replace(/\n+/g, " ").replace(/\s+/g, " ");
         console.log("moveListElement content:", moves);
+
+        // Send the move list to the background script
+        chrome.runtime.sendMessage({ action: "updateMoveList", moves: moves });
     }
 }
 
