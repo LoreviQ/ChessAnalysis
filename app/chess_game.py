@@ -44,6 +44,11 @@ class Game:
                 self._move_piece(piece, move)
                 return
         print("Invalid move.")
+        print("Possible moves:")
+        possible_moves = []
+        for piece in possible_pieces:
+            possible_moves += piece.list_possible_moves(self.previous_move)
+        print(possible_moves)
 
     def _move_piece(self, piece, move):
         destination = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
