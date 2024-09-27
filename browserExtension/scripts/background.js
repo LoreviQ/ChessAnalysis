@@ -8,6 +8,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     } else if (request.action === "updateMoveList") {
         moves = request.moves;
+        sendMovesToServer(moves);
     } else if (request.action === "getMoveList") {
         sendResponse({ moves: moves });
     }
@@ -15,7 +16,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Function to send moves to the local server
 function sendMovesToServer(moves) {
-    fetch("http://localhost:5000/update_moves", {
+    fetch("http://127.0.0.1:5000/update_moves", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
