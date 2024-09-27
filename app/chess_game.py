@@ -47,7 +47,9 @@ class Game:
 
     def _move_piece(self, piece, move):
         destination = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
-        destination_square = self.board.get_square(destination.group(1))
+        destination_square = self.board.get_square(
+            destination.group(1)[0], destination.group(1)[1]
+        )
         origin = piece.position.string
         take = "x" if "x" in move else ""
 
@@ -58,7 +60,9 @@ class Game:
                 destination_square.piece.taken()
             else:
                 # en passant
-                taken_square = self.board.get_square(self.previous_move[-2:])
+                taken_square = self.board.get_square(
+                    self.previous_move[-2:][0], self.previous_move[-2:][1]
+                )
                 taken_square.piece.taken()
         destination_square.add_piece(piece)
         self.turn = "black" if self.turn == "white" else "white"
@@ -100,9 +104,9 @@ class Board:
                 )
             print(row)
 
-    def get_square(self, algebraic_notation):
+    def get_square(self, file, rank):
         try:
-            return self.squares[algebraic_notation]
+            return self.squares[f"{file}{rank}"]
         except KeyError:
             return None
 
@@ -146,39 +150,36 @@ class Pawn(Piece):
         if self.active is False:
             return None
         moves = []
-        current_square = self.position
+        origin_file = self.position.file
+        origin_rank = self.position.rank
+
         # forward 1 square
-        forward_square = self.position.board.get_square(
-            f"{current_square.file}{int(current_square.rank) + self.direction}"
-        )
+        new_file = origin_file
+        new_rank = int(origin_rank) + self.direction
+        forward_square = self.position.board.get_square(new_file, new_rank)
         if forward_square and forward_square.piece is None:
-            moves.append(f"{forward_square.file}{forward_square.rank}")
+            moves.append(forward_square.string)
             # forward 2 squares from starting position
-            if (self.position.rank == "2" and self.direction == 1) or (
-                self.position.rank == "7" and self.direction == -1
+            if (origin_rank == "2" and self.direction == 1) or (
+                origin_rank == "7" and self.direction == -1
             ):
+                new_rank = int(origin_rank) + 2 * self.direction
                 double_forward_square = self.position.board.get_square(
-                    f"{current_square.file}{int(current_square.rank) + 2*self.direction}"
+                    new_file, new_rank
                 )
                 if double_forward_square and double_forward_square.piece is None:
-                    moves.append(
-                        f"{double_forward_square.file}{double_forward_square.rank}"
-                    )
+                    moves.append(double_forward_square.string)
+
         # capture diagonally
-        left_diagonal_square = self.position.board.get_square(
-            f"{chr(ord(current_square.file) - 1)}{int(current_square.rank) + self.direction}"
-        )
-        right_diagonal_square = self.position.board.get_square(
-            f"{chr(ord(current_square.file) + 1)}{int(current_square.rank) + self.direction}"
-        )
+        new_file = chr(ord(origin_file) - 1)
+        new_rank = int(origin_rank) + self.direction
+        left_diagonal_square = self.position.board.get_square(new_file, new_rank)
+        new_file = chr(ord(origin_file) + 1)
+        right_diagonal_square = self.position.board.get_square(new_file, new_rank)
         if left_diagonal_square and left_diagonal_square.piece:
-            moves.append(
-                f"{current_square.file}x{left_diagonal_square.file}{left_diagonal_square.rank}"
-            )
+            moves.append(f"{origin_file}x{left_diagonal_square.string}")
         if right_diagonal_square and right_diagonal_square.piece:
-            moves.append(
-                f"{current_square.file}x{right_diagonal_square.file}{right_diagonal_square.rank}"
-            )
+            moves.append(f"{origin_file}x{right_diagonal_square.string}")
 
         # en passant
         if (self.position.rank == "5" and self.direction == 1) or (
@@ -186,14 +187,10 @@ class Pawn(Piece):
         ):
             en_passant_left = f"{left_diagonal_square.file}{int(left_diagonal_square.rank)+self.direction}{left_diagonal_square.file}{int(left_diagonal_square.rank)-self.direction}"
             if previous_move == en_passant_left:
-                moves.append(
-                    f"{current_square.file}x{left_diagonal_square.file}{left_diagonal_square.rank}"
-                )
+                moves.append(f"{origin_file}x{left_diagonal_square.string}")
             en_passant_right = f"{right_diagonal_square.file}{int(right_diagonal_square.rank)+self.direction}{right_diagonal_square.file}{int(right_diagonal_square.rank)-self.direction}"
             if previous_move == en_passant_right:
-                moves.append(
-                    f"{current_square.file}x{right_diagonal_square.file}{right_diagonal_square.rank}"
-                )
+                moves.append(f"{origin_file}x{right_diagonal_square.string}")
 
         return moves
 
