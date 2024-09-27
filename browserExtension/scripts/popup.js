@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Displays the connection status based on the URL of the active tab
     chrome.runtime.sendMessage({ action: "getTabUrl" }, function (response) {
         const url = response.url;
+        console.log("URL: " + url);
         const connectionStatusDiv = document.getElementById("connection-status");
         if (url.includes("chess.com")) {
             connectionStatusDiv.textContent = "Connected to chess.com";
@@ -13,8 +14,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // displays the server status
-    const serverStatusDiv = document.getElementById("server-status");
-    chrome.runtime.sendMessage({ action: "getReady" }, function (response) {
+    chrome.runtime.sendMessage({ action: "getReadiness" }, function (response) {
+        console.log("Readiness: " + response.ready);
+        const serverStatusDiv = document.getElementById("server-status");
         if (response.ready) {
             serverStatusDiv.textContent = "Server is ready";
         } else {
@@ -23,8 +25,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Displays the move list in popup
-    const moveListDiv = document.getElementById("move-list");
     chrome.runtime.sendMessage({ action: "getMoveList" }, function (response) {
+        console.log("Moves: " + response.moves);
+        const moveListDiv = document.getElementById("move-list");
         console.log(response);
         if (response && response.moves) {
             moves = response.moves;

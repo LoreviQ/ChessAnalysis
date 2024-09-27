@@ -13,7 +13,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 console.log("Getting tab URL: " + tabs[0].url);
                 sendResponse({ url: tabs[0].url });
             });
-            return;
+            return true;
         case "updateMoveList":
             moves = request.moves;
             if (ready) {
