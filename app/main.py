@@ -1,16 +1,16 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/readiness")
+@app.route("/readiness", methods=["GET"])
 def readiness():
     """
     Health check endpoint
     """
-    return jsonify({"status": "success"})
+    return make_response("OK", 200)
 
 
 @app.route("/update_moves", methods=["POST"])
