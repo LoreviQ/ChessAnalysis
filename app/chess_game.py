@@ -158,7 +158,15 @@ class Pawn(Piece):
         new_rank = int(origin_rank) + self.direction
         forward_square = self.position.board.get_square(new_file, new_rank)
         if forward_square and forward_square.piece is None:
-            moves.append(forward_square.string)
+            move = forward_square.string
+            # promotion
+            if new_rank in [1, 8]:
+                moves.append(f"{move}=Q")
+                moves.append(f"{move}=R")
+                moves.append(f"{move}=B")
+                moves.append(f"{move}=N")
+            else:
+                moves.append(move)
             # forward 2 squares from starting position
             if (origin_rank == "2" and self.direction == 1) or (
                 origin_rank == "7" and self.direction == -1
@@ -191,7 +199,6 @@ class Pawn(Piece):
             en_passant_right = f"{right_diagonal_square.file}{int(right_diagonal_square.rank)+self.direction}{right_diagonal_square.file}{int(right_diagonal_square.rank)-self.direction}"
             if previous_move == en_passant_right:
                 moves.append(f"{origin_file}x{right_diagonal_square.string}")
-
         return moves
 
 
