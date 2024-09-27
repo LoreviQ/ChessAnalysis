@@ -1,60 +1,40 @@
 import threading
-import time
 import tkinter as tk
 
-import requests
-from server import received_data, server
+from database import DBConnection
+from server import Server
 
 
-# Function to run the Flask server
-def run_server():
-    server.run(debug=True, use_reloader=False)
+class App:
+    def __init__(self):
+        self.db_connection = DBConnection()
+        self.server = Server(self.db_connection)
 
+        self.root = tk.Tk()
+        self.root.title("Server Status")
 
-# Function to check server status
-def check_server_status():
-    try:
-        response = requests.get("http://127.0.0.1:5000/readiness")
-        if response.status_code == 200:
-            return "Server is active"
+        self.data_label = tk.Label(
+            self.root, text="No data received", font=("Helvetica", 16)
+        )
+        self.data_label.pack(pady=10)
+
+    def start(self):
+        self.update_gui()
+        self.root.mainloop()
+
+    def update_gui(self):
+        data = self.db_connection.fetch_latest_move()
+        if data:
+            self.data_label.config(text=str(data[-1]))
         else:
-            return "Server is inactive"
-    except requests.exceptions.RequestException:
-        return "Server is inactive"
+            self.data_label.config(text="No data received")
+
+        # Schedule the function to run again after 5 seconds
+        self.root.after(5000, self.update_gui)
 
 
-# Function to update the GUI
-def update_gui():
-    status = check_server_status()
-    status_label.config(text=status)
-
-    # Update received data
-    if received_data:
-        data_label.config(text=str(received_data[-1]))
-    else:
-        data_label.config(text="No data received")
-
-    # Schedule the function to run again after 5 seconds
-    root.after(5000, update_gui)
-
-
-# Start the Flask server in a separate thread
-server_thread = threading.Thread(target=run_server)
-server_thread.daemon = True
-server_thread.start()
-
-# Create the Tkinter window
-root = tk.Tk()
-root.title("Server Status")
-
-status_label = tk.Label(root, text="Checking server status...", font=("Helvetica", 16))
-status_label.pack(pady=10)
-
-data_label = tk.Label(root, text="No data received", font=("Helvetica", 16))
-data_label.pack(pady=10)
-
-# Start the periodic update
-update_gui()
-
-# Run the Tkinter event loop
-root.mainloop()
+if __name__ == "__main__":
+    app = App()
+    server_thread = threading.Thread(target=app.server.run())
+    server_thread.start()
+    app.start()
