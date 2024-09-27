@@ -1,17 +1,18 @@
+import re
+
+
 class Game:
     def __init__(self):
         self.board = Board()
         self.pieces = []
         self._initialize_pieces()
         self.turn = "white"
+        self.previous_move = None
 
     def _initialize_pieces(self):
         for file in self.board.files:
             self.pieces += [self.board.squares[f"{file}2"].add_piece(Pawn("white"))]
             self.pieces += [self.board.squares[f"{file}7"].add_piece(Pawn("black"))]
-
-    def _get_direction(self, colour):
-        return 1 if colour == "white" else -1
 
     def make_move(self, move):
         # Ignore pieces that are not active or not of the current turn
@@ -39,18 +40,25 @@ class Game:
                 print("Invalid move.")
         # Find the piece that can make the move
         for piece in possible_pieces:
-            if move in piece.list_possible_moves():
+            if move in piece.list_possible_moves(self.previous_move):
                 self._move_piece(piece, move)
-                break
+                return
         print("Invalid move.")
 
     def _move_piece(self, piece, move):
+        destination = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
+        destination_square = self.board.get_square(destination.group(1))
+        origin = piece.position.string
+        take = "x" if "x" in move else ""
+
+        long_notation = f"{piece.string}{origin}{take}{destination.group(0)}"
         piece.position.remove_piece()
-        move_square = self.board.get_square(move[-2:])
-        if move_square.piece:
-            move_square.piece.taken()
-        move_square.add_piece(piece)
+        if destination_square.piece:
+            destination_square.piece.taken()
+        destination_square.add_piece(piece)
         self.turn = "black" if self.turn == "white" else "white"
+        self.previous_move = long_notation
+        print(long_notation)
 
     def start_game(self):
         while True:
@@ -100,6 +108,7 @@ class Square:
         self.file = file
         self.piece = None
         self.board = board
+        self.string = f"{file}{rank}"
 
     def add_piece(self, piece):
         self.piece = piece
@@ -125,9 +134,10 @@ class Pawn(Piece):
     def __init__(self, colour):
         super().__init__(colour)
         self.printable = "♟" if colour == "white" else "♙"
+        self.string = ""
         self.direction = 1 if colour == "white" else -1
 
-    def list_possible_moves(self):
+    def list_possible_moves(self, previous_move):
         if self.active is False:
             return None
         moves = []
@@ -164,6 +174,21 @@ class Pawn(Piece):
             moves.append(
                 f"{current_square.file}x{right_diagonal_square.file}{right_diagonal_square.rank}"
             )
+
+        # en passant
+        if (self.position.rank == "5" and self.direction == 1) or (
+            self.position.rank == "4" and self.direction == -1
+        ):
+            if previous_move:
+                if (
+                    previous_move[0] in "abcdefgh"
+                    and previous_move[1] == self.position.rank
+                ):
+                    if abs(ord(previous_move[0]) - ord(current_square.file)) == 1:
+                        moves.append(
+                            f"{current_square.file}x{previous_move[0]}{previous_move[1]}"
+                        )
+
         return moves
 
 
