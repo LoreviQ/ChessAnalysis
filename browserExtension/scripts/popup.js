@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     console.log("loading popup.js");
+
     // Displays the connection status based on the URL of the active tab
     chrome.runtime.sendMessage({ action: "getTabUrl" }, function (response) {
         const url = response.url;
@@ -12,6 +13,17 @@ document.addEventListener("DOMContentLoaded", function () {
             connectionStatusDiv.textContent = "Unsupported website";
         }
     });
+
+    // displays the server status
+    const serverStatusDiv = document.getElementById("server-status");
+    chrome.runtime.sendMessage({ action: "getReady" }, function (response) {
+        if (response.ready) {
+            serverStatusDiv.textContent = "Server is ready";
+        } else {
+            serverStatusDiv.textContent = "Server is not ready";
+        }
+    });
+
     // Displays the move list in popup
     const moveListDiv = document.getElementById("move-list");
     chrome.runtime.sendMessage({ action: "getMoveList" }, function (response) {

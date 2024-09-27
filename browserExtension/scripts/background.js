@@ -45,11 +45,15 @@ function sendMovesToServer(moves) {
 function checkReadiness() {
     fetch(baseURL + "readiness", {
         method: "GET",
-    }).then((response) => {
-        if (response.status === 200) {
-            ready = true;
-        } else {
+    })
+        .then((response) => {
+            if (response.status === 200) {
+                ready = true;
+            } else {
+                ready = false;
+            }
+        })
+        .catch((error) => {
             ready = false;
-        }
-    });
+        });
 }
