@@ -53,8 +53,13 @@ class Game:
 
         long_notation = f"{piece.string}{origin}{take}{destination.group(0)}"
         piece.position.remove_piece()
-        if destination_square.piece:
-            destination_square.piece.taken()
+        if take:
+            if destination_square.piece:
+                destination_square.piece.taken()
+            else:
+                # en passant
+                taken_square = self.board.get_square(self.previous_move[-2:])
+                taken_square.piece.taken()
         destination_square.add_piece(piece)
         self.turn = "black" if self.turn == "white" else "white"
         self.previous_move = long_notation
@@ -179,15 +184,16 @@ class Pawn(Piece):
         if (self.position.rank == "5" and self.direction == 1) or (
             self.position.rank == "4" and self.direction == -1
         ):
-            if previous_move:
-                if (
-                    previous_move[0] in "abcdefgh"
-                    and previous_move[1] == self.position.rank
-                ):
-                    if abs(ord(previous_move[0]) - ord(current_square.file)) == 1:
-                        moves.append(
-                            f"{current_square.file}x{previous_move[0]}{previous_move[1]}"
-                        )
+            en_passant_left = f"{left_diagonal_square.file}{int(left_diagonal_square.rank)+self.direction}{left_diagonal_square.file}{int(left_diagonal_square.rank)-self.direction}"
+            if previous_move == en_passant_left:
+                moves.append(
+                    f"{current_square.file}x{left_diagonal_square.file}{left_diagonal_square.rank}"
+                )
+            en_passant_right = f"{right_diagonal_square.file}{int(right_diagonal_square.rank)+self.direction}{right_diagonal_square.file}{int(right_diagonal_square.rank)-self.direction}"
+            if previous_move == en_passant_right:
+                moves.append(
+                    f"{current_square.file}x{right_diagonal_square.file}{right_diagonal_square.rank}"
+                )
 
         return moves
 
