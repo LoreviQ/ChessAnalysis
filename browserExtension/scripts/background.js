@@ -15,7 +15,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             return;
         case "updateMoveList":
             moves = request.moves;
-            sendMovesToServer(moves);
+            if (ready) {
+                sendMovesToServer(moves);
+            }
             break;
         case "getMoveList":
             sendResponse({ moves: moves });
