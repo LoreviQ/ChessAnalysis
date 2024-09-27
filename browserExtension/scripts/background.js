@@ -2,28 +2,36 @@ let moves = "";
 let ready = false;
 const baseURL = "http://127.0.0.1:5000/";
 
-const intervalId = setInterval(() => {
-    checkReadiness();
-}, 1000);
+checkReadiness();
+setInterval(checkReadiness, 60000);
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("Executing action: " + request.action);
     switch (request.action) {
         case "getTabUrl":
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                console.log("Getting tab URL: " + tabs[0].url);
                 sendResponse({ url: tabs[0].url });
             });
             return;
         case "updateMoveList":
             moves = request.moves;
             if (ready) {
+                console.log("Sending moves to server: " + moves);
                 sendMovesToServer(moves);
             }
             break;
         case "getMoveList":
+            console.log("Sending moves to popup: " + moves);
             sendResponse({ moves: moves });
             break;
-        case "getReady":
+        case "getReadiness":
+            console.log("Sending readiness to popup: " + ready);
             sendResponse({ ready: ready });
+            break;
+        case "manualReadinessCheck":
+            console.log("Manual readiness check");
+            checkReadiness();
             break;
         default:
             break;

@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("loading popup.js");
-
     // Displays the connection status based on the URL of the active tab
     chrome.runtime.sendMessage({ action: "getTabUrl" }, function (response) {
         const url = response.url;
