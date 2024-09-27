@@ -30,8 +30,32 @@ class Game:
         possible_pieces = [
             piece for piece in self.pieces if piece.colour == self.turn and piece.active
         ]
-        match move[0]:
-            case _ if move[0] in "abcdefgh":  # pawn move
+
+        # regex to match algebraic notation
+        pattern = r"([KQRBN]?)([a-h]?)(x?)([a-h][1-8])(=[QRBN])?([+#]?)"
+        regex_match = re.search(pattern, move)
+        if not regex_match:
+            print("Invalid move.")
+            print("Possible moves:")
+            possible_moves = []
+            for piece in possible_pieces:
+                possible_moves += piece.list_possible_moves(self.previous_move)
+            print(possible_moves)
+            return
+        piece = regex_match.group(1)
+        origin_file = regex_match.group(2)
+        take = regex_match.group(3)
+        destination = regex_match.group(4)
+        promotion = regex_match.group(5)
+        checkmate = regex_match.group(6)
+        print("Matched groups:")
+        print(
+            f"'{piece}', '{origin_file}', '{take}', '{destination}', '{promotion}', '{checkmate}'"
+        )
+        print("---")
+
+        match piece:
+            case "":  # pawn move
                 possible_pieces = [
                     piece for piece in possible_pieces if isinstance(piece, Pawn)
                 ]
@@ -47,19 +71,11 @@ class Game:
                 pass
             case "O":  # castling
                 pass
-            case _:
-                print("Invalid move.")
         # Find the piece that can make the move
         for piece in possible_pieces:
             if move in piece.list_possible_moves(self.previous_move):
                 self._move_piece(piece, move)
                 return
-        print("Invalid move.")
-        print("Possible moves:")
-        possible_moves = []
-        for piece in possible_pieces:
-            possible_moves += piece.list_possible_moves(self.previous_move)
-        print(possible_moves)
 
     def _move_piece(self, piece, move):
         move_string = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
@@ -70,7 +86,7 @@ class Game:
         origin = piece.position.string
         take = "x" if "x" in move else ""
 
-        long_notation = f"{piece.string}{origin}{take}{move_string}"
+        long_notation = f"{piece.string}{origin}{take}{move_string.group(0)}"
         piece.position.remove_piece()
         if take:
             if destination_square.piece:
