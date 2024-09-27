@@ -1,7 +1,15 @@
+"""
+Module to play chess in the terminal.
+"""
+
 import re
 
 
 class Game:
+    """
+    A class to manage a chess game.
+    """
+
     def __init__(self):
         self.board = Board()
         self.pieces = []
@@ -15,6 +23,9 @@ class Game:
             self.pieces += [self.board.squares[f"{file}7"].add_piece(Pawn("black"))]
 
     def make_move(self, move):
+        """
+        Checks if the move is valid and makes the move if it is.
+        """
         # Ignore pieces that are not active or not of the current turn
         possible_pieces = [
             piece for piece in self.pieces if piece.colour == self.turn and piece.active
@@ -51,14 +62,15 @@ class Game:
         print(possible_moves)
 
     def _move_piece(self, piece, move):
-        destination = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
-        destination_square = self.board.get_square(
-            destination.group(1)[0], destination.group(1)[1]
-        )
+        move_string = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
+        destination = move_string.group(1)
+        promotion = move_string.group(2) if move_string.group(2) else None
+        checkmate = move_string.group(3) if move_string.group(3) else None
+        destination_square = self.board.get_square(destination[0], destination[1])
         origin = piece.position.string
         take = "x" if "x" in move else ""
 
-        long_notation = f"{piece.string}{origin}{take}{destination.group(0)}"
+        long_notation = f"{piece.string}{origin}{take}{move_string}"
         piece.position.remove_piece()
         if take:
             if destination_square.piece:
@@ -70,11 +82,19 @@ class Game:
                 )
                 taken_square.piece.taken()
         destination_square.add_piece(piece)
+        # promotion
+        if promotion:
+            piece = piece.promote(promotion[1])
+            self.pieces += [destination_square.add_piece(piece)]
         self.turn = "black" if self.turn == "white" else "white"
         self.previous_move = long_notation
         print(long_notation)
 
     def start_game(self):
+        """
+        Starts the game and allows players to make moves.
+        Expects mvoe input in algebraic notation.
+        """
         while True:
             self.board.print_board()
             move = input(f"{self.turn.capitalize()}'s move: ")
@@ -85,6 +105,10 @@ class Game:
 
 
 class Board:
+    """
+    A class to represent a chess board.
+    """
+
     def __init__(self):
         self.ranks = "12345678"
         self.files = "abcdefgh"
@@ -98,6 +122,9 @@ class Board:
         return board
 
     def print_board(self):
+        """
+        Prints the board with the pieces in their current positions.
+        """
         for rank in self.ranks[::-1]:
             row = ""
             for file in self.files:
@@ -110,6 +137,9 @@ class Board:
             print(row)
 
     def get_square(self, file, rank):
+        """
+        Returns the square at the given file and rank.
+        """
         try:
             return self.squares[f"{file}{rank}"]
         except KeyError:
@@ -117,6 +147,10 @@ class Board:
 
 
 class Square:
+    """
+    A class to represent a square on a chess board.
+    """
+
     def __init__(self, rank, file, board):
         self.rank = rank
         self.file = file
@@ -125,26 +159,43 @@ class Square:
         self.string = f"{file}{rank}"
 
     def add_piece(self, piece):
+        """
+        Adds a piece to the square.
+        """
         self.piece = piece
         self.piece.position = self
         return piece
 
     def remove_piece(self):
+        """
+        Removes a piece from the square.
+        """
         self.piece = None
 
 
 class Piece:
+    """
+    A class to represent a chess piece.
+    """
+
     def __init__(self, colour):
         self.active = True
         self.colour = colour
         self.position = None
 
     def taken(self):
+        """
+        Sets the piece as taken.
+        """
         self.active = False
         self.position = None
 
 
 class Pawn(Piece):
+    """
+    A class to represent a pawn chess piece.
+    """
+
     def __init__(self, colour):
         super().__init__(colour)
         self.printable = "♟" if colour == "white" else "♙"
@@ -152,6 +203,9 @@ class Pawn(Piece):
         self.direction = 1 if colour == "white" else -1
 
     def list_possible_moves(self, previous_move):
+        """
+        Returns a list of possible moves for the pawn.
+        """
         if self.active is False:
             return None
         moves = []
@@ -193,6 +247,7 @@ class Pawn(Piece):
             moves.append(f"{origin_file}x{left_diagonal_square.string}")
         if right_diagonal_square and right_diagonal_square.piece:
             moves.append(f"{origin_file}x{right_diagonal_square.string}")
+            # TODO capture promotion
 
         # en passant
         if (self.position.rank == "5" and self.direction == 1) or (
@@ -205,6 +260,76 @@ class Pawn(Piece):
             if previous_move == en_passant_right:
                 moves.append(f"{origin_file}x{right_diagonal_square.string}")
         return moves
+
+    def promote(self, promotion):
+        """
+        Promotes the pawn to a queen, rook, bishop, or knight.
+        """
+        self.taken()
+        if promotion == "Q":
+            return Queen(self.colour)
+        if promotion == "R":
+            return Rook(self.colour)
+        if promotion == "B":
+            return Bishop(self.colour)
+        if promotion == "N":
+            return Knight(self.colour)
+        raise ValueError("Invalid promotion.")
+
+
+class Rook(Piece):
+    """
+    A class to represent a rook chess piece.
+    """
+
+    def __init__(self, colour):
+        super().__init__(colour)
+        self.printable = "♜" if colour == "white" else "♖"
+        self.string = "R"
+
+
+class Knight(Piece):
+    """
+    A class to represent a knight chess piece.
+    """
+
+    def __init__(self, colour):
+        super().__init__(colour)
+        self.printable = "♞" if colour == "white" else "♘"
+        self.string = "N"
+
+
+class Bishop(Piece):
+    """
+    A class to represent a bishop chess piece.
+    """
+
+    def __init__(self, colour):
+        super().__init__(colour)
+        self.printable = "♝" if colour == "white" else "♗"
+        self.string = "B"
+
+
+class Queen(Piece):
+    """
+    A class to represent a queen chess piece.
+    """
+
+    def __init__(self, colour):
+        super().__init__(colour)
+        self.printable = "♛" if colour == "white" else "♕"
+        self.string = "Q"
+
+
+class King(Piece):
+    """
+    A class to represent a king chess piece.
+    """
+
+    def __init__(self, colour):
+        super().__init__(colour)
+        self.printable = "♚" if colour == "white" else "♔"
+        self.string = "K"
 
 
 if __name__ == "__main__":
