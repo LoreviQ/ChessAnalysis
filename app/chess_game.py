@@ -16,6 +16,10 @@ class Game:
         self._initialize_pieces()
         self.turn = "white"
         self.previous_moves = []
+        self.can_castle = {
+            "white": {"short": True, "long": True},
+            "black": {"short": True, "long": True},
+        }
 
     def _initialize_pieces(self):
         for file in self.board.files:
@@ -46,6 +50,12 @@ class Game:
         try:
             piece_str, take, destination, promotion, checkmate = self._regex_match(move)
         except ValueError:
+            if move == "0-0":
+                self._short_castle()
+                return
+            if move == "0-0-0":
+                self._long_castle()
+                return
             self._declare_invalid_move()
             return
         # Find the piece that can make the move and move it
@@ -80,12 +90,71 @@ class Game:
                 )
                 taken_square.piece.taken()
         destination_square.add_piece(piece)
+
         # Promotion
         if promotion:
             piece = piece.promote(promotion[1])
             self.pieces += [destination_square.add_piece(piece)]
+
+        # disable castling if king or rook moves
+        if piece_str == "K":
+            self.can_castle[self.turn]["short"] = False
+            self.can_castle[self.turn]["long"] = False
+        if piece_str == "R":
+            if origin == "a1":
+                self.can_castle["white"]["long"] = False
+            if origin == "h1":
+                self.can_castle["white"]["short"] = False
+            if origin == "a8":
+                self.can_castle["black"]["long"] = False
+            if origin == "h8":
+                self.can_castle["black"]["short"] = False
+
+        # change turn
         self.turn = "black" if self.turn == "white" else "white"
+
+        # log move
         self.previous_moves += [long_notation]
+
+    def _short_castle(self):
+        if self.can_castle[self.turn]["short"] is False:
+            # Castle disabled
+            self._declare_invalid_move()
+            return
+        home_rank = "1" if self.turn == "white" else "8"
+        king = self.board.get_square("e", home_rank).piece
+        rook = self.board.get_square("h", home_rank).piece
+        f_square = self.board.get_square("f", home_rank)
+        g_square = self.board.get_square("g", home_rank)
+        if (
+            isinstance(king, King) is False
+            or isinstance(rook, Rook) is False
+            or king.active is False
+            or rook.active is False
+        ):
+            # King or rook has moved
+            self._declare_invalid_move()
+            return
+        if f_square.piece or g_square.piece:
+            # Squares between king and rook are occupied
+            self._declare_invalid_move()
+            return
+        # TODO check for check on squares king passes through
+        # Make the move
+        king.position.remove_piece()
+        rook.position.remove_piece()
+        f_square.add_piece(king)
+        g_square.add_piece(rook)
+        # Disable castling for the rest of the game
+        self.can_castle[self.turn]["short"] = False
+        self.can_castle[self.turn]["long"] = False
+        # Change turn
+        self.turn = "black" if self.turn == "white" else "white"
+        # Log move
+        self.previous_moves += ["0-0"]
+
+    def _long_castle(self):
+        pass
 
     def _list_moves(self, colour=None, filter_piece_str=None):
         """
@@ -124,12 +193,20 @@ class Game:
                 possible_moves[piece_move] = piece
                 possible_moves[other_move] = other
                 del possible_moves[move]
+        # Castling
+        if self.can_castle[colour]["short"]:
+            possible_moves["0-0"] = None
+        if self.can_castle[colour]["long"]:
+            possible_moves["0-0-0"] = None
         return possible_moves
 
     def _log_possible_moves(self, possible_moves):
         print(f"{self.turn.capitalize()}'s possible moves:")
         log_moves = {}
         for move, piece in possible_moves.items():
+            if piece is None:
+                print(move)
+                continue
             piece_unique_print = f"{piece.printable}-{piece.position.string}"
             if piece_unique_print in log_moves:
                 log_moves[piece_unique_print].append(move)
