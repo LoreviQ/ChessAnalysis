@@ -56,11 +56,9 @@ class Game:
 
         match piece:
             case "":  # pawn move
-                possible_pieces = [
-                    piece for piece in possible_pieces if isinstance(piece, Pawn)
-                ]
+                correct_piece = Pawn
             case "R":  # rook move
-                pass
+                correct_piece = Rook
             case "N":  # knight move
                 pass
             case "B":  # bishop move
@@ -71,6 +69,10 @@ class Game:
                 pass
             case "O":  # castling
                 pass
+        # Remove pieces that are not of the specified type
+        possible_pieces = [
+            piece for piece in possible_pieces if isinstance(piece, correct_piece)
+        ]
         # Find the piece that can make the move
         for piece in possible_pieces:
             if move in piece.list_possible_moves(self.previous_move):
@@ -205,6 +207,13 @@ class Piece:
         """
         self.active = False
         self.position = None
+
+    def list_possible_moves(self, previous_move):
+        """
+        Returns a list of possible moves for the piece.
+        Not implemented in the base class.
+        """
+        return []
 
 
 class Pawn(Piece):
