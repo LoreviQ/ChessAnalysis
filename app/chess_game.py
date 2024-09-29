@@ -1,5 +1,10 @@
 """
 Module to play chess in the terminal.
+
+Used to convert a list of moves to long algebraic notation.
+
+It's necessary to play the moves in order to convert them 
+since short algebraic notation relies on board state.
 """
 
 import re
