@@ -50,10 +50,10 @@ class Game:
         try:
             piece_str, take, destination, promotion, checkmate = self._regex_match(move)
         except ValueError:
-            if move == "0-0":
+            if move in ("0-0", "O-O"):
                 self._short_castle()
                 return
-            if move == "0-0-0":
+            if move in ("0-0-0", "O-O-O"):
                 self._long_castle()
                 return
             self._declare_invalid_move()
@@ -151,7 +151,7 @@ class Game:
         # Change turn
         self.turn = "black" if self.turn == "white" else "white"
         # Log move
-        self.previous_moves += ["0-0"]
+        self.previous_moves += ["O-O"]
 
     def _long_castle(self):
         pass
@@ -195,9 +195,9 @@ class Game:
                 del possible_moves[move]
         # Castling
         if self.can_castle[colour]["short"]:
-            possible_moves["0-0"] = None
+            possible_moves["O-O"] = None
         if self.can_castle[colour]["long"]:
-            possible_moves["0-0-0"] = None
+            possible_moves["O-O-O"] = None
         return possible_moves
 
     def _log_possible_moves(self, possible_moves):
