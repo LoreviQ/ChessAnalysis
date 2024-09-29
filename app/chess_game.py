@@ -22,68 +22,29 @@ class Game:
             self.pieces += [self.board.squares[f"{file}2"].add_piece(Pawn("white"))]
             self.pieces += [self.board.squares[f"{file}7"].add_piece(Pawn("black"))]
 
-    def make_move(self, move):
+    def _make_move(self, move):
         """
         Checks if the move is valid and makes the move if it is.
         """
-        # Ignore pieces that are not active or not of the current turn
-        possible_pieces = [
-            piece for piece in self.pieces if piece.colour == self.turn and piece.active
-        ]
-
-        # regex to match algebraic notation
-        pattern = r"([KQRBN]?)([a-h]?)(x?)([a-h][1-8])(=[QRBN])?([+#]?)"
-        regex_match = re.search(pattern, move)
-        if not regex_match:
-            print("Invalid move.")
-            print("Possible moves:")
-            possible_moves = []
-            for piece in possible_pieces:
-                possible_moves += piece.list_possible_moves(self.previous_moves)
-            print(possible_moves)
+        # Parse move string
+        try:
+            piece_str, origin_file, take, destination, promotion, checkmate = (
+                self._regex_match(move)
+            )
+        except ValueError:
+            self._declare_invalid_move()
             return
-        piece = regex_match.group(1)
-        origin_file = regex_match.group(2)
-        take = regex_match.group(3)
-        destination = regex_match.group(4)
-        promotion = regex_match.group(5)
-        checkmate = regex_match.group(6)
-        print("Matched groups:")
-        print(
-            f"'{piece}', '{origin_file}', '{take}', '{destination}', '{promotion}', '{checkmate}'"
-        )
-        print("---")
-
-        match piece:
-            case "":  # pawn move
-                correct_piece = Pawn
-            case "R":  # rook move
-                correct_piece = Rook
-            case "N":  # knight move
-                pass
-            case "B":  # bishop move
-                pass
-            case "Q":  # queen move
-                pass
-            case "K":  # king move
-                pass
-            case "O":  # castling
-                pass
-        # Remove pieces that are not of the specified type
+        # Remove pieces of the opposite colour, wrong turn and wrong piece type
         possible_pieces = [
-            piece for piece in possible_pieces if isinstance(piece, correct_piece)
+            piece
+            for piece in self.pieces
+            if piece.active and piece.colour == self.turn and piece.string == piece_str
         ]
-        # Find the piece that can make the move
+        # Find the piece that can make the move and move it
         for piece in possible_pieces:
             if move in piece.list_possible_moves(self.previous_moves):
                 self._move_piece(piece, move)
                 return
-        print("Invalid move.")
-        print("Possible moves:")
-        possible_moves = []
-        for piece in possible_pieces:
-            possible_moves += piece.list_possible_moves(self.previous_moves)
-        print(possible_moves)
 
     def _move_piece(self, piece, move):
         move_string = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
@@ -114,6 +75,35 @@ class Game:
         self.previous_moves += [long_notation]
         print(long_notation)
 
+    def _list_moves(self):
+        """
+        Lists all possible moves for the current player.
+        """
+        possible_moves = []
+        for piece in self.pieces:
+            if piece.colour == self.turn and piece.active:
+                possible_moves += piece.list_possible_moves(self.previous_moves)
+        print(f"{self.turn.capitalize()}'s possible moves:")
+        print(possible_moves)
+
+    def _regex_match(self, move):
+        # regex to match algebraic notation
+        pattern = r"([KQRBN]?)([a-h]?)(x?)([a-h][1-8])(=[QRBN])?([+#]?)"
+        regex_match = re.search(pattern, move)
+        if not regex_match:
+            raise ValueError("Invalid move.")
+        piece = regex_match.group(1)
+        origin_file = regex_match.group(2)
+        take = regex_match.group(3)
+        destination = regex_match.group(4)
+        promotion = regex_match.group(5)
+        checkmate = regex_match.group(6)
+        return piece, origin_file, take, destination, promotion, checkmate
+
+    def _declare_invalid_move(self):
+        print("Invalid move.")
+        self._list_moves()
+
     def start_game(self):
         """
         Starts the game and allows players to make moves.
@@ -121,11 +111,17 @@ class Game:
         """
         while True:
             self.board.print_board()
-            move = input(f"{self.turn.capitalize()}'s move: ")
-            if move.lower() == "quit":
+            user_input = input(f"{self.turn.capitalize()}'s move: ")
+            if user_input.lower() == "quit":
                 print("Game over.")
                 break
-            self.make_move(move)
+            if user_input.lower() == "moves":
+                print(self.previous_moves)
+                continue
+            if user_input.lower() == "list_moves":
+                self._list_moves()
+                continue
+            self._make_move(user_input)
 
 
 class Board:
