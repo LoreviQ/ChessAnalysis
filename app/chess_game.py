@@ -21,8 +21,10 @@ class Game:
         for file in self.board.files:
             self.pieces += [self.board.squares[f"{file}2"].add_piece(Pawn("white"))]
             self.pieces += [self.board.squares[f"{file}7"].add_piece(Pawn("black"))]
-        self.pieces += [self.board.squares["a3"].add_piece(Rook("white"))]
-        self.pieces += [self.board.squares["h3"].add_piece(Rook("white"))]
+        self.pieces += [self.board.squares["a1"].add_piece(Rook("white"))]
+        self.pieces += [self.board.squares["h1"].add_piece(Rook("white"))]
+        self.pieces += [self.board.squares["a8"].add_piece(Rook("black"))]
+        self.pieces += [self.board.squares["h8"].add_piece(Rook("black"))]
 
     def _make_move(self, move):
         """
@@ -387,32 +389,36 @@ class Rook(Piece):
         # forward
         for rank in range(int(origin_rank) + 1, 9):
             square = self.position.board.get_square(origin_file, str(rank))
-            if square.piece and square.piece.colour != self.colour:
-                moves.append(f"{self.string}x{square.string}")
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
 
         # backward
         for rank in range(int(origin_rank) - 1, 0, -1):
             square = self.position.board.get_square(origin_file, str(rank))
-            if square.piece and square.piece.colour != self.colour:
-                moves.append(f"{self.string}x{square.string}")
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
 
         # left
         for file in range(ord(origin_file) - 1, ord("a") - 1, -1):
             square = self.position.board.get_square(chr(file), origin_rank)
-            if square.piece and square.piece.colour != self.colour:
-                moves.append(f"{self.string}x{square.string}")
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
 
         # right
         for file in range(ord(origin_file) + 1, ord("h") + 1):
             square = self.position.board.get_square(chr(file), origin_rank)
-            if square.piece and square.piece.colour != self.colour:
-                moves.append(f"{self.string}x{square.string}")
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
         return moves
