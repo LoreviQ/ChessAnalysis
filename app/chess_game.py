@@ -75,7 +75,7 @@ class Game:
         self.turn = "black" if self.turn == "white" else "white"
         self.previous_moves += [long_notation]
 
-    def _list_moves(self, colour=None, piece_str=None, log=False):
+    def _list_moves(self, colour=None, piece_str=None):
         """
         Lists all possible moves for the current player.
         """
@@ -83,26 +83,48 @@ class Game:
             colour = self.turn
         possible_moves = {}
         for piece in self.pieces:
-            if (
+            # Filter out pieces that can't move
+            if not (
                 piece.active
                 and piece.colour == colour
                 and (piece_str is None or piece.string == piece_str)
             ):
-                piece_moves = piece.list_possible_moves(self)
-                for move in piece_moves:
+                continue
+            piece_moves = piece.list_possible_moves(self)
+            for move in piece_moves:
+                if move not in possible_moves:
                     possible_moves[move] = piece
-        if log:
-            print(f"{self.turn.capitalize()}'s possible moves:")
-            log_moves = {}
-            for move, piece in possible_moves.items():
-                piece_unique_print = f"{piece.printable}-{piece.position.string}"
-                if piece_unique_print in log_moves:
-                    log_moves[piece_unique_print].append(move)
-                else:
-                    log_moves[piece_unique_print] = [move]
-            for piece_unique_print, moves in log_moves.items():
-                print(f"{piece_unique_print}: {', '.join(moves)}")
+                    continue
+
+                # Multiple pieces that can move to the same square
+                piece_str, take, destination, promotion, checkmate = self._regex_match(
+                    move
+                )
+                other = possible_moves[move]
+                if other.position.rank == piece.position.rank:
+                    # If the pieces are on the same rank, disambiguate by file
+                    piece_move = f"{piece_str}{piece.position.file}{take}{destination}{promotion}{checkmate}"
+                    other_move = f"{piece_str}{other.position.file}{take}{destination}{promotion}{checkmate}"
+                if other.position.file == piece.position.file:
+                    # If the pieces are on the same file, disambiguate by rank
+                    piece_move = f"{piece_str}{piece.position.rank}{take}{destination}{promotion}{checkmate}"
+                    other_move = f"{piece_str}{other.position.rank}{take}{destination}{promotion}{checkmate}"
+                possible_moves[piece_move] = piece
+                possible_moves[other_move] = other
+                del possible_moves[move]
         return possible_moves
+
+    def _log_possible_moves(self, possible_moves):
+        print(f"{self.turn.capitalize()}'s possible moves:")
+        log_moves = {}
+        for move, piece in possible_moves.items():
+            piece_unique_print = f"{piece.printable}-{piece.position.string}"
+            if piece_unique_print in log_moves:
+                log_moves[piece_unique_print].append(move)
+            else:
+                log_moves[piece_unique_print] = [move]
+        for piece_unique_print, moves in log_moves.items():
+            print(f"{piece_unique_print}: {', '.join(moves)}")
 
     def _regex_match(self, move, log=False):
         # regex to match algebraic notation
@@ -129,7 +151,8 @@ class Game:
 
     def _declare_invalid_move(self):
         print("Invalid move.")
-        self._list_moves(log=True)
+        possible_moves = self._list_moves()
+        self._log_possible_moves(possible_moves)
 
     def start_game(self):
         """
@@ -146,7 +169,8 @@ class Game:
                 print(self.previous_moves)
                 continue
             if user_input.lower() == "list_moves":
-                self._list_moves(log=True)
+                possible_moves = self._list_moves()
+                self._log_possible_moves(possible_moves)
                 continue
             self._make_move(user_input)
 
