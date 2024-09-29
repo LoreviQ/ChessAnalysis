@@ -50,14 +50,12 @@ class Game:
         try:
             piece_str, take, destination, promotion, checkmate = self._regex_match(move)
         except ValueError:
-            if move in ("0-0", "O-O"):
-                self._short_castle()
-                return
-            if move in ("0-0-0", "O-O-O"):
-                self._long_castle()
-                return
             self._declare_invalid_move()
-            return
+            return False
+        if piece_str in ("0-0", "O-O"):
+            return self._short_castle()
+        if piece_str in ("0-0-0", "O-O-O"):
+            return self._long_castle()
         # Find the piece that can make the move and move it
         if checkmate:
             # check/checkmate ignored for move finding purposes
@@ -65,7 +63,7 @@ class Game:
         possible_moves = self._list_moves(self.turn, piece_str)
         for possible_move, piece in possible_moves.items():
             if possible_move == move:
-                self._move_piece(
+                return self._move_piece(
                     piece,
                     piece_str,
                     take,
@@ -73,9 +71,9 @@ class Game:
                     promotion,
                     checkmate,
                 )
-                return
         # If no piece can make the move, declare it invalid
         self._declare_invalid_move()
+        return False
 
     def _move_piece(self, piece, piece_str, take, destination, promotion, checkmate):
         destination_square = self.board.get_square(destination[0], destination[1])
@@ -118,6 +116,7 @@ class Game:
 
         # log move
         self.previous_moves += [long_notation]
+        return True
 
     def _validate_castle_conditions(self, colour, side):
         # Check if castling has been disabled for this player
@@ -147,7 +146,7 @@ class Game:
     def _short_castle(self):
         if self.can_castle[self.turn]["short"] is False:
             self._declare_invalid_move()
-            return
+            return False
         # Make the move
         home_rank = "1" if self.turn == "white" else "8"
         king = self.board.get_square("e", home_rank).piece
@@ -156,8 +155,8 @@ class Game:
         g_square = self.board.get_square("g", home_rank)
         king.position.remove_piece()
         rook.position.remove_piece()
-        f_square.add_piece(king)
-        g_square.add_piece(rook)
+        f_square.add_piece(rook)
+        g_square.add_piece(king)
         # Disable castling for the rest of the game
         self.can_castle[self.turn]["short"] = False
         self.can_castle[self.turn]["long"] = False
@@ -165,11 +164,12 @@ class Game:
         self.turn = "black" if self.turn == "white" else "white"
         # Log move
         self.previous_moves += ["O-O"]
+        return True
 
     def _long_castle(self):
         if self.can_castle[self.turn]["long"] is False:
             self._declare_invalid_move()
-            return
+            return False
         # Make the move
         home_rank = "1" if self.turn == "white" else "8"
         king = self.board.get_square("e", home_rank).piece
@@ -187,6 +187,7 @@ class Game:
         self.turn = "black" if self.turn == "white" else "white"
         # Log move
         self.previous_moves += ["O-O-O"]
+        return True
 
     def _list_moves(self, colour=None, filter_piece_str=None):
         """
@@ -214,14 +215,14 @@ class Game:
                     move
                 )
                 other = possible_moves[move]
-                if other.position.rank == piece.position.rank:
-                    # If the pieces are on the same rank, disambiguate by file
-                    piece_move = f"{piece_str}{piece.position.file}{take}{destination}{promotion}{checkmate}"
-                    other_move = f"{piece_str}{other.position.file}{take}{destination}{promotion}{checkmate}"
                 if other.position.file == piece.position.file:
                     # If the pieces are on the same file, disambiguate by rank
                     piece_move = f"{piece_str}{piece.position.rank}{take}{destination}{promotion}{checkmate}"
                     other_move = f"{piece_str}{other.position.rank}{take}{destination}{promotion}{checkmate}"
+                else:
+                    # Otherwise, disambiguate by file
+                    piece_move = f"{piece_str}{piece.position.file}{take}{destination}{promotion}{checkmate}"
+                    other_move = f"{piece_str}{other.position.file}{take}{destination}{promotion}{checkmate}"
                 possible_moves[piece_move] = piece
                 possible_moves[other_move] = other
                 del possible_moves[move]
@@ -249,31 +250,48 @@ class Game:
 
     def _regex_match(self, move, log=False):
         # regex to match algebraic notation
-        pattern = r"([KQRBN]?)(x?)([a-h][1-8])(=[QRBN])?([+#]?)"
+        pattern = (
+            r"^([NBRQK])?([a-h])?([1-8])?(x)?([a-h][1-8])(=[NBRQK])?(\+|#)?$|^O-O(-O)?$"
+        )
         regex_match = re.search(pattern, move)
         if not regex_match:
             raise ValueError("Invalid move.")
+        if move in ("0-0", "O-O", "0-0-0", "O-O-O"):
+            return move, "", "", "", ""
         piece_str = regex_match.group(1)
-        take = regex_match.group(2)
-        destination = regex_match.group(3)
-        promotion = regex_match.group(4)
-        checkmate = regex_match.group(5)
+        origin_file = regex_match.group(2)
+        origin_rank = regex_match.group(3)
+        take = regex_match.group(4)
+        destination = regex_match.group(5)
+        promotion = regex_match.group(6)
+        checkmate = regex_match.group(7)
         if log:
             print(
-                f"piece: {piece_str}, take: {take}, destination: {destination}, promotion: {promotion}, checkmate: {checkmate}"
+                f"piece: {piece_str}, origin: {origin_file}{origin_rank}, take: {take}, destination: {destination}, promotion: {promotion}, checkmate: {checkmate}"
             )
         return (
-            piece_str,
-            take,
+            piece_str if piece_str else "",
+            take if take else "",
             destination,
             promotion if promotion else "",
-            checkmate,
+            checkmate if checkmate else "",
         )
 
     def _declare_invalid_move(self):
         print("Invalid move.")
         possible_moves = self._list_moves()
         self._log_possible_moves(possible_moves)
+
+    def _new_game(self):
+        self.board = Board()
+        self.pieces = []
+        self._initialize_pieces()
+        self.turn = "white"
+        self.previous_moves = []
+        self.can_castle = {
+            "white": {"short": True, "long": True},
+            "black": {"short": True, "long": True},
+        }
 
     def start_game(self):
         """
@@ -294,6 +312,29 @@ class Game:
                 self._log_possible_moves(possible_moves)
                 continue
             self._make_move(user_input)
+
+    def convert_notation(self, moves, debug=False):
+        """
+        Converts a list of moves to long algebraic notation
+        by playing them and returning the game log
+        """
+        self._new_game()
+        if debug:
+            for move in moves:
+                while True:
+                    # wait for enter key to be pressed
+                    user_input = input(f"{self.turn.capitalize()}'s move: {move} ")
+                    if user_input.lower() == "print":
+                        self.board.print_board()
+                        continue
+                    if self._make_move(move):
+                        break
+                    self.board.print_board()
+        else:
+            for move in moves:
+                self._make_move(move)
+        print(self.previous_moves)
+        return self.previous_moves
 
 
 class Board:
@@ -460,12 +501,14 @@ class Pawn(Piece):
         if (self.position.rank == "5" and self.direction == 1) or (
             self.position.rank == "4" and self.direction == -1
         ):
-            en_passant_left = f"{left_diagonal_square.file}{int(left_diagonal_square.rank)+self.direction}{left_diagonal_square.file}{int(left_diagonal_square.rank)-self.direction}"
-            if game.previous_moves[-1] == en_passant_left:
-                moves.append(f"{origin_file}x{left_diagonal_square.string}")
-            en_passant_right = f"{right_diagonal_square.file}{int(right_diagonal_square.rank)+self.direction}{right_diagonal_square.file}{int(right_diagonal_square.rank)-self.direction}"
-            if game.previous_moves[-1] == en_passant_right:
-                moves.append(f"{origin_file}x{right_diagonal_square.string}")
+            if left_diagonal_square:
+                en_passant_left = f"{left_diagonal_square.file}{int(left_diagonal_square.rank)+self.direction}{left_diagonal_square.file}{int(left_diagonal_square.rank)-self.direction}"
+                if game.previous_moves[-1] == en_passant_left:
+                    moves.append(f"{origin_file}x{left_diagonal_square.string}")
+            if right_diagonal_square:
+                en_passant_right = f"{right_diagonal_square.file}{int(right_diagonal_square.rank)+self.direction}{right_diagonal_square.file}{int(right_diagonal_square.rank)-self.direction}"
+                if game.previous_moves[-1] == en_passant_right:
+                    moves.append(f"{origin_file}x{right_diagonal_square.string}")
 
         return moves
 
@@ -810,5 +853,10 @@ class King(Piece):
 
 
 if __name__ == "__main__":
-    chessGame = Game()
-    chessGame.start_game()
+    if False:
+        chessGame = Game()
+        chessGame.start_game()
+    else:
+        an_moves = "e4 e5 Nc3 Nc6 f4 exf4 Nf3 Bb4 d4 Bxc3+ bxc3 d5 e5 f6 Bxf4 fxe5 Bxe5 Nxe5 Nxe5 Qe7 Bd3 c5 O-O Nf6 Qf3 Bg4 Qf2 O-O Qg3 Ne4 Bxe4 dxe4 Qxg4 cxd4 cxd4 Rad8 c3 b5 Qxe4 Qa3 Rf3 a5 Raf1 Qxa2 Rxf8+ Rxf8 Rxf8+ Kxf8 Qa8+ Ke7 Nc6+ Ke6 Nxa5 Qe2 Qc6+ Kf5 Qf3+ Qxf3 gxf3 Kf4 Kf2 g5 d5 Ke5 Nc6+ Kxd5 Nd4 b4 cxb4 Kxd4 Kg3 Kc4 Kg4 h6 Kh5 Kxb4 Kxh6 Kc5 Kxg5 Kd6 Kg6 Ke5 h4 Kf4 h5 Kxf3 h6 Ke2 h7 Kd3 h8=Q Kc4 Qe5 Kd3 Kf5 Kc4 Kf4 Kd3 Qe4+ Kc3 Kf3 Kd2 Qe3+ Kc2 Kf2 Kd1 Qe2+ Kc1 Ke3 Kb1 Kd3 Kc1 Qf2 Kd1 Qf1#".split()
+        chessGame = Game()
+        chessGame.convert_notation(an_moves)
