@@ -15,7 +15,7 @@ class Game:
         self.pieces = []
         self._initialize_pieces()
         self.turn = "white"
-        self.previous_move = None
+        self.previous_moves = []
 
     def _initialize_pieces(self):
         for file in self.board.files:
@@ -39,7 +39,7 @@ class Game:
             print("Possible moves:")
             possible_moves = []
             for piece in possible_pieces:
-                possible_moves += piece.list_possible_moves(self.previous_move)
+                possible_moves += piece.list_possible_moves(self.previous_moves)
             print(possible_moves)
             return
         piece = regex_match.group(1)
@@ -75,9 +75,15 @@ class Game:
         ]
         # Find the piece that can make the move
         for piece in possible_pieces:
-            if move in piece.list_possible_moves(self.previous_move):
+            if move in piece.list_possible_moves(self.previous_moves):
                 self._move_piece(piece, move)
                 return
+        print("Invalid move.")
+        print("Possible moves:")
+        possible_moves = []
+        for piece in possible_pieces:
+            possible_moves += piece.list_possible_moves(self.previous_moves)
+        print(possible_moves)
 
     def _move_piece(self, piece, move):
         move_string = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
@@ -96,7 +102,7 @@ class Game:
             else:
                 # en passant
                 taken_square = self.board.get_square(
-                    self.previous_move[-2:][0], self.previous_move[-2:][1]
+                    self.previous_moves[-2:][0], self.previous_moves[-2:][1]
                 )
                 taken_square.piece.taken()
         destination_square.add_piece(piece)
@@ -105,7 +111,7 @@ class Game:
             piece = piece.promote(promotion[1])
             self.pieces += [destination_square.add_piece(piece)]
         self.turn = "black" if self.turn == "white" else "white"
-        self.previous_move = long_notation
+        self.previous_moves += [long_notation]
         print(long_notation)
 
     def start_game(self):
@@ -208,7 +214,7 @@ class Piece:
         self.active = False
         self.position = None
 
-    def list_possible_moves(self, previous_move):
+    def list_possible_moves(self, previous_moves):
         """
         Returns a list of possible moves for the piece.
         Not implemented in the base class.
@@ -227,7 +233,7 @@ class Pawn(Piece):
         self.string = ""
         self.direction = 1 if colour == "white" else -1
 
-    def list_possible_moves(self, previous_move):
+    def list_possible_moves(self, previous_moves):
         """
         Returns a list of possible moves for the pawn.
         """
@@ -279,10 +285,10 @@ class Pawn(Piece):
             self.position.rank == "4" and self.direction == -1
         ):
             en_passant_left = f"{left_diagonal_square.file}{int(left_diagonal_square.rank)+self.direction}{left_diagonal_square.file}{int(left_diagonal_square.rank)-self.direction}"
-            if previous_move == en_passant_left:
+            if previous_moves[-1] == en_passant_left:
                 moves.append(f"{origin_file}x{left_diagonal_square.string}")
             en_passant_right = f"{right_diagonal_square.file}{int(right_diagonal_square.rank)+self.direction}{right_diagonal_square.file}{int(right_diagonal_square.rank)-self.direction}"
-            if previous_move == en_passant_right:
+            if previous_moves[-1] == en_passant_right:
                 moves.append(f"{origin_file}x{right_diagonal_square.string}")
         return moves
 
@@ -311,6 +317,28 @@ class Rook(Piece):
         super().__init__(colour)
         self.printable = "♜" if colour == "white" else "♖"
         self.string = "R"
+
+    def list_possible_moves(self, previous_moves):
+        """
+        Returns a list of possible moves for the rook.
+        """
+        if self.active is False:
+            return None
+        moves = []
+        origin_file = self.position.file
+        origin_rank = self.position.rank
+
+        # forward
+        for rank in range(int(origin_rank) + 1, 9):
+            try:
+                square = self.position.board.get_square(origin_file, str(rank))
+            except KeyError:
+                break
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
 
 
 class Knight(Piece):
