@@ -38,18 +38,17 @@ class Game:
             return
         # Find the piece that can make the move and move it
         possible_moves = self._list_moves(self.turn, piece_str)
-        for piece, possible_piece_moves in possible_moves.items():
-            for possible_move in possible_piece_moves:
-                if possible_move == move:
-                    self._move_piece(
-                        piece,
-                        piece_str,
-                        take,
-                        destination,
-                        promotion,
-                        checkmate,
-                    )
-                    return
+        for possible_move, piece in possible_moves.items():
+            if possible_move == move:
+                self._move_piece(
+                    piece,
+                    piece_str,
+                    take,
+                    destination,
+                    promotion,
+                    checkmate,
+                )
+                return
         # If no piece can make the move, declare it invalid
         self._declare_invalid_move()
 
@@ -76,7 +75,7 @@ class Game:
         self.turn = "black" if self.turn == "white" else "white"
         self.previous_moves += [long_notation]
 
-    def _list_moves(self, colour=None, piece_str=None):
+    def _list_moves(self, colour=None, piece_str=None, log=False):
         """
         Lists all possible moves for the current player.
         """
@@ -89,7 +88,20 @@ class Game:
                 and piece.colour == colour
                 and (piece_str is None or piece.string == piece_str)
             ):
-                possible_moves[piece] = piece.list_possible_moves(self)
+                piece_moves = piece.list_possible_moves(self)
+                for move in piece_moves:
+                    possible_moves[move] = piece
+        if log:
+            print(f"{self.turn.capitalize()}'s possible moves:")
+            log_moves = {}
+            for move, piece in possible_moves.items():
+                piece_unique_print = f"{piece.printable}-{piece.position.string}"
+                if piece_unique_print in log_moves:
+                    log_moves[piece_unique_print].append(move)
+                else:
+                    log_moves[piece_unique_print] = [move]
+            for piece_unique_print, moves in log_moves.items():
+                print(f"{piece_unique_print}: {', '.join(moves)}")
         return possible_moves
 
     def _regex_match(self, move, log=False):
@@ -117,7 +129,7 @@ class Game:
 
     def _declare_invalid_move(self):
         print("Invalid move.")
-        self._list_moves()
+        self._list_moves(log=True)
 
     def start_game(self):
         """
@@ -134,12 +146,7 @@ class Game:
                 print(self.previous_moves)
                 continue
             if user_input.lower() == "list_moves":
-                possible_moves = self._list_moves()
-                print(f"{self.turn.capitalize()}'s possible moves:")
-                for piece, moves in possible_moves.items():
-                    print(
-                        f"{piece.printable}-{piece.position.string}: {', '.join(moves)}"
-                    )
+                self._list_moves(log=True)
                 continue
             self._make_move(user_input)
 
