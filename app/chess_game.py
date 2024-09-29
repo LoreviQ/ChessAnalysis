@@ -116,31 +116,41 @@ class Game:
         # log move
         self.previous_moves += [long_notation]
 
-    def _short_castle(self):
-        if self.can_castle[self.turn]["short"] is False:
-            # Castle disabled
-            self._declare_invalid_move()
-            return
-        home_rank = "1" if self.turn == "white" else "8"
+    def _validate_castle_conditions(self, colour, side):
+        # Check if castling has been disabled for this player
+        if self.can_castle[colour][side] is False:
+            return False
+        # Check if king and rook are in their home positions
+        home_rank = "1" if colour == "white" else "8"
         king = self.board.get_square("e", home_rank).piece
-        rook = self.board.get_square("h", home_rank).piece
-        f_square = self.board.get_square("f", home_rank)
-        g_square = self.board.get_square("g", home_rank)
+        rook_file = "h" if side == "short" else "a"
+        rook = self.board.get_square(rook_file, home_rank).piece
         if (
             isinstance(king, King) is False
             or isinstance(rook, Rook) is False
             or king.active is False
             or rook.active is False
         ):
-            # King or rook has moved
+            return False
+        # Check if squares between king and rook are empty
+        inbetween_files = ["f", "g"] if side == "short" else ["b", "c", "d"]
+        for file in inbetween_files:
+            if self.board.get_square(file, home_rank).piece:
+                return False
+        # Check if king passes through check
+        # TODO
+        return True
+
+    def _short_castle(self):
+        if self.can_castle[self.turn]["short"] is False:
             self._declare_invalid_move()
             return
-        if f_square.piece or g_square.piece:
-            # Squares between king and rook are occupied
-            self._declare_invalid_move()
-            return
-        # TODO check for check on squares king passes through
         # Make the move
+        home_rank = "1" if self.turn == "white" else "8"
+        king = self.board.get_square("e", home_rank).piece
+        rook = self.board.get_square("h", home_rank).piece
+        f_square = self.board.get_square("f", home_rank)
+        g_square = self.board.get_square("g", home_rank)
         king.position.remove_piece()
         rook.position.remove_piece()
         f_square.add_piece(king)
@@ -154,7 +164,26 @@ class Game:
         self.previous_moves += ["O-O"]
 
     def _long_castle(self):
-        pass
+        if self.can_castle[self.turn]["long"] is False:
+            self._declare_invalid_move()
+            return
+        # Make the move
+        home_rank = "1" if self.turn == "white" else "8"
+        king = self.board.get_square("e", home_rank).piece
+        rook = self.board.get_square("a", home_rank).piece
+        d_square = self.board.get_square("d", home_rank)
+        c_square = self.board.get_square("c", home_rank)
+        king.position.remove_piece()
+        rook.position.remove_piece()
+        d_square.add_piece(rook)
+        c_square.add_piece(king)
+        # Disable castling for the rest of the game
+        self.can_castle[self.turn]["short"] = False
+        self.can_castle[self.turn]["long"] = False
+        # Change turn
+        self.turn = "black" if self.turn == "white" else "white"
+        # Log move
+        self.previous_moves += ["O-O-O"]
 
     def _list_moves(self, colour=None, filter_piece_str=None):
         """
@@ -194,9 +223,9 @@ class Game:
                 possible_moves[other_move] = other
                 del possible_moves[move]
         # Castling
-        if self.can_castle[colour]["short"]:
+        if self._validate_castle_conditions(self.turn, "short"):
             possible_moves["O-O"] = None
-        if self.can_castle[colour]["long"]:
+        if self._validate_castle_conditions(self.turn, "long"):
             possible_moves["O-O-O"] = None
         return possible_moves
 
