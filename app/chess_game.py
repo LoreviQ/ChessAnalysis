@@ -21,6 +21,7 @@ class Game:
         for file in self.board.files:
             self.pieces += [self.board.squares[f"{file}2"].add_piece(Pawn("white"))]
             self.pieces += [self.board.squares[f"{file}7"].add_piece(Pawn("black"))]
+        self.pieces += [self.board.squares["d4"].add_piece(Rook("white"))]
 
     def _make_move(self, move):
         """
@@ -251,7 +252,7 @@ class Pawn(Piece):
         Returns a list of possible moves for the pawn.
         """
         if self.active is False:
-            return None
+            return []
         moves = []
         origin_file = self.position.file
         origin_rank = self.position.rank
@@ -336,22 +337,48 @@ class Rook(Piece):
         Returns a list of possible moves for the rook.
         """
         if self.active is False:
-            return None
+            return []
         moves = []
         origin_file = self.position.file
         origin_rank = self.position.rank
 
         # forward
         for rank in range(int(origin_rank) + 1, 9):
-            try:
-                square = self.position.board.get_square(origin_file, str(rank))
-            except KeyError:
-                break
+            square = self.position.board.get_square(origin_file, str(rank))
             if square.piece:
                 if square.piece.colour != self.colour:
                     moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
+
+        # backward
+        for rank in range(int(origin_rank) - 1, 0, -1):
+            square = self.position.board.get_square(origin_file, str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # left
+        for file in range(ord(origin_file) - 1, ord("a") - 1, -1):
+            square = self.position.board.get_square(chr(file), origin_rank)
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # right
+        for file in range(ord(origin_file) + 1, ord("h") + 1):
+            square = self.position.board.get_square(chr(file), origin_rank)
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        return moves
 
 
 class Knight(Piece):
