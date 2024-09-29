@@ -33,6 +33,10 @@ class Game:
         self.pieces += [self.board.squares["f1"].add_piece(Bishop("white"))]
         self.pieces += [self.board.squares["c8"].add_piece(Bishop("black"))]
         self.pieces += [self.board.squares["f8"].add_piece(Bishop("black"))]
+        self.pieces += [self.board.squares["d1"].add_piece(Queen("white"))]
+        self.pieces += [self.board.squares["d8"].add_piece(Queen("black"))]
+        self.pieces += [self.board.squares["e1"].add_piece(King("white"))]
+        self.pieces += [self.board.squares["e8"].add_piece(King("black"))]
 
     def _make_move(self, move):
         """
@@ -555,6 +559,105 @@ class Queen(Piece):
         self.printable = "♛" if colour == "white" else "♕"
         self.string = "Q"
 
+    def list_possible_moves(self, _):
+        """
+        Returns a list of possible moves for the queen.
+        """
+        if self.active is False:
+            return []
+        moves = []
+        origin_file = self.position.file
+        origin_rank = self.position.rank
+
+        # forward
+        for rank in range(int(origin_rank) + 1, 9):
+            square = self.position.board.get_square(origin_file, str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # backward
+        for rank in range(int(origin_rank) - 1, 0, -1):
+            square = self.position.board.get_square(origin_file, str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # left
+        for file in range(ord(origin_file) - 1, ord("a") - 1, -1):
+            square = self.position.board.get_square(chr(file), origin_rank)
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # right
+        for file in range(ord(origin_file) + 1, ord("h") + 1):
+            square = self.position.board.get_square(chr(file), origin_rank)
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # top right
+        for i in range(1, 8):
+            file = chr(ord(origin_file) + i)
+            rank = int(origin_rank) + i
+            if file > "h" or rank > 8:
+                break
+            square = self.position.board.get_square(file, str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # top left
+        for i in range(1, 8):
+            file = chr(ord(origin_file) - i)
+            rank = int(origin_rank) + i
+            if file < "a" or rank > 8:
+                break
+            square = self.position.board.get_square(file, str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # bottom right
+        for i in range(1, 8):
+            file = chr(ord(origin_file) + i)
+            rank = int(origin_rank) - i
+            if file > "h" or rank < 1:
+                break
+            square = self.position.board.get_square(file, str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+        # bottom left
+        for i in range(1, 8):
+            file = chr(ord(origin_file) - i)
+            rank = int(origin_rank) - i
+            if file < "a" or rank < 1:
+                break
+            square = self.position.board.get_square(file, str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+        return moves
+
 
 class King(Piece):
     """
@@ -565,6 +668,36 @@ class King(Piece):
         super().__init__(colour)
         self.printable = "♚" if colour == "white" else "♔"
         self.string = "K"
+
+    def list_possible_moves(self, _):
+        """
+        Returns a list of possible moves for the king.
+        """
+        if self.active is False:
+            return []
+        moves = []
+        origin_file = self.position.file
+        origin_rank = self.position.rank
+        possible_moves = [
+            (ord(origin_file) - 1, int(origin_rank) + 1),
+            (ord(origin_file), int(origin_rank) + 1),
+            (ord(origin_file) + 1, int(origin_rank) + 1),
+            (ord(origin_file) - 1, int(origin_rank)),
+            (ord(origin_file) + 1, int(origin_rank)),
+            (ord(origin_file) - 1, int(origin_rank) - 1),
+            (ord(origin_file), int(origin_rank) - 1),
+            (ord(origin_file) + 1, int(origin_rank) - 1),
+        ]
+        for file, rank in possible_moves:
+            if file < ord("a") or file > ord("h") or rank < 1 or rank > 8:
+                continue
+            square = self.position.board.get_square(chr(file), str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                continue
+            moves.append(f"{self.string}{square.string}")
+        return moves
 
 
 if __name__ == "__main__":
