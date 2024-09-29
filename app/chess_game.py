@@ -30,8 +30,8 @@ class Game:
         """
         # Parse move string
         try:
-            piece_str, origin_file, take, destination, promotion, checkmate = (
-                self._regex_match(move, log=True)
+            piece_str, take, destination, promotion, checkmate = self._regex_match(
+                move, log=True
             )
         except ValueError:
             self._declare_invalid_move()
@@ -44,7 +44,6 @@ class Game:
                     self._move_piece(
                         piece,
                         piece_str,
-                        origin_file,
                         take,
                         destination,
                         promotion,
@@ -54,9 +53,7 @@ class Game:
         # If no piece can make the move, declare it invalid
         self._declare_invalid_move()
 
-    def _move_piece(
-        self, piece, piece_str, origin_file, take, destination, promotion, checkmate
-    ):
+    def _move_piece(self, piece, piece_str, take, destination, promotion, checkmate):
         destination_square = self.board.get_square(destination[0], destination[1])
         origin = piece.position.string
         long_notation = f"{piece_str}{origin}{take}{destination}{promotion}{checkmate}"
@@ -97,23 +94,21 @@ class Game:
 
     def _regex_match(self, move, log=False):
         # regex to match algebraic notation
-        pattern = r"([KQRBN]?)([a-h]?)(x?)([a-h][1-8])(=[QRBN])?([+#]?)"
+        pattern = r"([KQRBN]?)(x?)([a-h][1-8])(=[QRBN])?([+#]?)"
         regex_match = re.search(pattern, move)
         if not regex_match:
             raise ValueError("Invalid move.")
         piece_str = regex_match.group(1)
-        origin_file = regex_match.group(2)
-        take = regex_match.group(3)
-        destination = regex_match.group(4)
-        promotion = regex_match.group(5)
-        checkmate = regex_match.group(6)
+        take = regex_match.group(2)
+        destination = regex_match.group(3)
+        promotion = regex_match.group(4)
+        checkmate = regex_match.group(5)
         if log:
             print(
-                f"piece: {piece_str}, origin: {origin_file}, take: {take}, destination: {destination}, promotion: {promotion}, checkmate: {checkmate}"
+                f"piece: {piece_str}, take: {take}, destination: {destination}, promotion: {promotion}, checkmate: {checkmate}"
             )
         return (
             piece_str,
-            origin_file,
             take,
             destination,
             promotion if promotion else "",
@@ -235,7 +230,7 @@ class Piece:
         self.active = False
         self.position = None
 
-    def list_possible_moves(self, game):
+    def list_possible_moves(self, _):
         """
         Returns a list of possible moves for the piece.
         Not implemented in the base class.
@@ -348,7 +343,7 @@ class Rook(Piece):
         self.printable = "♜" if colour == "white" else "♖"
         self.string = "R"
 
-    def list_possible_moves(self, game, avoid_recursion=False):
+    def list_possible_moves(self, _):
         """
         Returns a list of possible moves for the rook.
         """
