@@ -21,7 +21,8 @@ class Game:
         for file in self.board.files:
             self.pieces += [self.board.squares[f"{file}2"].add_piece(Pawn("white"))]
             self.pieces += [self.board.squares[f"{file}7"].add_piece(Pawn("black"))]
-        self.pieces += [self.board.squares["d4"].add_piece(Rook("white"))]
+        self.pieces += [self.board.squares["a3"].add_piece(Rook("white"))]
+        self.pieces += [self.board.squares["h3"].add_piece(Rook("white"))]
 
     def _make_move(self, move):
         """
@@ -35,25 +36,21 @@ class Game:
         except ValueError:
             self._declare_invalid_move()
             return
-        # Remove pieces of the opposite colour, wrong turn and wrong piece type
-        possible_pieces = [
-            piece
-            for piece in self.pieces
-            if piece.active and piece.colour == self.turn and piece.string == piece_str
-        ]
         # Find the piece that can make the move and move it
-        for piece in possible_pieces:
-            if move in piece.list_possible_moves(self.previous_moves):
-                self._move_piece(
-                    piece,
-                    piece_str,
-                    origin_file,
-                    take,
-                    destination,
-                    promotion,
-                    checkmate,
-                )
-                return
+        possible_moves = self._list_moves(self.turn, piece_str)
+        for piece, possible_piece_moves in possible_moves.items():
+            for possible_move in possible_piece_moves:
+                if possible_move == move:
+                    self._move_piece(
+                        piece,
+                        piece_str,
+                        origin_file,
+                        take,
+                        destination,
+                        promotion,
+                        checkmate,
+                    )
+                    return
         # If no piece can make the move, declare it invalid
         self._declare_invalid_move()
 
@@ -82,16 +79,21 @@ class Game:
         self.turn = "black" if self.turn == "white" else "white"
         self.previous_moves += [long_notation]
 
-    def _list_moves(self):
+    def _list_moves(self, colour=None, piece_str=None):
         """
         Lists all possible moves for the current player.
         """
-        possible_moves = []
+        if colour is None:
+            colour = self.turn
+        possible_moves = {}
         for piece in self.pieces:
-            if piece.colour == self.turn and piece.active:
-                possible_moves += piece.list_possible_moves(self.previous_moves)
-        print(f"{self.turn.capitalize()}'s possible moves:")
-        print(possible_moves)
+            if (
+                piece.active
+                and piece.colour == colour
+                and (piece_str is None or piece.string == piece_str)
+            ):
+                possible_moves[piece] = piece.list_possible_moves(self)
+        return possible_moves
 
     def _regex_match(self, move, log=False):
         # regex to match algebraic notation
@@ -137,7 +139,12 @@ class Game:
                 print(self.previous_moves)
                 continue
             if user_input.lower() == "list_moves":
-                self._list_moves()
+                possible_moves = self._list_moves()
+                print(f"{self.turn.capitalize()}'s possible moves:")
+                for piece, moves in possible_moves.items():
+                    print(
+                        f"{piece.printable}-{piece.position.string}: {', '.join(moves)}"
+                    )
                 continue
             self._make_move(user_input)
 
@@ -228,7 +235,7 @@ class Piece:
         self.active = False
         self.position = None
 
-    def list_possible_moves(self, previous_moves):
+    def list_possible_moves(self, game):
         """
         Returns a list of possible moves for the piece.
         Not implemented in the base class.
@@ -247,7 +254,7 @@ class Pawn(Piece):
         self.string = ""
         self.direction = 1 if colour == "white" else -1
 
-    def list_possible_moves(self, previous_moves):
+    def list_possible_moves(self, game):
         """
         Returns a list of possible moves for the pawn.
         """
@@ -288,9 +295,17 @@ class Pawn(Piece):
         left_diagonal_square = self.position.board.get_square(new_file, new_rank)
         new_file = chr(ord(origin_file) + 1)
         right_diagonal_square = self.position.board.get_square(new_file, new_rank)
-        if left_diagonal_square and left_diagonal_square.piece:
+        if (
+            left_diagonal_square
+            and left_diagonal_square.piece
+            and left_diagonal_square.piece.colour != self.colour
+        ):
             moves.append(f"{origin_file}x{left_diagonal_square.string}")
-        if right_diagonal_square and right_diagonal_square.piece:
+        if (
+            right_diagonal_square
+            and right_diagonal_square.piece
+            and right_diagonal_square.piece.colour != self.colour
+        ):
             moves.append(f"{origin_file}x{right_diagonal_square.string}")
             # TODO capture promotion
 
@@ -299,11 +314,12 @@ class Pawn(Piece):
             self.position.rank == "4" and self.direction == -1
         ):
             en_passant_left = f"{left_diagonal_square.file}{int(left_diagonal_square.rank)+self.direction}{left_diagonal_square.file}{int(left_diagonal_square.rank)-self.direction}"
-            if previous_moves[-1] == en_passant_left:
+            if game.previous_moves[-1] == en_passant_left:
                 moves.append(f"{origin_file}x{left_diagonal_square.string}")
             en_passant_right = f"{right_diagonal_square.file}{int(right_diagonal_square.rank)+self.direction}{right_diagonal_square.file}{int(right_diagonal_square.rank)-self.direction}"
-            if previous_moves[-1] == en_passant_right:
+            if game.previous_moves[-1] == en_passant_right:
                 moves.append(f"{origin_file}x{right_diagonal_square.string}")
+
         return moves
 
     def promote(self, promotion):
@@ -332,7 +348,7 @@ class Rook(Piece):
         self.printable = "♜" if colour == "white" else "♖"
         self.string = "R"
 
-    def list_possible_moves(self, previous_moves):
+    def list_possible_moves(self, game, avoid_recursion=False):
         """
         Returns a list of possible moves for the rook.
         """
@@ -345,39 +361,34 @@ class Rook(Piece):
         # forward
         for rank in range(int(origin_rank) + 1, 9):
             square = self.position.board.get_square(origin_file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
+            if square.piece and square.piece.colour != self.colour:
+                moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
 
         # backward
         for rank in range(int(origin_rank) - 1, 0, -1):
             square = self.position.board.get_square(origin_file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
+            if square.piece and square.piece.colour != self.colour:
+                moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
 
         # left
         for file in range(ord(origin_file) - 1, ord("a") - 1, -1):
             square = self.position.board.get_square(chr(file), origin_rank)
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
+            if square.piece and square.piece.colour != self.colour:
+                moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
 
         # right
         for file in range(ord(origin_file) + 1, ord("h") + 1):
             square = self.position.board.get_square(chr(file), origin_rank)
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
+            if square.piece and square.piece.colour != self.colour:
+                moves.append(f"{self.string}x{square.string}")
                 break
             moves.append(f"{self.string}{square.string}")
-
         return moves
 
 
