@@ -59,6 +59,9 @@ class Game:
             self._declare_invalid_move()
             return
         # Find the piece that can make the move and move it
+        if checkmate:
+            # check/checkmate ignored for move finding purposes
+            move = f"{move[:-1]}"
         possible_moves = self._list_moves(self.turn, piece_str)
         for possible_move, piece in possible_moves.items():
             if possible_move == move:
