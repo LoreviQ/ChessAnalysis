@@ -29,7 +29,7 @@ class Game:
         # Parse move string
         try:
             piece_str, origin_file, take, destination, promotion, checkmate = (
-                self._regex_match(move)
+                self._regex_match(move, log=True)
             )
         except ValueError:
             self._declare_invalid_move()
@@ -43,20 +43,27 @@ class Game:
         # Find the piece that can make the move and move it
         for piece in possible_pieces:
             if move in piece.list_possible_moves(self.previous_moves):
-                self._move_piece(piece, move)
+                self._move_piece(
+                    piece,
+                    piece_str,
+                    origin_file,
+                    take,
+                    destination,
+                    promotion,
+                    checkmate,
+                )
                 return
+        # If no piece can make the move, declare it invalid
+        self._declare_invalid_move()
 
-    def _move_piece(self, piece, move):
-        move_string = re.search(r"([a-h][1-8])(=[QRBN])?([+#]?)", move)
-        destination = move_string.group(1)
-        promotion = move_string.group(2) if move_string.group(2) else None
-        checkmate = move_string.group(3) if move_string.group(3) else None
+    def _move_piece(
+        self, piece, piece_str, origin_file, take, destination, promotion, checkmate
+    ):
         destination_square = self.board.get_square(destination[0], destination[1])
         origin = piece.position.string
-        take = "x" if "x" in move else ""
+        long_notation = f"{piece_str}{origin}{take}{destination}{promotion}{checkmate}"
 
-        long_notation = f"{piece.string}{origin}{take}{move_string.group(0)}"
-        piece.position.remove_piece()
+        piece.position.remove_piece()  # Remove piece from origin square
         if take:
             if destination_square.piece:
                 destination_square.piece.taken()
@@ -67,13 +74,12 @@ class Game:
                 )
                 taken_square.piece.taken()
         destination_square.add_piece(piece)
-        # promotion
+        # Promotion
         if promotion:
             piece = piece.promote(promotion[1])
             self.pieces += [destination_square.add_piece(piece)]
         self.turn = "black" if self.turn == "white" else "white"
         self.previous_moves += [long_notation]
-        print(long_notation)
 
     def _list_moves(self):
         """
@@ -86,19 +92,30 @@ class Game:
         print(f"{self.turn.capitalize()}'s possible moves:")
         print(possible_moves)
 
-    def _regex_match(self, move):
+    def _regex_match(self, move, log=False):
         # regex to match algebraic notation
         pattern = r"([KQRBN]?)([a-h]?)(x?)([a-h][1-8])(=[QRBN])?([+#]?)"
         regex_match = re.search(pattern, move)
         if not regex_match:
             raise ValueError("Invalid move.")
-        piece = regex_match.group(1)
+        piece_str = regex_match.group(1)
         origin_file = regex_match.group(2)
         take = regex_match.group(3)
         destination = regex_match.group(4)
         promotion = regex_match.group(5)
         checkmate = regex_match.group(6)
-        return piece, origin_file, take, destination, promotion, checkmate
+        if log:
+            print(
+                f"piece: {piece_str}, origin: {origin_file}, take: {take}, destination: {destination}, promotion: {promotion}, checkmate: {checkmate}"
+            )
+        return (
+            piece_str,
+            origin_file,
+            take,
+            destination,
+            promotion if promotion else "",
+            checkmate,
+        )
 
     def _declare_invalid_move(self):
         print("Invalid move.")
