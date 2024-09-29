@@ -25,6 +25,8 @@ class Game:
         self.pieces += [self.board.squares["h1"].add_piece(Rook("white"))]
         self.pieces += [self.board.squares["a8"].add_piece(Rook("black"))]
         self.pieces += [self.board.squares["h8"].add_piece(Rook("black"))]
+        self.pieces += [self.board.squares["c4"].add_piece(Knight("white"))]
+        self.pieces += [self.board.squares["g4"].add_piece(Knight("white"))]
 
     def _make_move(self, move):
         """
@@ -32,9 +34,7 @@ class Game:
         """
         # Parse move string
         try:
-            piece_str, take, destination, promotion, checkmate = self._regex_match(
-                move, log=True
-            )
+            piece_str, take, destination, promotion, checkmate = self._regex_match(move)
         except ValueError:
             self._declare_invalid_move()
             return
@@ -77,7 +77,7 @@ class Game:
         self.turn = "black" if self.turn == "white" else "white"
         self.previous_moves += [long_notation]
 
-    def _list_moves(self, colour=None, piece_str=None):
+    def _list_moves(self, colour=None, filter_piece_str=None):
         """
         Lists all possible moves for the current player.
         """
@@ -89,7 +89,7 @@ class Game:
             if not (
                 piece.active
                 and piece.colour == colour
-                and (piece_str is None or piece.string == piece_str)
+                and ((filter_piece_str is None) or (piece.string == filter_piece_str))
             ):
                 continue
             piece_moves = piece.list_possible_moves(self)
@@ -433,6 +433,36 @@ class Knight(Piece):
         super().__init__(colour)
         self.printable = "♞" if colour == "white" else "♘"
         self.string = "N"
+
+    def list_possible_moves(self, _):
+        """
+        Returns a list of possible moves for the knight.
+        """
+        if self.active is False:
+            return []
+        moves = []
+        origin_file = self.position.file
+        origin_rank = self.position.rank
+        possible_moves = [
+            (ord(origin_file) - 1, int(origin_rank) + 2),
+            (ord(origin_file) + 1, int(origin_rank) + 2),
+            (ord(origin_file) - 2, int(origin_rank) + 1),
+            (ord(origin_file) + 2, int(origin_rank) + 1),
+            (ord(origin_file) - 2, int(origin_rank) - 1),
+            (ord(origin_file) + 2, int(origin_rank) - 1),
+            (ord(origin_file) - 1, int(origin_rank) - 2),
+            (ord(origin_file) + 1, int(origin_rank) - 2),
+        ]
+        for file, rank in possible_moves:
+            if file < ord("a") or file > ord("h") or rank < 1 or rank > 8:
+                continue
+            square = self.position.board.get_square(chr(file), str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                continue
+            moves.append(f"{self.string}{square.string}")
+        return moves
 
 
 class Bishop(Piece):
