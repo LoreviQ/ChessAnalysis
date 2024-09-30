@@ -467,65 +467,76 @@ class Pawn(Piece):
         moves = []
         origin_file = self.position.file
         origin_rank = self.position.rank
+        moves += self._forward(origin_file, origin_rank)
+        moves += self._diagonal_capture(origin_file, origin_rank, game)
+        return moves
 
+    def _forward(self, origin_file, origin_rank):
+        """
+        Returns the moves obtainable by moving the pawn forward.
+        """
+        moves = []
         # forward 1 square
-        new_file = origin_file
         new_rank = int(origin_rank) + self.direction
-        forward_square = self.position.board.get_square(new_file, new_rank)
+        forward_square = self.position.board.get_square(origin_file, new_rank)
         if forward_square and forward_square.piece is None:
             move = forward_square.string
-            # promotion
-            if new_rank in [1, 8]:
-                moves.append(f"{move}=Q")
-                moves.append(f"{move}=R")
-                moves.append(f"{move}=B")
-                moves.append(f"{move}=N")
-            else:
-                moves.append(move)
+            moves += self._check_promotion(move, new_rank)
             # forward 2 squares from starting position
             if (origin_rank == "2" and self.direction == 1) or (
                 origin_rank == "7" and self.direction == -1
             ):
                 new_rank = int(origin_rank) + 2 * self.direction
                 double_forward_square = self.position.board.get_square(
-                    new_file, new_rank
+                    origin_file, new_rank
                 )
                 if double_forward_square and double_forward_square.piece is None:
                     moves.append(double_forward_square.string)
+        return moves
 
+    def _diagonal_capture(self, origin_file, origin_rank, game):
+        """
+        Returns the moves obtainable by capturing diagonally.
+        """
+        moves = []
         # capture diagonally
-        new_file = chr(ord(origin_file) - 1)
         new_rank = int(origin_rank) + self.direction
-        left_diagonal_square = self.position.board.get_square(new_file, new_rank)
-        new_file = chr(ord(origin_file) + 1)
-        right_diagonal_square = self.position.board.get_square(new_file, new_rank)
-        if (
-            left_diagonal_square
-            and left_diagonal_square.piece
-            and left_diagonal_square.piece.colour != self.colour
-        ):
-            moves.append(f"{origin_file}x{left_diagonal_square.string}")
-        if (
-            right_diagonal_square
-            and right_diagonal_square.piece
-            and right_diagonal_square.piece.colour != self.colour
-        ):
-            moves.append(f"{origin_file}x{right_diagonal_square.string}")
-            # TODO capture promotion
+        for side in [-1, 1]:
+            new_file = chr(ord(origin_file) + side)
+            diagonal_square = self.position.board.get_square(new_file, new_rank)
+            if (
+                diagonal_square
+                and diagonal_square.piece
+                and diagonal_square.piece.colour != self.colour
+            ):
+                move = f"{origin_file}x{diagonal_square.string}"
+                moves += self._check_promotion(move, new_rank)
+            # en passant
+            if (self.position.rank == "5" and self.direction == 1) or (
+                self.position.rank == "4" and self.direction == -1
+            ):
+                if diagonal_square:
+                    en_passant = (
+                        f"{new_file}{int(diagonal_square.rank)+self.direction}"
+                        f"{new_file}{int(diagonal_square.rank)-self.direction}"
+                    )
+                    if game.previous_moves[-1] == en_passant:
+                        moves.append(f"{origin_file}x{diagonal_square.string}")
+        return moves
 
-        # en passant
-        if (self.position.rank == "5" and self.direction == 1) or (
-            self.position.rank == "4" and self.direction == -1
-        ):
-            if left_diagonal_square:
-                en_passant_left = f"{left_diagonal_square.file}{int(left_diagonal_square.rank)+self.direction}{left_diagonal_square.file}{int(left_diagonal_square.rank)-self.direction}"
-                if game.previous_moves[-1] == en_passant_left:
-                    moves.append(f"{origin_file}x{left_diagonal_square.string}")
-            if right_diagonal_square:
-                en_passant_right = f"{right_diagonal_square.file}{int(right_diagonal_square.rank)+self.direction}{right_diagonal_square.file}{int(right_diagonal_square.rank)-self.direction}"
-                if game.previous_moves[-1] == en_passant_right:
-                    moves.append(f"{origin_file}x{right_diagonal_square.string}")
-
+    def _check_promotion(self, move, rank):
+        """
+        Returns a list of possible promotions for the pawn or
+        a list of the move if no promotion is possible.
+        """
+        moves = []
+        if rank in [1, 8]:
+            moves.append(f"{move}=Q")
+            moves.append(f"{move}=R")
+            moves.append(f"{move}=B")
+            moves.append(f"{move}=N")
+        else:
+            moves.append(move)
         return moves
 
     def promote(self, promotion):
