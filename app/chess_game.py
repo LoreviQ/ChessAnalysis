@@ -714,94 +714,15 @@ class Queen(Piece):
         moves = []
         origin_file = self.position.file
         origin_rank = self.position.rank
-
-        # forward
-        for rank in range(int(origin_rank) + 1, 9):
-            square = self.position.board.get_square(origin_file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # backward
-        for rank in range(int(origin_rank) - 1, 0, -1):
-            square = self.position.board.get_square(origin_file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # left
-        for file in range(ord(origin_file) - 1, ord("a") - 1, -1):
-            square = self.position.board.get_square(chr(file), origin_rank)
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # right
-        for file in range(ord(origin_file) + 1, ord("h") + 1):
-            square = self.position.board.get_square(chr(file), origin_rank)
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # top right
-        for i in range(1, 8):
-            file = chr(ord(origin_file) + i)
-            rank = int(origin_rank) + i
-            if file > "h" or rank > 8:
-                break
-            square = self.position.board.get_square(file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # top left
-        for i in range(1, 8):
-            file = chr(ord(origin_file) - i)
-            rank = int(origin_rank) + i
-            if file < "a" or rank > 8:
-                break
-            square = self.position.board.get_square(file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # bottom right
-        for i in range(1, 8):
-            file = chr(ord(origin_file) + i)
-            rank = int(origin_rank) - i
-            if file > "h" or rank < 1:
-                break
-            square = self.position.board.get_square(file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # bottom left
-        for i in range(1, 8):
-            file = chr(ord(origin_file) - i)
-            rank = int(origin_rank) - i
-            if file < "a" or rank < 1:
-                break
-            square = self.position.board.get_square(file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
+        
+        self._move_orthogonally(moves, origin_file, origin_rank, "forward")
+        self._move_orthogonally(moves, origin_file, origin_rank, "backward")
+        self._move_orthogonally(moves, origin_file, origin_rank, "left")
+        self._move_orthogonally(moves, origin_file, origin_rank, "right")
+        self._move_diagonally(moves, origin_file, origin_rank, "top_right")
+        self._move_diagonally(moves, origin_file, origin_rank, "top_left")
+        self._move_diagonally(moves, origin_file, origin_rank, "bottom_right")
+        self._move_diagonally(moves, origin_file, origin_rank, "bottom_left")
         return moves
 
 
