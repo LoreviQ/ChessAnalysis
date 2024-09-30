@@ -60,7 +60,7 @@ class Game:
         """
         Checks if the move is valid and makes the move if it is.
         :param move: A string representing the move in short algebraic notation.
-        (e.g. "e4", "Nf3", "Bxb7", "0-0", "0-0-0") 
+        (e.g. "e4", "Nf3", "Bxb7", "0-0", "0-0-0")
         return: True if the move was made, False otherwise.
         """
         # Parse move string
@@ -155,7 +155,7 @@ class Game:
         return True
 
     def _short_castle(self):
-        if self.can_castle[self.turn]["short"] is False:
+        if not self._validate_castle_conditions(self.turn, "short"):
             self._declare_invalid_move()
             return False
         # Make the move
@@ -177,7 +177,7 @@ class Game:
         return True
 
     def _long_castle(self):
-        if self.can_castle[self.turn]["long"] is False:
+        if not self._validate_castle_conditions(self.turn, "long"):
             self._declare_invalid_move()
             return False
         # Make the move
@@ -200,7 +200,10 @@ class Game:
 
     def _list_moves(self, colour=None, filter_piece_str=None):
         """
-        Lists all possible moves for the current player.
+        Lists all possible moves for a player and piece type.
+        :param colour: The colour of the player.
+        :param filter_piece_str: The type of piece to filter by.
+        (e.g. "N", "B", "R", "Q", "K", "" for pawn)
         """
         if colour is None:
             colour = self.turn
@@ -232,6 +235,7 @@ class Game:
                     # Otherwise, disambiguate by file
                     piece_move = f"{piece_str}{piece.position.file}{take}{destination}{promotion}{checkmate}"
                     other_move = f"{piece_str}{other.position.file}{take}{destination}{promotion}{checkmate}"
+                # TODO disambiguate by both file and rank (incredibly rare)
                 possible_moves[piece_move] = piece
                 possible_moves[other_move] = other
                 del possible_moves[move]
