@@ -45,7 +45,7 @@ function sendMovesToServer(moves) {
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ moves: moves }),
+        body: JSON.stringify({ moves: moves, gameid: "1" }),
     });
 }
 

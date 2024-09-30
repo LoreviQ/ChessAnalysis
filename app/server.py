@@ -24,7 +24,13 @@ class Server:
             Update moves endpoint
             """
             data = request.get_json()
-            self.db_connection.insert_move(data)
+            moves = data.get("moves")
+            if not moves:
+                return jsonify({"status": "error", "message": "No moves provided"})
+            game_id = data.get("game_id", 1)
+            print(f"Received moves: {moves}")
+            print(f"Game ID: {game_id}")
+            self.db_connection.insert_move(moves, game_id)
             return jsonify({"status": "success"})
 
     def run(self):

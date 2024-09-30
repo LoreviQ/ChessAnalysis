@@ -1,4 +1,13 @@
+import json
 import sqlite3
+
+from chess_game import convert_notation
+
+QUERIES = {
+    "CREATE_MOVES": """
+        INSERT INTO moves (game_id, move_data) VALUES (?, ?)
+    """,
+}
 
 
 class DBConnection:
@@ -12,23 +21,18 @@ class DBConnection:
 
     def _init_db(self):
         conn, cursor = self._get_connection()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS moves (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                move_data TEXT NOT NULL
-            )
-        """
-        )
+        with open("schema.sql", "r", encoding="utf-8") as schema_file:
+            schema = schema_file.read()
+        cursor.executescript(schema)
         conn.commit()
         conn.close()
 
-    def insert_move(self, data):
-        # conn, cursor = self._get_connection()
-        # cursor.execute("INSERT INTO moves (move_data) VALUES (?)", (data,))
-        # conn.commit()
-        # conn.close()
-        standardize_moves(data)
+    def insert_move(self, moves, game_id=1):
+        conn, cursor = self._get_connection()
+        moves_str = self._standardize_moves(moves)
+        cursor.execute(QUERIES["CREATE_MOVES"], (game_id, moves_str))
+        conn.commit()
+        conn.close()
 
     def fetch_latest_move(self):
         conn, cursor = self._get_connection()
@@ -37,9 +41,11 @@ class DBConnection:
         conn.close()
         return result[0] if result else "No data received"
 
-
-def standardize_moves(moves):
-    standardized_moves = ""
-    for i in range(0, len(moves), 3):
-        standardized_moves += f"{moves[i + 1]},{moves[i + 2]},"
-    print(standardized_moves[:-1])
+    def _standardize_moves(self, moves):
+        """
+        :param moves: list of moves in short algebraic notation
+        :return: string of space-seperated moves in long algebraic notation
+        """
+        moves = [move for i, move in enumerate(moves) if i % 3 != 0]
+        moves = convert_notation(moves)
+        return json.dumps(moves)

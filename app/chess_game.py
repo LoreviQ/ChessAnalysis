@@ -363,7 +363,6 @@ class Game:
         else:
             for move in moves:
                 self._make_move(move)
-        print(self.previous_moves)
         return self.previous_moves
 
 
