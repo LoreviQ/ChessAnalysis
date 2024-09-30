@@ -59,6 +59,9 @@ class Game:
     def _make_move(self, move):
         """
         Checks if the move is valid and makes the move if it is.
+        :param move: A string representing the move in short algebraic notation.
+        (e.g. "e4", "Nf3", "Bxb7", "0-0", "0-0-0") 
+        return: True if the move was made, False otherwise.
         """
         # Parse move string
         try:
@@ -70,10 +73,10 @@ class Game:
             return self._short_castle()
         if piece_str in ("0-0-0", "O-O-O"):
             return self._long_castle()
-        # Find the piece that can make the move and move it
+        # check/checkmate ignored for move finding purposes
         if checkmate:
-            # check/checkmate ignored for move finding purposes
             move = f"{move[:-1]}"
+        # Find the piece that can make the move and move it
         possible_moves = self._list_moves(self.turn, piece_str)
         for possible_move, piece in possible_moves.items():
             if possible_move == move:
