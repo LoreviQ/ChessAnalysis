@@ -61,13 +61,6 @@ class DBConnection:
         conn.commit()
         conn.close()
 
-    def fetch_latest_move(self):
-        conn, cursor = self._get_connection()
-        cursor.execute("SELECT move_data FROM moves ORDER BY id DESC LIMIT 1")
-        result = cursor.fetchone()
-        conn.close()
-        return result[0] if result else "No data received"
-
     def _standardize_moves(self, moves):
         """
         :param moves: list of moves in short algebraic notation
