@@ -518,6 +518,7 @@ class Pawn(Piece):
         moves = []
         origin_file = self.position.file
         origin_rank = self.position.rank
+
         self._forward(moves, origin_file, origin_rank)
         self._diagonal_capture(moves, origin_file, origin_rank, game)
         return moves
@@ -532,6 +533,7 @@ class Pawn(Piece):
         if forward_square and forward_square.piece is None:
             move = forward_square.string
             self._check_promotion(moves, move, new_rank)
+
             # forward 2 squares from starting position
             if (origin_rank == "2" and self.direction == 1) or (
                 origin_rank == "7" and self.direction == -1
@@ -559,6 +561,7 @@ class Pawn(Piece):
             ):
                 move = f"{origin_file}x{diagonal_square.string}"
                 self._check_promotion(moves, move, new_rank)
+
             # en passant
             if (self.position.rank == "5" and self.direction == 1) or (
                 self.position.rank == "4" and self.direction == -1
@@ -646,6 +649,7 @@ class Knight(Piece):
         moves = []
         origin_file = self.position.file
         origin_rank = self.position.rank
+
         possible_moves = [
             (ord(origin_file) - 1, int(origin_rank) + 2),
             (ord(origin_file) + 1, int(origin_rank) + 2),
@@ -714,7 +718,7 @@ class Queen(Piece):
         moves = []
         origin_file = self.position.file
         origin_rank = self.position.rank
-        
+
         self._move_orthogonally(moves, origin_file, origin_rank, "forward")
         self._move_orthogonally(moves, origin_file, origin_rank, "backward")
         self._move_orthogonally(moves, origin_file, origin_rank, "left")
