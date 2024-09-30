@@ -7,14 +7,14 @@ from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
 
 
-def start_server(db_connection):
+def initialize_server(db_connection):
     """
     Start the Flask server
     """
     server = Flask(__name__)
     CORS(server)
     setup_routes(server, db_connection)
-    server.run(debug=True, use_reloader=False)
+    return server
 
 
 def setup_routes(server, db_connection):
@@ -47,4 +47,5 @@ def setup_routes(server, db_connection):
 
 if __name__ == "__main__":
     db = DBConnection()
-    start_server(db)
+    my_server = initialize_server(db)
+    my_server.run(debug=True, use_reloader=False)

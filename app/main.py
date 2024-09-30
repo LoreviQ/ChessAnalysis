@@ -2,12 +2,15 @@ import threading
 import tkinter as tk
 
 from database import DBConnection
-from server import start_server
+from server import initialize_server
 
 
 def start_app():
     db_connection = DBConnection()
-    server_thread = threading.Thread(target=start_server, args=(db_connection,))
+    my_server = initialize_server(db_connection)
+    server_thread = threading.Thread(
+        target=my_server.run, kwargs={"debug": True, "use_reloader": False}
+    )
     server_thread.start()
     root = tk.Tk()
     root.title("Server Status")
