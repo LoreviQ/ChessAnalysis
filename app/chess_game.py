@@ -116,17 +116,11 @@ class Game:
             self.can_castle[self.turn]["short"] = False
             self.can_castle[self.turn]["long"] = False
         if piece_str == "R":
-            if origin == "a1":
-                self.can_castle["white"]["long"] = False
-            if origin == "h1":
-                self.can_castle["white"]["short"] = False
-            if origin == "a8":
-                self.can_castle["black"]["long"] = False
-            if origin == "h8":
-                self.can_castle["black"]["short"] = False
-
-        # change turn
-        self.turn = "black" if self.turn == "white" else "white"
+            if origin[0] == "a":
+                self.can_castle[self.turn]["long"] = False
+            if origin[0] == "h":
+                self.can_castle[self.turn]["short"] = False
+        self._change_turn()
 
         # log move
         self.previous_moves += [long_notation]
@@ -174,8 +168,7 @@ class Game:
         # Disable castling for the rest of the game
         self.can_castle[self.turn]["short"] = False
         self.can_castle[self.turn]["long"] = False
-        # Change turn
-        self.turn = "black" if self.turn == "white" else "white"
+        self._change_turn()
         # Log move
         self.previous_moves += ["O-O"]
         return True
@@ -197,8 +190,7 @@ class Game:
         # Disable castling for the rest of the game
         self.can_castle[self.turn]["short"] = False
         self.can_castle[self.turn]["long"] = False
-        # Change turn
-        self.turn = "black" if self.turn == "white" else "white"
+        self._change_turn()
         # Log move
         self.previous_moves += ["O-O-O"]
         return True
@@ -306,6 +298,9 @@ class Game:
             "white": {"short": True, "long": True},
             "black": {"short": True, "long": True},
         }
+
+    def _change_turn(self):
+        self.turn = "black" if self.turn == "white" else "white"
 
     def start_game(self):
         """
