@@ -229,12 +229,24 @@ class Game:
                 other = possible_moves[move]
                 if other.position.file == piece.position.file:
                     # If the pieces are on the same file, disambiguate by rank
-                    piece_move = f"{piece_str}{piece.position.rank}{take}{destination}{promotion}{checkmate}"
-                    other_move = f"{piece_str}{other.position.rank}{take}{destination}{promotion}{checkmate}"
+                    piece_move = (
+                        f"{piece_str}{piece.position.rank}{take}{destination}"
+                        f"{promotion}{checkmate}"
+                    )
+                    other_move = (
+                        f"{piece_str}{other.position.rank}{take}{destination}"
+                        f"{promotion}{checkmate}"
+                    )
                 else:
                     # Otherwise, disambiguate by file
-                    piece_move = f"{piece_str}{piece.position.file}{take}{destination}{promotion}{checkmate}"
-                    other_move = f"{piece_str}{other.position.file}{take}{destination}{promotion}{checkmate}"
+                    piece_move = (
+                        f"{piece_str}{piece.position.file}{take}{destination}"
+                        f"{promotion}{checkmate}"
+                    )
+                    other_move = (
+                        f"{piece_str}{other.position.file}{take}{destination}"
+                        f"{promotion}{checkmate}"
+                    )
                 # TODO disambiguate by both file and rank (incredibly rare)
                 possible_moves[piece_move] = piece
                 possible_moves[other_move] = other
@@ -280,7 +292,9 @@ class Game:
         checkmate = regex_match.group(7)
         if log:
             print(
-                f"piece: {piece_str}, origin: {origin_file}{origin_rank}, take: {take}, destination: {destination}, promotion: {promotion}, checkmate: {checkmate}"
+                f"piece: {piece_str}, origin: {origin_file}{origin_rank}, "
+                f"take: {take}, destination: {destination}, promotion: {promotion}, "
+                f"checkmate: {checkmate}"
             )
         return (
             piece_str if piece_str else "",
