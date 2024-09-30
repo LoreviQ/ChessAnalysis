@@ -447,12 +447,37 @@ class Piece:
         """
         return []
 
-    def _move_in_direction(self, moves, origin_file, origin_rank, direction):
+    def _move_orthogonally(self, moves, origin_file, origin_rank, direction):
         directions = {
             "right": (1, 0),
             "left": (-1, 0),
             "forward": (0, 1),
             "backward": (0, -1),
+        }
+        file_step, rank_step = directions[direction]
+        file = ord(origin_file)
+        rank = int(origin_rank)
+
+        while True:
+            file += file_step
+            rank += rank_step
+
+            if file < ord("a") or file > ord("h") or rank < 1 or rank > 8:
+                break
+
+            square = self.position.board.get_square(chr(file), str(rank))
+            if square.piece:
+                if square.piece.colour != self.colour:
+                    moves.append(f"{self.string}x{square.string}")
+                break
+            moves.append(f"{self.string}{square.string}")
+
+    def _move_diagonally(self, moves, origin_file, origin_rank, direction):
+        directions = {
+            "top_right": (1, 1),
+            "top_left": (-1, 1),
+            "bottom_right": (1, -1),
+            "bottom_left": (-1, -1),
         }
         file_step, rank_step = directions[direction]
         file = ord(origin_file)
@@ -595,10 +620,10 @@ class Rook(Piece):
         origin_file = self.position.file
         origin_rank = self.position.rank
 
-        self._move_in_direction(moves, origin_file, origin_rank, "forward")
-        self._move_in_direction(moves, origin_file, origin_rank, "backward")
-        self._move_in_direction(moves, origin_file, origin_rank, "left")
-        self._move_in_direction(moves, origin_file, origin_rank, "right")
+        self._move_orthogonally(moves, origin_file, origin_rank, "forward")
+        self._move_orthogonally(moves, origin_file, origin_rank, "backward")
+        self._move_orthogonally(moves, origin_file, origin_rank, "left")
+        self._move_orthogonally(moves, origin_file, origin_rank, "right")
         return moves
 
 
@@ -663,57 +688,10 @@ class Bishop(Piece):
         origin_file = self.position.file
         origin_rank = self.position.rank
 
-        # top right
-        for i in range(1, 8):
-            file = chr(ord(origin_file) + i)
-            rank = int(origin_rank) + i
-            if file > "h" or rank > 8:
-                break
-            square = self.position.board.get_square(file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # top left
-        for i in range(1, 8):
-            file = chr(ord(origin_file) - i)
-            rank = int(origin_rank) + i
-            if file < "a" or rank > 8:
-                break
-            square = self.position.board.get_square(file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # bottom right
-        for i in range(1, 8):
-            file = chr(ord(origin_file) + i)
-            rank = int(origin_rank) - i
-            if file > "h" or rank < 1:
-                break
-            square = self.position.board.get_square(file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
-
-        # bottom left
-        for i in range(1, 8):
-            file = chr(ord(origin_file) - i)
-            rank = int(origin_rank) - i
-            if file < "a" or rank < 1:
-                break
-            square = self.position.board.get_square(file, str(rank))
-            if square.piece:
-                if square.piece.colour != self.colour:
-                    moves.append(f"{self.string}x{square.string}")
-                break
-            moves.append(f"{self.string}{square.string}")
+        self._move_diagonally(moves, origin_file, origin_rank, "top_right")
+        self._move_diagonally(moves, origin_file, origin_rank, "top_left")
+        self._move_diagonally(moves, origin_file, origin_rank, "bottom_right")
+        self._move_diagonally(moves, origin_file, origin_rank, "bottom_left")
         return moves
 
 
