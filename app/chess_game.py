@@ -493,21 +493,20 @@ class Pawn(Piece):
         moves = []
         origin_file = self.position.file
         origin_rank = self.position.rank
-        moves += self._forward(origin_file, origin_rank)
-        moves += self._diagonal_capture(origin_file, origin_rank, game)
+        self._forward(moves, origin_file, origin_rank)
+        self._diagonal_capture(moves, origin_file, origin_rank, game)
         return moves
 
-    def _forward(self, origin_file, origin_rank):
+    def _forward(self, moves, origin_file, origin_rank):
         """
         Returns the moves obtainable by moving the pawn forward.
         """
-        moves = []
         # forward 1 square
         new_rank = int(origin_rank) + self.direction
         forward_square = self.position.board.get_square(origin_file, new_rank)
         if forward_square and forward_square.piece is None:
             move = forward_square.string
-            moves += self._check_promotion(move, new_rank)
+            self._check_promotion(moves, move, new_rank)
             # forward 2 squares from starting position
             if (origin_rank == "2" and self.direction == 1) or (
                 origin_rank == "7" and self.direction == -1
@@ -518,13 +517,11 @@ class Pawn(Piece):
                 )
                 if double_forward_square and double_forward_square.piece is None:
                     moves.append(double_forward_square.string)
-        return moves
 
-    def _diagonal_capture(self, origin_file, origin_rank, game):
+    def _diagonal_capture(self, moves, origin_file, origin_rank, game):
         """
         Returns the moves obtainable by capturing diagonally.
         """
-        moves = []
         # capture diagonally
         new_rank = int(origin_rank) + self.direction
         for side in [-1, 1]:
@@ -536,7 +533,7 @@ class Pawn(Piece):
                 and diagonal_square.piece.colour != self.colour
             ):
                 move = f"{origin_file}x{diagonal_square.string}"
-                moves += self._check_promotion(move, new_rank)
+                self._check_promotion(moves, move, new_rank)
             # en passant
             if (self.position.rank == "5" and self.direction == 1) or (
                 self.position.rank == "4" and self.direction == -1
@@ -548,14 +545,12 @@ class Pawn(Piece):
                     )
                     if game.previous_moves[-1] == en_passant:
                         moves.append(f"{origin_file}x{diagonal_square.string}")
-        return moves
 
-    def _check_promotion(self, move, rank):
+    def _check_promotion(self, moves, move, rank):
         """
         Returns a list of possible promotions for the pawn or
         a list of the move if no promotion is possible.
         """
-        moves = []
         if rank in [1, 8]:
             moves.append(f"{move}=Q")
             moves.append(f"{move}=R")
@@ -563,7 +558,6 @@ class Pawn(Piece):
             moves.append(f"{move}=N")
         else:
             moves.append(move)
-        return moves
 
     def promote(self, promotion):
         """
