@@ -27,7 +27,7 @@ class Server:
             moves = data.get("moves")
             if not moves:
                 return jsonify({"status": "error", "message": "No moves provided"})
-            game_id = data.get("game_id", 1)
+            game_id = data.get("game_id")
             print(f"Received moves: {moves}")
             print(f"Game ID: {game_id}")
             self.db_connection.insert_move(moves, game_id)
