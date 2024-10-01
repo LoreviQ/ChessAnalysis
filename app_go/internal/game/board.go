@@ -11,6 +11,7 @@ var (
 	ErrPieceNotPawn    = errors.New("piece is not a pawn")
 	ErrInvalidRank     = errors.New("invalid rank")
 	ErrInvalidFile     = errors.New("invalid file")
+	ErrPieceNotFound   = errors.New("piece not found")
 )
 
 type Board struct {
@@ -163,4 +164,15 @@ func intToFile(i int) rune {
 // converts a-h to 1-8
 func fileToInt(r rune) int {
 	return int(r-'a') + 1
+}
+
+func (b *Board) GetLocation(piece *Piece) (rune, int, error) {
+	for i, row := range b.Squares {
+		for j, p := range row {
+			if p == piece {
+				return intToFile(j + 1), i + 1, nil
+			}
+		}
+	}
+	return 0, 0, ErrPieceNotFound
 }

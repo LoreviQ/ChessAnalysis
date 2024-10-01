@@ -199,3 +199,34 @@ func TestPromotePawn(t *testing.T) {
 		}
 	}
 }
+
+func TestGetLocation(t *testing.T) {
+	b := NewBoard()
+	bc1, _ := b.GetPieceAtSquare('c', 1)
+	qd8, _ := b.GetPieceAtSquare('d', 8)
+	pe2, _ := b.GetPieceAtSquare('e', 2)
+	pa7, _ := b.GetPieceAtSquare('a', 7)
+	b.MovePiece(Move{FromFile: 'a', FromRank: 1, ToFile: 'a', ToRank: 7, Capture: 'x'})
+	tests := []struct {
+		piece *Piece
+		file  rune
+		rank  int
+		err   error
+	}{
+		{bc1, 'c', 1, nil},
+		{qd8, 'd', 8, nil},
+		{pe2, 'e', 2, nil},
+		{pa7, 'e', 4, ErrPieceNotFound},
+	}
+
+	for _, tt := range tests {
+		file, rank, err := b.GetLocation(tt.piece)
+		if err != tt.err {
+			t.Errorf("Expected error %v, got %v", tt.err, err)
+		}
+		if err == nil && (file != tt.file || rank != tt.rank) {
+			t.Errorf("Expected location %c%d, got %c%d", tt.file, tt.rank, file, rank)
+		}
+	}
+
+}

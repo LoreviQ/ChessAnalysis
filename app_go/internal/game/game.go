@@ -48,16 +48,29 @@ func (g *Game) MovePiece(moveStr string) error {
 }
 
 // Get all possible moves for the current player
-func (g *Game) GetPossibleMoves() []Move {
-	possibleMoves := []Move{}
+func (g *Game) GetPossibleMoves() map[Move]*Piece {
+	possibleMoves := map[Move]*Piece{}
 	for rank, row := range g.Board.Squares {
 		for file, p := range row {
 			if p != nil && p.Color == g.Turn {
-				possibleMoves = append(possibleMoves, p.GetPossibleMoves(g, intToFile(file), rank)...)
+				pieceMoves := p.GetPossibleMoves(g, intToFile(file), rank)
+				for _, move := range pieceMoves {
+					if possibleMoves[move] == nil {
+						possibleMoves[move] = p
+					} else {
+						possibleMoves[move] = nil
+						handleDuplicateMove(move)
+					}
+				}
 			}
 		}
 	}
 	return possibleMoves
+}
+
+// Handle a duplicate move
+func handleDuplicateMove(move Move) {
+	// Handle duplicate move
 }
 
 // Parse a move string in algebraic notation
