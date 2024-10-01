@@ -7,22 +7,52 @@ import (
 )
 
 func main() {
-	b := game.NewBoard()
-	moves := []struct {
-		fromFile rune
-		fromRank int
-		toFile   rune
-		toRank   int
-	}{
-		{'e', 2, 'e', 4},
-		{'e', 7, 'e', 5},
-		{'b', 1, 'c', 3},
-		{'g', 8, 'f', 6},
-		{'f', 2, 'f', 4},
-	}
-	for _, move := range moves {
-		b.MovePiece(move.fromFile, move.fromRank, move.toFile, move.toRank)
-	}
+	b := game.CustomBoard([8][8]*game.Piece{
+		{
+			&game.Piece{PieceType: game.Rook, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Knight, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Bishop, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Queen, Color: "white", Active: true},
+			&game.Piece{PieceType: game.King, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Bishop, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Knight, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Rook, Color: "white", Active: true},
+		},
+		{
+			&game.Piece{PieceType: game.Pawn, Color: "white", Active: true},
+			nil,
+			nil,
+			&game.Piece{PieceType: game.Pawn, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Pawn, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Pawn, Color: "white", Active: true},
+			nil,
+			nil,
+		},
+		{nil, nil, &game.Piece{PieceType: game.Pawn, Color: "white", Active: true}, nil, nil, nil, nil, nil},
+		{nil, nil, nil, &game.Piece{PieceType: game.Pawn, Color: "black", Active: true}, nil, nil, nil, nil},
+		{nil, &game.Piece{PieceType: game.Pawn, Color: "white", Active: true}, &game.Piece{PieceType: game.Pawn, Color: "black", Active: true}, nil, nil, nil, nil, nil},
+		{nil, nil, nil, nil, nil, nil, nil, nil},
+		{
+			&game.Piece{PieceType: game.Pawn, Color: "black", Active: true},
+			&game.Piece{PieceType: game.Pawn, Color: "black", Active: true},
+			nil,
+			nil,
+			&game.Piece{PieceType: game.Pawn, Color: "black", Active: true},
+			&game.Piece{PieceType: game.Pawn, Color: "black", Active: true},
+			&game.Piece{PieceType: game.Pawn, Color: "white", Active: true},
+			&game.Piece{PieceType: game.Pawn, Color: "white", Active: true},
+		},
+		{
+			&game.Piece{PieceType: game.Rook, Color: "black", Active: true},
+			&game.Piece{PieceType: game.Knight, Color: "black", Active: true},
+			&game.Piece{PieceType: game.Bishop, Color: "black", Active: true},
+			&game.Piece{PieceType: game.Queen, Color: "black", Active: true},
+			&game.Piece{PieceType: game.King, Color: "black", Active: true},
+			&game.Piece{PieceType: game.Bishop, Color: "black", Active: true},
+			nil,
+			nil,
+		},
+	})
 	board := b.PrintBoard()
 	fmt.Println(board)
 }

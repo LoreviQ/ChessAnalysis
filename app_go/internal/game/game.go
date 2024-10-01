@@ -7,7 +7,7 @@ import (
 type Game struct {
 	Board       Board
 	Turn        string
-	MoveHistory []string
+	MoveHistory []Move
 	CanCastle   map[string]map[string]bool
 }
 
@@ -28,7 +28,7 @@ func NewGame() Game {
 	return Game{
 		Board:       NewBoard(),
 		Turn:        "white",
-		MoveHistory: []string{},
+		MoveHistory: []Move{},
 		CanCastle: map[string]map[string]bool{
 			"white": {"short": true, "long": true},
 			"black": {"short": true, "long": true},
@@ -52,7 +52,7 @@ func (g *Game) GetPossibleMoves() []Move {
 	possibleMoves := []Move{}
 	for rank, row := range g.Board.Squares {
 		for file, p := range row {
-			if p != nil && p.color == g.Turn {
+			if p != nil && p.Color == g.Turn {
 				possibleMoves = append(possibleMoves, p.GetPossibleMoves(g, intToFile(file), rank)...)
 			}
 		}

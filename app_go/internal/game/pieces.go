@@ -2,13 +2,13 @@ package game
 
 import "fmt"
 
-type piece struct {
-	pType  pieceType
-	color  string
-	active bool
+type Piece struct {
+	PieceType PieceType
+	Color     string
+	Active    bool
 }
 
-type pieceType int8
+type PieceType int8
 
 const (
 	King = iota
@@ -21,8 +21,8 @@ const (
 
 // Returns the letter representing the piece
 // K, Q, R, B, N, zeroval for Pawn
-func (p *piece) getSymbol() (rune, error) {
-	switch p.pType {
+func (p *Piece) getSymbol() (rune, error) {
+	switch p.PieceType {
 	case King:
 		return 'K', nil
 	case Queen:
@@ -42,35 +42,35 @@ func (p *piece) getSymbol() (rune, error) {
 
 // Returns the symbol of the piece
 // ♔, ♕, ♖, ♗, ♘, ♙, ♚, ♛, ♜, ♝, ♞, ♟
-func (p *piece) getPrintable() (rune, error) {
-	switch p.pType {
+func (p *Piece) getPrintable() (rune, error) {
+	switch p.PieceType {
 	case Pawn:
-		if p.color == "white" {
+		if p.Color == "white" {
 			return '♟', nil
 		}
 		return '♙', nil
 	case King:
-		if p.color == "white" {
+		if p.Color == "white" {
 			return '♚', nil
 		}
 		return '♔', nil
 	case Queen:
-		if p.color == "white" {
+		if p.Color == "white" {
 			return '♛', nil
 		}
 		return '♕', nil
 	case Rook:
-		if p.color == "white" {
+		if p.Color == "white" {
 			return '♜', nil
 		}
 		return '♖', nil
 	case Bishop:
-		if p.color == "white" {
+		if p.Color == "white" {
 			return '♝', nil
 		}
 		return '♗', nil
 	case Knight:
-		if p.color == "white" {
+		if p.Color == "white" {
 			return '♞', nil
 		}
 		return '♘', nil
@@ -80,19 +80,19 @@ func (p *piece) getPrintable() (rune, error) {
 }
 
 // Returns the direction the piece moves
-func (p *piece) getDirection() int {
-	if p.color == "white" {
+func (p *Piece) getDirection() int {
+	if p.Color == "white" {
 		return 1
 	}
 	return -1
 }
 
 // Returns the possible moves for the piece
-func (p *piece) GetPossibleMoves(g *Game, fromFile rune, fromRank int) []Move {
-	if !p.active {
+func (p *Piece) GetPossibleMoves(g *Game, fromFile rune, fromRank int) []Move {
+	if !p.Active {
 		return []Move{}
 	}
-	switch p.pType {
+	switch p.PieceType {
 	case Pawn:
 		return p.getPawnMoves(g, fromFile, fromRank)
 	case King:
@@ -111,53 +111,124 @@ func (p *piece) GetPossibleMoves(g *Game, fromFile rune, fromRank int) []Move {
 }
 
 // Returns the possible moves for a pawn
-func (p *piece) getPawnMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) getPawnMoves(g *Game, fromFile rune, fromRank int) []Move {
 	moves := []Move{}
-	direction := p.getDirection()
-	// Forward one square
-	toRank := fromRank + direction
-	forward_piece, err := g.Board.GetPieceAtSquare(fromFile, toRank)
-	if err == nil && forward_piece == nil {
-		moves = append(moves, Move{
-			FromFile: fromFile,
-			FromRank: fromRank,
-			ToFile:   fromFile,
-			ToRank:   toRank,
-		})
-		// Forward two squares
-		if (direction == 1 && fromRank == 2) || (direction == -1 && fromRank == 7) {
-			toRank = fromRank + 2*direction
-			forward_piece, err := g.Board.GetPieceAtSquare(fromFile, toRank)
-			if err == nil && forward_piece == nil {
-				moves = append(moves, Move{
-					FromFile: fromFile,
-					FromRank: fromRank,
-					ToFile:   fromFile,
-					ToRank:   toRank,
-				})
-			}
-		}
-	}
-
+	moves = append(moves, p.pawnForward(g, fromFile, fromRank)...)
+	moves = append(moves, p.pawnDiagonally(g, fromFile, fromRank)...)
 	return moves
 }
 
-func (p *piece) getKingMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) pawnForward(g *Game, fromFile rune, fromRank int) []Move {
+	// Forward one square
+	moves := []Move{}
+	direction := p.getDirection()
+	toRank := fromRank + direction
+	forwardPiece, err := g.Board.GetPieceAtSquare(fromFile, toRank)
+	if err != nil || forwardPiece != nil {
+		return moves
+	}
+	move := Move{
+		FromFile: fromFile,
+		FromRank: fromRank,
+		ToFile:   fromFile,
+		ToRank:   toRank,
+	}
+	moves = append(moves, listPawnPromotions(move)...)
+
+	// Forward two squares
+	if !((direction == 1 && fromRank == 2) || (direction == -1 && fromRank == 7)) {
+		return moves
+	}
+	toRank = fromRank + 2*direction
+	doubleForwardPiece, err := g.Board.GetPieceAtSquare(fromFile, toRank)
+	if err != nil || doubleForwardPiece != nil {
+		return moves
+	}
+	moves = append(moves, Move{
+		FromFile: fromFile,
+		FromRank: fromRank,
+		ToFile:   fromFile,
+		ToRank:   toRank,
+	})
+	return moves
+}
+
+func (p *Piece) pawnDiagonally(g *Game, fromFile rune, fromRank int) []Move {
+	moves := []Move{}
+	direction := p.getDirection()
+	// Capture diagonally
+	toRank := fromRank + direction
+	for _, toFile := range []rune{fromFile - 1, fromFile + 1} {
+		diagonalPiece, err := g.Board.GetPieceAtSquare(toFile, toRank)
+		if err != nil {
+			continue
+		}
+		if diagonalPiece != nil &&
+			diagonalPiece.Color != p.Color {
+			move := Move{
+				FromFile: fromFile,
+				FromRank: fromRank,
+				Capture:  'x',
+				ToFile:   toFile,
+				ToRank:   toRank,
+			}
+			moves = append(moves, listPawnPromotions(move)...)
+		}
+		// En passant
+		if !((fromRank == 5 && direction == 1) ||
+			(fromRank == 4 && direction == -1)) {
+			continue
+		}
+		requiredPreviousMove := Move{
+			FromFile: toFile,
+			FromRank: toRank + direction,
+			ToFile:   toFile,
+			ToRank:   toRank - direction,
+		}
+		previousMove := g.MoveHistory[len(g.MoveHistory)-1]
+		if previousMove != requiredPreviousMove {
+			continue
+		}
+		moves = append(moves, Move{
+			FromFile: fromFile,
+			FromRank: fromRank,
+			Capture:  'x',
+			ToFile:   toFile,
+			ToRank:   toRank,
+		})
+	}
+	return moves
+}
+
+func listPawnPromotions(move Move) []Move {
+	moves := []Move{}
+	if move.ToRank == 8 || move.ToRank == 1 {
+		for _, promotion := range []rune{'N', 'B', 'R', 'Q'} {
+			move.Promotion = promotion
+			moves = append(moves, move)
+		}
+	} else {
+		moves = append(moves, move)
+	}
+	return moves
+}
+
+func (p *Piece) getKingMoves(g *Game, fromFile rune, fromRank int) []Move {
 	return []Move{}
 }
 
-func (p *piece) getQueenMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) getQueenMoves(g *Game, fromFile rune, fromRank int) []Move {
 	return []Move{}
 }
 
-func (p *piece) getRookMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) getRookMoves(g *Game, fromFile rune, fromRank int) []Move {
 	return []Move{}
 }
 
-func (p *piece) getBishopMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) getBishopMoves(g *Game, fromFile rune, fromRank int) []Move {
 	return []Move{}
 }
 
-func (p *piece) getKnightMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) getKnightMoves(g *Game, fromFile rune, fromRank int) []Move {
 	return []Move{}
 }

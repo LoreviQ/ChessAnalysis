@@ -14,8 +14,8 @@ var (
 )
 
 type Board struct {
-	Squares  [8][8]*piece
-	captured []*piece
+	Squares  [8][8]*Piece
+	captured []*Piece
 }
 
 // NewBoard creates a new board with the initial game state
@@ -25,33 +25,40 @@ func NewBoard() Board {
 	return b
 }
 
+// Create a custom board with the given squares
+func CustomBoard(squares [8][8]*Piece) Board {
+	return Board{
+		Squares: squares,
+	}
+}
+
 // Set up the board with the initial game state
 func (b *Board) setup_game() {
-	b.Squares[0] = [8]*piece{
-		{pType: Rook, color: "white", active: true},
-		{pType: Knight, color: "white", active: true},
-		{pType: Bishop, color: "white", active: true},
-		{pType: Queen, color: "white", active: true},
-		{pType: King, color: "white", active: true},
-		{pType: Bishop, color: "white", active: true},
-		{pType: Knight, color: "white", active: true},
-		{pType: Rook, color: "white", active: true},
+	b.Squares[0] = [8]*Piece{
+		{PieceType: Rook, Color: "white", Active: true},
+		{PieceType: Knight, Color: "white", Active: true},
+		{PieceType: Bishop, Color: "white", Active: true},
+		{PieceType: Queen, Color: "white", Active: true},
+		{PieceType: King, Color: "white", Active: true},
+		{PieceType: Bishop, Color: "white", Active: true},
+		{PieceType: Knight, Color: "white", Active: true},
+		{PieceType: Rook, Color: "white", Active: true},
 	}
-	b.Squares[7] = [8]*piece{
-		{pType: Rook, color: "black", active: true},
-		{pType: Knight, color: "black", active: true},
-		{pType: Bishop, color: "black", active: true},
-		{pType: Queen, color: "black", active: true},
-		{pType: King, color: "black", active: true},
-		{pType: Bishop, color: "black", active: true},
-		{pType: Knight, color: "black", active: true},
-		{pType: Rook, color: "black", active: true},
-	}
-	for i := 0; i < 8; i++ {
-		b.Squares[1][i] = &piece{pType: Pawn, color: "white", active: true}
+	b.Squares[7] = [8]*Piece{
+		{PieceType: Rook, Color: "black", Active: true},
+		{PieceType: Knight, Color: "black", Active: true},
+		{PieceType: Bishop, Color: "black", Active: true},
+		{PieceType: Queen, Color: "black", Active: true},
+		{PieceType: King, Color: "black", Active: true},
+		{PieceType: Bishop, Color: "black", Active: true},
+		{PieceType: Knight, Color: "black", Active: true},
+		{PieceType: Rook, Color: "black", Active: true},
 	}
 	for i := 0; i < 8; i++ {
-		b.Squares[6][i] = &piece{pType: Pawn, color: "black", active: true}
+		b.Squares[1][i] = &Piece{PieceType: Pawn, Color: "white", Active: true}
+	}
+	for i := 0; i < 8; i++ {
+		b.Squares[6][i] = &Piece{PieceType: Pawn, Color: "black", Active: true}
 	}
 
 }
@@ -77,7 +84,7 @@ func (b *Board) PrintBoard() string {
 }
 
 // Get the piece at a given square
-func (b *Board) GetPieceAtSquare(file rune, rank int) (*piece, error) {
+func (b *Board) GetPieceAtSquare(file rune, rank int) (*Piece, error) {
 	if rank < 1 || rank > 8 {
 		return nil, ErrInvalidRank
 	}
@@ -89,43 +96,39 @@ func (b *Board) GetPieceAtSquare(file rune, rank int) (*piece, error) {
 
 // Move a piece from one square to another
 // Doesn't check if the move is valid only if the square is occupied
-func (b *Board) MovePiece(fromFile rune, fromRank int, toFile rune, toRank int) error {
-	fromPiece, err := b.GetPieceAtSquare(fromFile, fromRank)
+func (b *Board) MovePiece(move Move) error {
+	fromPiece, err := b.GetPieceAtSquare(move.FromFile, move.FromRank)
 	if err != nil {
 		return err
 	}
 	if fromPiece == nil {
 		return ErrNoPieceAtSquare
 	}
-	toPiece, err := b.GetPieceAtSquare(toFile, toRank)
+	toPiece, err := b.GetPieceAtSquare(move.ToFile, move.ToRank)
 	if err != nil {
 		return err
 	}
-	if toPiece != nil {
-		return ErrSquareOccupied
+	if move.Capture == 'x' {
+		if toPiece == nil {
+			return ErrNoPieceAtSquare
+		}
+		if toPiece.Color == fromPiece.Color {
+			return ErrSquareOccupied
+		}
+		toPiece.Active = false
+		b.captured = append(b.captured, toPiece)
+	} else {
+		if toPiece != nil {
+			return ErrSquareOccupied
+		}
 	}
-	b.Squares[toRank-1][fileToInt(toFile)-1] = fromPiece
-	b.Squares[fromRank-1][fileToInt(fromFile-1)] = nil
-	return nil
-}
-
-// Capture a piece from a square
-func (b *Board) CapturePiece(file rune, rank int) error {
-	p, err := b.GetPieceAtSquare(file, rank)
-	if err != nil {
-		return err
-	}
-	if p == nil {
-		return ErrNoPieceAtSquare
-	}
-	p.active = false
-	b.captured = append(b.captured, p)
-	b.Squares[rank-1][fileToInt(file)] = nil
+	b.Squares[move.ToRank-1][fileToInt(move.ToFile)-1] = fromPiece
+	b.Squares[move.FromRank-1][fileToInt(move.FromFile-1)] = nil
 	return nil
 }
 
 // Promote a pawn to another piece type
-func (b *Board) PromotePawn(file rune, rank int, pType pieceType) error {
+func (b *Board) PromotePawn(file rune, rank int, pType PieceType) error {
 	p, err := b.GetPieceAtSquare(file, rank)
 	if err != nil {
 		return err
@@ -133,19 +136,19 @@ func (b *Board) PromotePawn(file rune, rank int, pType pieceType) error {
 	if p == nil {
 		return ErrNoPieceAtSquare
 	}
-	if p.pType != Pawn {
+	if p.PieceType != Pawn {
 		return ErrPieceNotPawn
 	}
-	p.pType = pType
+	p.PieceType = pType
 	return nil
 }
 
 // Get the pieces captured by a given colour
 // e.g. twken by white returns black pieces
-func (b *Board) GetCapturedByColour(color string) []*piece {
-	var CapturedByColour []*piece
+func (b *Board) GetCapturedByColour(color string) []*Piece {
+	var CapturedByColour []*Piece
 	for _, p := range b.captured {
-		if p.color != color {
+		if p.Color != color {
 			CapturedByColour = append(CapturedByColour, p)
 		}
 	}

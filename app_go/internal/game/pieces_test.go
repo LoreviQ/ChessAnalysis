@@ -6,16 +6,16 @@ import (
 
 func TestGetSymbol(t *testing.T) {
 	tests := []struct {
-		piece     piece
+		piece     Piece
 		expected  rune
 		expectErr bool
 	}{
-		{piece{pType: King}, 'K', false},
-		{piece{pType: Queen}, 'Q', false},
-		{piece{pType: Rook}, 'R', false},
-		{piece{pType: Bishop}, 'B', false},
-		{piece{pType: Knight}, 'N', false},
-		{piece{pType: Pawn}, 0, false},
+		{Piece{PieceType: King}, 'K', false},
+		{Piece{PieceType: Queen}, 'Q', false},
+		{Piece{PieceType: Rook}, 'R', false},
+		{Piece{PieceType: Bishop}, 'B', false},
+		{Piece{PieceType: Knight}, 'N', false},
+		{Piece{PieceType: Pawn}, 0, false},
 	}
 
 	for _, test := range tests {
@@ -31,22 +31,22 @@ func TestGetSymbol(t *testing.T) {
 
 func TestGetPrintable(t *testing.T) {
 	tests := []struct {
-		piece     piece
+		piece     Piece
 		expected  rune
 		expectErr bool
 	}{
-		{piece{pType: Pawn, color: "white"}, '♟', false},
-		{piece{pType: Pawn, color: "black"}, '♙', false},
-		{piece{pType: King, color: "white"}, '♚', false},
-		{piece{pType: King, color: "black"}, '♔', false},
-		{piece{pType: Queen, color: "white"}, '♛', false},
-		{piece{pType: Queen, color: "black"}, '♕', false},
-		{piece{pType: Rook, color: "white"}, '♜', false},
-		{piece{pType: Rook, color: "black"}, '♖', false},
-		{piece{pType: Bishop, color: "white"}, '♝', false},
-		{piece{pType: Bishop, color: "black"}, '♗', false},
-		{piece{pType: Knight, color: "white"}, '♞', false},
-		{piece{pType: Knight, color: "black"}, '♘', false},
+		{Piece{PieceType: Pawn, Color: "white"}, '♟', false},
+		{Piece{PieceType: Pawn, Color: "black"}, '♙', false},
+		{Piece{PieceType: King, Color: "white"}, '♚', false},
+		{Piece{PieceType: King, Color: "black"}, '♔', false},
+		{Piece{PieceType: Queen, Color: "white"}, '♛', false},
+		{Piece{PieceType: Queen, Color: "black"}, '♕', false},
+		{Piece{PieceType: Rook, Color: "white"}, '♜', false},
+		{Piece{PieceType: Rook, Color: "black"}, '♖', false},
+		{Piece{PieceType: Bishop, Color: "white"}, '♝', false},
+		{Piece{PieceType: Bishop, Color: "black"}, '♗', false},
+		{Piece{PieceType: Knight, Color: "white"}, '♞', false},
+		{Piece{PieceType: Knight, Color: "black"}, '♘', false},
 	}
 
 	for _, test := range tests {
@@ -56,6 +56,129 @@ func TestGetPrintable(t *testing.T) {
 		}
 		if result != test.expected {
 			t.Errorf("Expected: %c, got: %c", test.expected, result)
+		}
+	}
+}
+
+func TestGetPawnMoves(t *testing.T) {
+	g := NewGame()
+	g.Board = CustomBoard([8][8]*Piece{
+		{
+			&Piece{PieceType: Rook, Color: "white", Active: true},
+			&Piece{PieceType: Knight, Color: "white", Active: true},
+			&Piece{PieceType: Bishop, Color: "white", Active: true},
+			&Piece{PieceType: Queen, Color: "white", Active: true},
+			&Piece{PieceType: King, Color: "white", Active: true},
+			&Piece{PieceType: Bishop, Color: "white", Active: true},
+			&Piece{PieceType: Knight, Color: "white", Active: true},
+			&Piece{PieceType: Rook, Color: "white", Active: true},
+		},
+		{
+			&Piece{PieceType: Pawn, Color: "white", Active: true},
+			nil,
+			nil,
+			&Piece{PieceType: Pawn, Color: "white", Active: true},
+			&Piece{PieceType: Pawn, Color: "white", Active: true},
+			&Piece{PieceType: Pawn, Color: "white", Active: true},
+			nil,
+			nil,
+		},
+		{nil, nil, &Piece{PieceType: Pawn, Color: "white", Active: true}, nil, nil, nil, nil, nil},
+		{nil, nil, nil, &Piece{PieceType: Pawn, Color: "black", Active: true}, nil, nil, nil, nil},
+		{nil, &Piece{PieceType: Pawn, Color: "white", Active: true}, &Piece{PieceType: Pawn, Color: "black", Active: true}, nil, nil, nil, nil, nil},
+		{nil, nil, nil, nil, nil, nil, nil, nil},
+		{
+			&Piece{PieceType: Pawn, Color: "black", Active: true},
+			&Piece{PieceType: Pawn, Color: "black", Active: true},
+			nil,
+			nil,
+			&Piece{PieceType: Pawn, Color: "black", Active: true},
+			&Piece{PieceType: Pawn, Color: "black", Active: true},
+			&Piece{PieceType: Pawn, Color: "white", Active: true},
+			&Piece{PieceType: Pawn, Color: "white", Active: true},
+		},
+		{
+			&Piece{PieceType: Rook, Color: "black", Active: true},
+			&Piece{PieceType: Knight, Color: "black", Active: true},
+			&Piece{PieceType: Bishop, Color: "black", Active: true},
+			&Piece{PieceType: Queen, Color: "black", Active: true},
+			&Piece{PieceType: King, Color: "black", Active: true},
+			&Piece{PieceType: Bishop, Color: "black", Active: true},
+			nil,
+			nil,
+		},
+	})
+	b := g.Board
+	g.MoveHistory = append(g.MoveHistory, Move{FromFile: 'c', FromRank: 7, ToFile: 'c', ToRank: 5})
+	// Board looks like this:
+	// 8 ♖ ♘ ♗ ♕ ♔ ♗
+	// 7 ♙ ♙       ♙ ♙ ♟ ♟
+	// 6
+	// 5    ♟ ♙
+	// 4         ♙
+	// 3       ♟
+	// 2 ♟       ♟ ♟ ♟
+	// 1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+	//   a  b  c  d  e  f  g  h
+	pa2, _ := b.GetPieceAtSquare('a', 2) // Testing forward 1 and forward 2
+	pb5, _ := b.GetPieceAtSquare('b', 5) // Testing En passant
+	pc3, _ := b.GetPieceAtSquare('c', 3) // Testing capture
+	pg7, _ := b.GetPieceAtSquare('g', 7) // Testing capture promotion
+	ph7, _ := b.GetPieceAtSquare('h', 7) // Testing promotion
+
+	tests := []struct {
+		piece    *Piece
+		fromFile rune
+		fromRank int
+		expected []Move
+	}{
+		{pa2, 'a', 2, []Move{
+			{FromFile: 'a', FromRank: 2, ToFile: 'a', ToRank: 3},
+			{FromFile: 'a', FromRank: 2, ToFile: 'a', ToRank: 4},
+		}},
+		{pb5, 'b', 5, []Move{
+			{FromFile: 'b', FromRank: 5, ToFile: 'b', ToRank: 6},
+			{FromFile: 'b', FromRank: 5, Capture: 'x', ToFile: 'c', ToRank: 6},
+		}},
+		{pc3, 'c', 3, []Move{
+			{FromFile: 'c', FromRank: 3, ToFile: 'c', ToRank: 4},
+			{FromFile: 'c', FromRank: 3, Capture: 'x', ToFile: 'd', ToRank: 4},
+		}},
+		{pg7, 'g', 7, []Move{
+			{FromFile: 'g', FromRank: 7, ToFile: 'g', ToRank: 8, Promotion: 'Q'},
+			{FromFile: 'g', FromRank: 7, ToFile: 'g', ToRank: 8, Promotion: 'R'},
+			{FromFile: 'g', FromRank: 7, ToFile: 'g', ToRank: 8, Promotion: 'N'},
+			{FromFile: 'g', FromRank: 7, ToFile: 'g', ToRank: 8, Promotion: 'B'},
+			{FromFile: 'g', FromRank: 7, Capture: 'x', ToFile: 'f', ToRank: 8, Promotion: 'Q'},
+			{FromFile: 'g', FromRank: 7, Capture: 'x', ToFile: 'f', ToRank: 8, Promotion: 'R'},
+			{FromFile: 'g', FromRank: 7, Capture: 'x', ToFile: 'f', ToRank: 8, Promotion: 'N'},
+			{FromFile: 'g', FromRank: 7, Capture: 'x', ToFile: 'f', ToRank: 8, Promotion: 'B'},
+		}},
+		{ph7, 'h', 7, []Move{
+			{FromFile: 'h', FromRank: 7, ToFile: 'h', ToRank: 8, Promotion: 'Q'},
+			{FromFile: 'h', FromRank: 7, ToFile: 'h', ToRank: 8, Promotion: 'R'},
+			{FromFile: 'h', FromRank: 7, ToFile: 'h', ToRank: 8, Promotion: 'N'},
+			{FromFile: 'h', FromRank: 7, ToFile: 'h', ToRank: 8, Promotion: 'B'},
+		}},
+	}
+
+	for _, test := range tests {
+		moves := test.piece.GetPossibleMoves(&g, test.fromFile, test.fromRank)
+		if len(moves) != len(test.expected) {
+			t.Errorf("Expected %d moves, got %d", len(test.expected), len(moves))
+		}
+		// check if move is in expected mvoes
+		for _, expectedMove := range test.expected {
+			found := false
+			for _, move := range moves {
+				if expectedMove == move {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("Expected move %v not found", expectedMove)
+			}
 		}
 	}
 }

@@ -8,16 +8,16 @@ func TestNewBoard(t *testing.T) {
 	b := NewBoard()
 
 	// Check initial positions of some pieces
-	if b.Squares[0][0].pType != Rook || b.Squares[0][0].color != "white" {
+	if b.Squares[0][0].PieceType != Rook || b.Squares[0][0].Color != "white" {
 		t.Errorf("Expected white Rook at a8, got %v", b.Squares[0][0])
 	}
-	if b.Squares[7][4].pType != King || b.Squares[7][4].color != "black" {
+	if b.Squares[7][4].PieceType != King || b.Squares[7][4].Color != "black" {
 		t.Errorf("Expected black King at e1, got %v", b.Squares[7][4])
 	}
-	if b.Squares[1][0].pType != Pawn || b.Squares[1][0].color != "white" {
+	if b.Squares[1][0].PieceType != Pawn || b.Squares[1][0].Color != "white" {
 		t.Errorf("Expected white Pawn at a7, got %v", b.Squares[1][0])
 	}
-	if b.Squares[6][0].pType != Pawn || b.Squares[6][0].color != "black" {
+	if b.Squares[6][0].PieceType != Pawn || b.Squares[6][0].Color != "black" {
 		t.Errorf("Expected black Pawn at a2, got %v", b.Squares[6][0])
 	}
 }
@@ -28,7 +28,7 @@ func TestGetPieceAtSquare(t *testing.T) {
 	tests := []struct {
 		file  rune
 		rank  int
-		pType pieceType
+		pType PieceType
 		color string
 		err   error
 	}{
@@ -46,7 +46,7 @@ func TestGetPieceAtSquare(t *testing.T) {
 		if err != tt.err {
 			t.Errorf("Expected error %v, got %v", tt.err, err)
 		}
-		if p != nil && (p.pType != tt.pType || p.color != tt.color) {
+		if p != nil && (p.PieceType != tt.pType || p.Color != tt.color) {
 			t.Errorf("Expected piece %v, got %v", tt, p)
 		}
 	}
@@ -74,25 +74,22 @@ func TestPrintBoard(t *testing.T) {
 func TestMovePiece(t *testing.T) {
 	b := NewBoard()
 	tests := []struct {
-		fromFile rune
-		fromRank int
-		toFile   rune
-		toRank   int
-		err      error
+		move Move
+		err  error
 	}{
-		{'e', 2, 'e', 4, nil},
-		{'e', 7, 'e', 5, nil},
-		{'b', 1, 'c', 3, nil},
-		{'g', 8, 'f', 6, nil},
-		{'f', 2, 'f', 4, nil},
-		{'a', 1, 'a', 2, ErrSquareOccupied},
-		{'d', 1, 'e', 8, ErrSquareOccupied},
-		{'g', 3, 'b', 1, ErrNoPieceAtSquare},
-		{'c', 4, 'd', 5, ErrNoPieceAtSquare},
+		{Move{FromFile: 'e', FromRank: 2, ToFile: 'e', ToRank: 4}, nil},
+		{Move{FromFile: 'e', FromRank: 7, ToFile: 'e', ToRank: 5}, nil},
+		{Move{FromFile: 'b', FromRank: 1, ToFile: 'c', ToRank: 3}, nil},
+		{Move{FromFile: 'g', FromRank: 8, ToFile: 'f', ToRank: 6}, nil},
+		{Move{FromFile: 'f', FromRank: 2, ToFile: 'f', ToRank: 4}, nil},
+		{Move{FromFile: 'a', FromRank: 1, ToFile: 'a', ToRank: 2}, ErrSquareOccupied},
+		{Move{FromFile: 'd', FromRank: 1, ToFile: 'e', ToRank: 8}, ErrSquareOccupied},
+		{Move{FromFile: 'g', FromRank: 3, ToFile: 'b', ToRank: 1}, ErrNoPieceAtSquare},
+		{Move{FromFile: 'c', FromRank: 4, ToFile: 'd', ToRank: 5}, ErrNoPieceAtSquare},
 	}
 
 	for _, tt := range tests {
-		err := b.MovePiece(tt.fromFile, tt.fromRank, tt.toFile, tt.toRank)
+		err := b.MovePiece(tt.move)
 		if err != nil && tt.err == nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
@@ -121,18 +118,18 @@ func TestMovePiece(t *testing.T) {
 func TestMovePieceCapture(t *testing.T) {
 	b := NewBoard()
 	tests := []struct {
-		fromFile rune
-		fromRank int
-		err      error
+		move Move
+		err  error
 	}{
-		{'c', 1, nil},
-		{'f', 2, nil},
-		{'f', 6, ErrNoPieceAtSquare},
-		{'c', 3, ErrNoPieceAtSquare},
+		{Move{FromFile: 'a', FromRank: 2, ToFile: 'c', ToRank: 7, Capture: 'x'}, nil},
+		{Move{FromFile: 'b', FromRank: 2, ToFile: 'f', ToRank: 8, Capture: 'x'}, nil},
+		{Move{FromFile: 'c', FromRank: 2, ToFile: 'f', ToRank: 6, Capture: 'x'}, ErrNoPieceAtSquare},
+		{Move{FromFile: 'd', FromRank: 2, ToFile: 'c', ToRank: 3, Capture: 'x'}, ErrNoPieceAtSquare},
+		{Move{FromFile: 'e', FromRank: 2, ToFile: 'e', ToRank: 1, Capture: 'x'}, ErrSquareOccupied},
 	}
 
 	for _, tt := range tests {
-		err := b.CapturePiece(tt.fromFile, tt.fromRank)
+		err := b.MovePiece(tt.move)
 		if err != nil && tt.err == nil {
 			t.Errorf("Unexpected error: %v", err)
 		}
@@ -142,14 +139,14 @@ func TestMovePieceCapture(t *testing.T) {
 	}
 
 	// Check captured pieces
-	takenByBlack := b.GetCapturedByColour("black")
-	expectedByBlack := []pieceType{Bishop, Pawn}
-	if len(takenByBlack) != len(expectedByBlack) {
-		t.Errorf("Expected %v, got %v", expectedByBlack, takenByBlack)
+	takenByWhite := b.GetCapturedByColour("white")
+	expectedByWhite := []PieceType{Pawn, Bishop}
+	if len(takenByWhite) != len(expectedByWhite) {
+		t.Errorf("Expected %v, got %v", expectedByWhite, takenByWhite)
 	}
-	for i, p := range takenByBlack {
-		if p.pType != expectedByBlack[i] {
-			t.Errorf("Expected %v, got %v", expectedByBlack, takenByBlack)
+	for i, p := range takenByWhite {
+		if p.PieceType != expectedByWhite[i] {
+			t.Errorf("Expected %v, got %v", expectedByWhite, takenByWhite)
 		}
 	}
 }
@@ -159,7 +156,7 @@ func TestPromotePawn(t *testing.T) {
 	tests := []struct {
 		file  rune
 		rank  int
-		pType pieceType
+		pType PieceType
 		err   error
 	}{
 		{'e', 2, Queen, nil},
