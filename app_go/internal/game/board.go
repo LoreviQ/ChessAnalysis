@@ -19,15 +19,15 @@ type Board struct {
 }
 
 // NewBoard creates a new board with the initial game state
-func NewBoard() Board {
+func NewBoard() *Board {
 	b := Board{}
 	b.setup_game()
-	return b
+	return &b
 }
 
 // Create a custom board with the given squares
-func CustomBoard(squares [8][8]*Piece) Board {
-	return Board{
+func CustomBoard(squares [8][8]*Piece) *Board {
+	return &Board{
 		Squares: squares,
 	}
 }

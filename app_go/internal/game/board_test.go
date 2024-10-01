@@ -52,6 +52,30 @@ func TestGetPieceAtSquare(t *testing.T) {
 	}
 }
 
+func TestGetPieceAtSquareAfterMove(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	piece, _ := b.GetPieceAtSquare('e', 2)
+	move := Move{FromFile: 'e', FromRank: 2, ToFile: 'e', ToRank: 4}
+	b.MovePiece(move)
+
+	tests := []struct {
+		file  rune
+		rank  int
+		piece *Piece
+	}{
+		{'e', 4, piece},
+		{'e', 2, nil},
+	}
+
+	for _, tt := range tests {
+		p, _ := b.GetPieceAtSquare(tt.file, tt.rank)
+		if p != tt.piece {
+			t.Errorf("Expected piece %v, got %v", tt.piece, p)
+		}
+	}
+}
+
 func TestPrintBoard(t *testing.T) {
 	b := NewBoard()
 	boardStr := b.PrintBoard()

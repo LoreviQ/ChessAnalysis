@@ -163,7 +163,7 @@ func TestGetPawnMoves(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		moves := test.piece.GetPossibleMoves(&g, test.fromFile, test.fromRank)
+		moves := test.piece.GetPossibleMoves(g, test.fromFile, test.fromRank)
 		if len(moves) != len(test.expected) {
 			t.Errorf("Expected %d moves, got %d", len(test.expected), len(moves))
 		}
@@ -208,7 +208,7 @@ func TestGetRookMoves(t *testing.T) {
 		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 4},
 		{FromFile: 'd', FromRank: 4, ToFile: 'h', ToRank: 4},
 	}
-	moves := rook.GetPossibleMoves(&g, fromFile, fromRank)
+	moves := rook.GetPossibleMoves(g, fromFile, fromRank)
 	if len(moves) != len(expected) {
 		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
 	}
@@ -249,7 +249,7 @@ func TestGetBishopMoves(t *testing.T) {
 		// Backward right
 		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
 	}
-	moves := bishop.GetPossibleMoves(&g, fromFile, fromRank)
+	moves := bishop.GetPossibleMoves(g, fromFile, fromRank)
 	if len(moves) != len(expected) {
 		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
 	}
@@ -305,7 +305,47 @@ func TestGetQueenMoves(t *testing.T) {
 		// Backward right
 		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
 	}
-	moves := queen.GetPossibleMoves(&g, fromFile, fromRank)
+	moves := queen.GetPossibleMoves(g, fromFile, fromRank)
+	if len(moves) != len(expected) {
+		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
+	}
+	// check if move is in expected mvoes
+	for _, expectedMove := range expected {
+		found := false
+		for _, move := range moves {
+			if expectedMove == move {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %v not found", expectedMove)
+		}
+	}
+}
+
+func TestGetKnightMoves(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	// Put knight at d5 so we can test all directions
+	b.MovePiece(Move{FromFile: 'b', FromRank: 1, ToFile: 'd', ToRank: 5})
+	// put pawn to c3 to block one move
+	b.MovePiece(Move{FromFile: 'c', FromRank: 2, ToFile: 'c', ToRank: 3})
+	knight, _ := b.GetPieceAtSquare('d', 5)
+	pawn, _ := b.GetPieceAtSquare(99, 3)
+	print(pawn)
+	fromFile := 'd'
+	fromRank := 5
+	expected := []Move{
+		{FromFile: 'd', FromRank: 5, ToFile: 'b', ToRank: 4},
+		{FromFile: 'd', FromRank: 5, ToFile: 'b', ToRank: 6},
+		{FromFile: 'd', FromRank: 5, ToFile: 'e', ToRank: 3},
+		{FromFile: 'd', FromRank: 5, ToFile: 'f', ToRank: 4},
+		{FromFile: 'd', FromRank: 5, ToFile: 'f', ToRank: 6},
+		{FromFile: 'd', FromRank: 5, ToFile: 'e', ToRank: 7, Capture: 'x'},
+		{FromFile: 'd', FromRank: 5, ToFile: 'c', ToRank: 7, Capture: 'x'},
+	}
+	moves := knight.GetPossibleMoves(g, fromFile, fromRank)
 	if len(moves) != len(expected) {
 		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
 	}

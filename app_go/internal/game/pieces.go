@@ -233,7 +233,37 @@ func (p *Piece) getBishopMoves(g *Game, fromFile rune, fromRank int) []Move {
 }
 
 func (p *Piece) getKnightMoves(g *Game, fromFile rune, fromRank int) []Move {
-	return []Move{}
+	moves := []Move{}
+	possibleMoves := [][]int{
+		{-1, -2},
+		{-2, -1},
+		{-2, 1},
+		{-1, 2},
+		{1, -2},
+		{2, -1},
+		{2, 1},
+		{1, 2},
+	}
+	for _, move := range possibleMoves {
+		toFile := fromFile + rune(move[0])
+		toRank := fromRank + move[1]
+		toPiece, err := g.Board.GetPieceAtSquare(toFile, toRank)
+		if err != nil || (toPiece != nil && toPiece.Color == p.Color) {
+			continue
+		}
+		var capture rune
+		if toPiece != nil {
+			capture = 'x'
+		}
+		moves = append(moves, Move{
+			FromFile: fromFile,
+			FromRank: fromRank,
+			ToFile:   toFile,
+			ToRank:   toRank,
+			Capture:  capture,
+		})
+	}
+	return moves
 }
 
 // Returns the possible moves for a piece moving orthogonally

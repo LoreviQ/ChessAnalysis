@@ -5,7 +5,7 @@ import (
 )
 
 type Game struct {
-	Board       Board
+	Board       *Board
 	Turn        string
 	MoveHistory []Move
 	CanCastle   map[string]map[string]bool
@@ -24,8 +24,8 @@ type Move struct {
 }
 
 // Create a new game
-func NewGame() Game {
-	return Game{
+func NewGame() *Game {
+	return &Game{
 		Board:       NewBoard(),
 		Turn:        "white",
 		MoveHistory: []Move{},
