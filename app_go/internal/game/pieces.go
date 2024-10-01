@@ -218,16 +218,18 @@ func (p *Piece) getKingMoves(g *Game, fromFile rune, fromRank int) []Move {
 }
 
 func (p *Piece) getQueenMoves(g *Game, fromFile rune, fromRank int) []Move {
-	return []Move{}
+	moves, _ := p.getMovesInDirection(g, fromFile, fromRank, "both")
+	return moves
 }
 
 func (p *Piece) getRookMoves(g *Game, fromFile rune, fromRank int) []Move {
-	return p.moveOrthogonally(g, fromFile, fromRank)
-
+	moves, _ := p.getMovesInDirection(g, fromFile, fromRank, "orthogonal")
+	return moves
 }
 
 func (p *Piece) getBishopMoves(g *Game, fromFile rune, fromRank int) []Move {
-	return []Move{}
+	moves, _ := p.getMovesInDirection(g, fromFile, fromRank, "diagonal")
+	return moves
 }
 
 func (p *Piece) getKnightMoves(g *Game, fromFile rune, fromRank int) []Move {
@@ -235,12 +237,22 @@ func (p *Piece) getKnightMoves(g *Game, fromFile rune, fromRank int) []Move {
 }
 
 // Returns the possible moves for a piece moving orthogonally
-func (p *Piece) moveOrthogonally(g *Game, fromFile rune, fromRank int) []Move {
-	directions := map[string][]int{
-		"forward":  {0, 1},
-		"backward": {0, -1},
-		"left":     {-1, 0},
-		"right":    {1, 0},
+func (p *Piece) getMovesInDirection(g *Game, fromFile rune, fromRank int, moveType string) ([]Move, error) {
+	directions := map[string][]int{}
+	if moveType != "orthogonal" && moveType != "diagonal" && moveType != "both" {
+		return nil, fmt.Errorf("invalid move type")
+	}
+	if moveType == "orthogonal" || moveType == "both" {
+		directions["forward"] = []int{0, 1}
+		directions["backward"] = []int{0, -1}
+		directions["left"] = []int{-1, 0}
+		directions["right"] = []int{1, 0}
+	}
+	if moveType == "diagonal" || moveType == "both" {
+		directions["forward-right"] = []int{1, 1}
+		directions["forward-left"] = []int{-1, 1}
+		directions["backward-right"] = []int{1, -1}
+		directions["backward-left"] = []int{-1, -1}
 	}
 	moves := []Move{}
 	for direction := range directions {
@@ -273,5 +285,5 @@ func (p *Piece) moveOrthogonally(g *Game, fromFile rune, fromRank int) []Move {
 			})
 		}
 	}
-	return moves
+	return moves, nil
 }
