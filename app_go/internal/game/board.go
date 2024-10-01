@@ -61,17 +61,19 @@ func (b *Board) setup_game() {
 func (b *Board) PrintBoard() string {
 	var board string
 	for i := 7; i >= 0; i-- { // Iterate from 7 to 0
+		board += fmt.Sprintf("%d ", i+1)
 		for j := 0; j < 8; j++ {
 			p := b.Squares[i][j]
 			if p != nil {
 				printable, _ := p.getPrintable()
 				board += printable
 			} else {
-				board += " "
+				board += "\u3000"
 			}
 		}
 		board += "\n"
 	}
+	board += "  a b c d e f g h\n"
 	return board
 }
 
@@ -81,6 +83,7 @@ func (b *Board) GetPieceAtSquare(file string, rank int) *piece {
 }
 
 // Move a piece from one square to another
+// Doesn't check if the move is valid only if the square is occupied
 func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank int) error {
 	fromPiece := b.GetPieceAtSquare(fromFile, fromRank)
 	if fromPiece == nil {
@@ -88,14 +91,43 @@ func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank i
 	}
 	toPiece := b.GetPieceAtSquare(toFile, toRank)
 	if toPiece != nil {
-		if toPiece.color == fromPiece.color {
-			return fmt.Errorf("cannot capture own piece")
-		}
-		// add taken piece to taken list
-		b.taken = append(b.taken, toPiece)
+		return fmt.Errorf("square is occupied")
 	}
-
 	b.Squares[toRank-1][b.files[toFile]] = fromPiece
 	b.Squares[fromRank-1][b.files[fromFile]] = nil
 	return nil
+}
+
+// Take a piece from a square
+func (b *Board) TakePiece(file string, rank int) error {
+	p := b.GetPieceAtSquare(file, rank)
+	if p == nil {
+		return fmt.Errorf("no piece at square")
+	}
+	p.active = false
+	b.taken = append(b.taken, p)
+	b.Squares[rank-1][b.files[file]] = nil
+	return nil
+}
+
+// Promote a pawn to another piece type
+func (b *Board) PromotePawn(file string, rank int, pType pieceType) error {
+	p := b.GetPieceAtSquare(file, rank)
+	if p == nil || p.pType != Pawn {
+		return fmt.Errorf("no pawn at square")
+	}
+	p.pType = pType
+	return nil
+}
+
+// Get the pieces taken by a given colour
+// e.g. twken by white returns black pieces
+func (b *Board) GetTakenByColour(color string) []*piece {
+	var takenByColour []*piece
+	for _, p := range b.taken {
+		if p.color != color {
+			takenByColour = append(takenByColour, p)
+		}
+	}
+	return takenByColour
 }

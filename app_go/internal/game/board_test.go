@@ -49,7 +49,7 @@ func TestPrintBoard(t *testing.T) {
 	b := NewBoard()
 	boardStr := b.PrintBoard()
 
-	expected := "♖♘♗♕♔♗♘♖\n♙♙♙♙♙♙♙♙\n        \n        \n        \n        \n♟♟♟♟♟♟♟♟\n♜♞♝♛♚♝♞♜\n"
+	expected := "8 ♖♘♗♕♔♗♘♖\n7 ♙♙♙♙♙♙♙♙\n6 \u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n5 \u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n4 \u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n3 \u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n2 ♟♟♟♟♟♟♟♟\n1 ♜♞♝♛♚♝♞♜\n  a b c d e f g h\n"
 	if boardStr != expected {
 		t.Errorf("Expected board string:\n%s\nGot:\n%s", expected, boardStr)
 	}
@@ -57,9 +57,36 @@ func TestPrintBoard(t *testing.T) {
 
 func TestMovePiece(t *testing.T) {
 	b := NewBoard()
-	b.MovePiece("e", 2, "e", 4)
-	p := b.GetPieceAtSquare("e", 4)
-	if p == nil || p.pType != Pawn || p.color != "white" {
-		t.Errorf("Expected white Pawn at e4, got %v", p)
+	tests := []struct {
+		fromFile string
+		fromRank int
+		toFile   string
+		toRank   int
+	}{
+		{"e", 2, "e", 4},
+		{"e", 7, "e", 5},
+		{"b", 1, "c", 3},
+		{"g", 8, "f", 6},
+		{"f", 2, "f", 4},
+	}
+
+	for _, tt := range tests {
+		err := b.MovePiece(tt.fromFile, tt.fromRank, tt.toFile, tt.toRank)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+	}
+	board := b.PrintBoard()
+	expected := "8 ♖♘♗♕♔♗\u3000♖\n7 ♙♙♙♙\u3000♙♙♙\n6 \u3000\u3000\u3000\u3000\u3000♘\u3000\u3000\n5 \u3000\u3000\u3000\u3000♙\u3000\u3000\u3000\n4 \u3000\u3000\u3000\u3000♟♟\u3000\u3000\n3 \u3000\u3000♞\u3000\u3000\u3000\u3000\u3000\n2 ♟♟♟♟\u3000\u3000♟♟\n1 ♜\u3000♝♛♚♝♞♜\n  a b c d e f g h\n"
+	if board != expected {
+		t.Errorf("Expected board string:\n%s\nGot:\n%s", expected, board)
+	}
+}
+
+func TestMovePieceInvalid(t *testing.T) {
+	b := NewBoard()
+	err := b.MovePiece("e", 3, "e", 4)
+	if err == nil {
+		t.Errorf("Expected error, got nil")
 	}
 }
