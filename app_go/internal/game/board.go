@@ -3,9 +3,9 @@ package game
 import "fmt"
 
 type Board struct {
-	Squares [8][8]*piece
-	taken   []*piece
-	files   map[string]int
+	Squares  [8][8]*piece
+	captured []*piece
+	files    map[string]int
 }
 
 // NewBoard creates a new board with the initial game state
@@ -98,14 +98,14 @@ func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank i
 	return nil
 }
 
-// Take a piece from a square
-func (b *Board) TakePiece(file string, rank int) error {
+// Capture a piece from a square
+func (b *Board) CapturePiece(file string, rank int) error {
 	p := b.GetPieceAtSquare(file, rank)
 	if p == nil {
 		return fmt.Errorf("no piece at square")
 	}
 	p.active = false
-	b.taken = append(b.taken, p)
+	b.captured = append(b.captured, p)
 	b.Squares[rank-1][b.files[file]] = nil
 	return nil
 }
@@ -120,14 +120,14 @@ func (b *Board) PromotePawn(file string, rank int, pType pieceType) error {
 	return nil
 }
 
-// Get the pieces taken by a given colour
+// Get the pieces captured by a given colour
 // e.g. twken by white returns black pieces
-func (b *Board) GetTakenByColour(color string) []*piece {
-	var takenByColour []*piece
-	for _, p := range b.taken {
+func (b *Board) GetCapturedByColour(color string) []*piece {
+	var CapturedByColour []*piece
+	for _, p := range b.captured {
 		if p.color != color {
-			takenByColour = append(takenByColour, p)
+			CapturedByColour = append(CapturedByColour, p)
 		}
 	}
-	return takenByColour
+	return CapturedByColour
 }
