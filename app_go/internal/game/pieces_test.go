@@ -123,7 +123,7 @@ func TestGetPawnMoves(t *testing.T) {
 	pa2, _ := b.GetPieceAtSquare('a', 2) // Testing forward 1 and forward 2
 	pb5, _ := b.GetPieceAtSquare('b', 5) // Testing En passant
 	pc3, _ := b.GetPieceAtSquare('c', 3) // Testing capture
-	pg7, _ := b.GetPieceAtSquare('g', 7) // Testing capture promotion
+	pg7, _ := b.GetPieceAtSquare('g', 7) // Testing capture + promotion
 	ph7, _ := b.GetPieceAtSquare('h', 7) // Testing promotion
 
 	tests := []struct {

@@ -222,7 +222,8 @@ func (p *Piece) getQueenMoves(g *Game, fromFile rune, fromRank int) []Move {
 }
 
 func (p *Piece) getRookMoves(g *Game, fromFile rune, fromRank int) []Move {
-	return []Move{}
+	return p.moveOrthogonally(g, fromFile, fromRank)
+
 }
 
 func (p *Piece) getBishopMoves(g *Game, fromFile rune, fromRank int) []Move {
@@ -231,4 +232,46 @@ func (p *Piece) getBishopMoves(g *Game, fromFile rune, fromRank int) []Move {
 
 func (p *Piece) getKnightMoves(g *Game, fromFile rune, fromRank int) []Move {
 	return []Move{}
+}
+
+// Returns the possible moves for a piece moving orthogonally
+func (p *Piece) moveOrthogonally(g *Game, fromFile rune, fromRank int) []Move {
+	directions := map[string][]int{
+		"forward":  {0, 1},
+		"backward": {0, -1},
+		"left":     {-1, 0},
+		"right":    {1, 0},
+	}
+	moves := []Move{}
+	for direction := range directions {
+		fileStep, rankStep := rune(directions[direction][0]), directions[direction][1]
+		toFile, toRank := fromFile, fromRank
+		for {
+			toFile += fileStep
+			toRank += rankStep
+			toPiece, err := g.Board.GetPieceAtSquare(toFile, toRank)
+			if err != nil {
+				break
+			}
+			if toPiece != nil {
+				if toPiece.Color != p.Color {
+					moves = append(moves, Move{
+						FromFile: fromFile,
+						FromRank: fromRank,
+						Capture:  'x',
+						ToFile:   toFile,
+						ToRank:   toRank,
+					})
+				}
+				break
+			}
+			moves = append(moves, Move{
+				FromFile: fromFile,
+				FromRank: fromRank,
+				ToFile:   toFile,
+				ToRank:   toRank,
+			})
+		}
+	}
+	return moves
 }
