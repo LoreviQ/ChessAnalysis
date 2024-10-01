@@ -88,37 +88,42 @@ func (p *Piece) getDirection() int {
 }
 
 // Returns the possible moves for the piece
-func (p *Piece) GetPossibleMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) GetPossibleMoves(g *Game) []Move {
 	if !p.Active {
 		return []Move{}
 	}
 	switch p.PieceType {
 	case Pawn:
-		return p.getPawnMoves(g, fromFile, fromRank)
+		return p.getPawnMoves(g)
 	case King:
-		return p.getKingMoves(g, fromFile, fromRank)
+		return p.getKingMoves(g)
 	case Queen:
-		return p.getQueenMoves(g, fromFile, fromRank)
+		return p.getQueenMoves(g)
 	case Rook:
-		return p.getRookMoves(g, fromFile, fromRank)
+		return p.getRookMoves(g)
 	case Bishop:
-		return p.getBishopMoves(g, fromFile, fromRank)
+		return p.getBishopMoves(g)
 	case Knight:
-		return p.getKnightMoves(g, fromFile, fromRank)
+		return p.getKnightMoves(g)
 	default:
 		return []Move{}
 	}
 }
 
 // Returns the possible moves for a pawn
-func (p *Piece) getPawnMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) getPawnMoves(g *Game) []Move {
 	moves := []Move{}
-	moves = append(moves, p.pawnForward(g, fromFile, fromRank)...)
-	moves = append(moves, p.pawnDiagonally(g, fromFile, fromRank)...)
+	moves = append(moves, p.pawnForward(g)...)
+	moves = append(moves, p.pawnDiagonally(g)...)
 	return moves
 }
 
-func (p *Piece) pawnForward(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) pawnForward(g *Game) []Move {
+	fromFile, fromRank, err := g.Board.GetLocation(p)
+	if err != nil {
+		return []Move{}
+	}
+
 	// Forward one square
 	moves := []Move{}
 	direction := p.getDirection()
@@ -153,9 +158,13 @@ func (p *Piece) pawnForward(g *Game, fromFile rune, fromRank int) []Move {
 	return moves
 }
 
-func (p *Piece) pawnDiagonally(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) pawnDiagonally(g *Game) []Move {
 	moves := []Move{}
 	direction := p.getDirection()
+	fromFile, fromRank, err := g.Board.GetLocation(p)
+	if err != nil {
+		return []Move{}
+	}
 	// Capture diagonally
 	toRank := fromRank + direction
 	for _, toFile := range []rune{fromFile - 1, fromFile + 1} {
@@ -213,7 +222,7 @@ func listPawnPromotions(move Move) []Move {
 	return moves
 }
 
-func (p *Piece) getKingMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) getKingMoves(g *Game) []Move {
 	possibleMoves := [][]int{
 		{-1, -1},
 		{-1, 0},
@@ -224,25 +233,25 @@ func (p *Piece) getKingMoves(g *Game, fromFile rune, fromRank int) []Move {
 		{1, 0},
 		{1, 1},
 	}
-	return p.exaluatePossibleMoves(g, fromFile, fromRank, possibleMoves)
+	return p.exaluatePossibleMoves(g, possibleMoves)
 }
 
-func (p *Piece) getQueenMoves(g *Game, fromFile rune, fromRank int) []Move {
-	moves, _ := p.getMovesInDirection(g, fromFile, fromRank, "both")
+func (p *Piece) getQueenMoves(g *Game) []Move {
+	moves, _ := p.getMovesInDirection(g, "both")
 	return moves
 }
 
-func (p *Piece) getRookMoves(g *Game, fromFile rune, fromRank int) []Move {
-	moves, _ := p.getMovesInDirection(g, fromFile, fromRank, "orthogonal")
+func (p *Piece) getRookMoves(g *Game) []Move {
+	moves, _ := p.getMovesInDirection(g, "orthogonal")
 	return moves
 }
 
-func (p *Piece) getBishopMoves(g *Game, fromFile rune, fromRank int) []Move {
-	moves, _ := p.getMovesInDirection(g, fromFile, fromRank, "diagonal")
+func (p *Piece) getBishopMoves(g *Game) []Move {
+	moves, _ := p.getMovesInDirection(g, "diagonal")
 	return moves
 }
 
-func (p *Piece) getKnightMoves(g *Game, fromFile rune, fromRank int) []Move {
+func (p *Piece) getKnightMoves(g *Game) []Move {
 	possibleMoves := [][]int{
 		{-1, -2},
 		{-2, -1},
@@ -253,11 +262,15 @@ func (p *Piece) getKnightMoves(g *Game, fromFile rune, fromRank int) []Move {
 		{2, 1},
 		{1, 2},
 	}
-	return p.exaluatePossibleMoves(g, fromFile, fromRank, possibleMoves)
+	return p.exaluatePossibleMoves(g, possibleMoves)
 }
 
 // Returns the possible moves for a piece moving orthogonally
-func (p *Piece) getMovesInDirection(g *Game, fromFile rune, fromRank int, moveType string) ([]Move, error) {
+func (p *Piece) getMovesInDirection(g *Game, moveType string) ([]Move, error) {
+	fromFile, fromRank, err := g.Board.GetLocation(p)
+	if err != nil {
+		return []Move{}, err
+	}
 	directions := map[string][]int{}
 	if moveType != "orthogonal" && moveType != "diagonal" && moveType != "both" {
 		return nil, fmt.Errorf("invalid move type")
@@ -308,8 +321,12 @@ func (p *Piece) getMovesInDirection(g *Game, fromFile rune, fromRank int, moveTy
 	return moves, nil
 }
 
-func (p *Piece) exaluatePossibleMoves(g *Game, fromFile rune, fromRank int, possibleMoves [][]int) []Move {
+func (p *Piece) exaluatePossibleMoves(g *Game, possibleMoves [][]int) []Move {
 	moves := []Move{}
+	fromFile, fromRank, err := g.Board.GetLocation(p)
+	if err != nil {
+		return []Move{}
+	}
 	for _, move := range possibleMoves {
 		toFile := fromFile + rune(move[0])
 		toRank := fromRank + move[1]

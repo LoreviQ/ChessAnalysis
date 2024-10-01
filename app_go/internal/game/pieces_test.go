@@ -128,23 +128,21 @@ func TestGetPawnMoves(t *testing.T) {
 
 	tests := []struct {
 		piece    *Piece
-		fromFile rune
-		fromRank int
 		expected []Move
 	}{
-		{pa2, 'a', 2, []Move{
+		{pa2, []Move{
 			{FromFile: 'a', FromRank: 2, ToFile: 'a', ToRank: 3},
 			{FromFile: 'a', FromRank: 2, ToFile: 'a', ToRank: 4},
 		}},
-		{pb5, 'b', 5, []Move{
+		{pb5, []Move{
 			{FromFile: 'b', FromRank: 5, ToFile: 'b', ToRank: 6},
 			{FromFile: 'b', FromRank: 5, Capture: 'x', ToFile: 'c', ToRank: 6},
 		}},
-		{pc3, 'c', 3, []Move{
+		{pc3, []Move{
 			{FromFile: 'c', FromRank: 3, ToFile: 'c', ToRank: 4},
 			{FromFile: 'c', FromRank: 3, Capture: 'x', ToFile: 'd', ToRank: 4},
 		}},
-		{pg7, 'g', 7, []Move{
+		{pg7, []Move{
 			{FromFile: 'g', FromRank: 7, ToFile: 'g', ToRank: 8, Promotion: 'Q'},
 			{FromFile: 'g', FromRank: 7, ToFile: 'g', ToRank: 8, Promotion: 'R'},
 			{FromFile: 'g', FromRank: 7, ToFile: 'g', ToRank: 8, Promotion: 'N'},
@@ -154,7 +152,7 @@ func TestGetPawnMoves(t *testing.T) {
 			{FromFile: 'g', FromRank: 7, Capture: 'x', ToFile: 'f', ToRank: 8, Promotion: 'N'},
 			{FromFile: 'g', FromRank: 7, Capture: 'x', ToFile: 'f', ToRank: 8, Promotion: 'B'},
 		}},
-		{ph7, 'h', 7, []Move{
+		{ph7, []Move{
 			{FromFile: 'h', FromRank: 7, ToFile: 'h', ToRank: 8, Promotion: 'Q'},
 			{FromFile: 'h', FromRank: 7, ToFile: 'h', ToRank: 8, Promotion: 'R'},
 			{FromFile: 'h', FromRank: 7, ToFile: 'h', ToRank: 8, Promotion: 'N'},
@@ -163,7 +161,7 @@ func TestGetPawnMoves(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		moves := test.piece.GetPossibleMoves(g, test.fromFile, test.fromRank)
+		moves := test.piece.GetPossibleMoves(g)
 		if len(moves) != len(test.expected) {
 			t.Errorf("Expected %d moves, got %d", len(test.expected), len(moves))
 		}
@@ -189,8 +187,6 @@ func TestGetRookMoves(t *testing.T) {
 	// Put rook at d4 so we can test all directions
 	b.MovePiece(Move{FromFile: 'a', FromRank: 1, ToFile: 'd', ToRank: 4})
 	rook, _ := b.GetPieceAtSquare('d', 4)
-	fromFile := 'd'
-	fromRank := 4
 	expected := []Move{
 		// Forward
 		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 5},
@@ -208,7 +204,7 @@ func TestGetRookMoves(t *testing.T) {
 		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 4},
 		{FromFile: 'd', FromRank: 4, ToFile: 'h', ToRank: 4},
 	}
-	moves := rook.GetPossibleMoves(g, fromFile, fromRank)
+	moves := rook.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
 		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
 	}
@@ -233,8 +229,6 @@ func TestGetBishopMoves(t *testing.T) {
 	// Put bishop at d4 so we can test all directions
 	b.MovePiece(Move{FromFile: 'c', FromRank: 1, ToFile: 'd', ToRank: 4})
 	bishop, _ := b.GetPieceAtSquare('d', 4)
-	fromFile := 'd'
-	fromRank := 4
 	expected := []Move{
 		// Forward left
 		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 5},
@@ -249,7 +243,7 @@ func TestGetBishopMoves(t *testing.T) {
 		// Backward right
 		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
 	}
-	moves := bishop.GetPossibleMoves(g, fromFile, fromRank)
+	moves := bishop.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
 		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
 	}
@@ -274,8 +268,6 @@ func TestGetQueenMoves(t *testing.T) {
 	// Put queen at d4 so we can test all directions
 	b.MovePiece(Move{FromFile: 'd', FromRank: 1, ToFile: 'd', ToRank: 4})
 	queen, _ := b.GetPieceAtSquare('d', 4)
-	fromFile := 'd'
-	fromRank := 4
 	expected := []Move{
 		// Forward
 		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 5},
@@ -305,7 +297,7 @@ func TestGetQueenMoves(t *testing.T) {
 		// Backward right
 		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
 	}
-	moves := queen.GetPossibleMoves(g, fromFile, fromRank)
+	moves := queen.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
 		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
 	}
@@ -332,10 +324,6 @@ func TestGetKnightMoves(t *testing.T) {
 	// put pawn to c3 to block one move
 	b.MovePiece(Move{FromFile: 'c', FromRank: 2, ToFile: 'c', ToRank: 3})
 	knight, _ := b.GetPieceAtSquare('d', 5)
-	pawn, _ := b.GetPieceAtSquare(99, 3)
-	print(pawn)
-	fromFile := 'd'
-	fromRank := 5
 	expected := []Move{
 		{FromFile: 'd', FromRank: 5, ToFile: 'b', ToRank: 4},
 		{FromFile: 'd', FromRank: 5, ToFile: 'b', ToRank: 6},
@@ -345,7 +333,7 @@ func TestGetKnightMoves(t *testing.T) {
 		{FromFile: 'd', FromRank: 5, ToFile: 'e', ToRank: 7, Capture: 'x'},
 		{FromFile: 'd', FromRank: 5, ToFile: 'c', ToRank: 7, Capture: 'x'},
 	}
-	moves := knight.GetPossibleMoves(g, fromFile, fromRank)
+	moves := knight.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
 		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
 	}
@@ -372,8 +360,6 @@ func TestGetKingMoves(t *testing.T) {
 	// Put black pawn at d4 to test capture
 	b.MovePiece(Move{FromFile: 'd', FromRank: 7, ToFile: 'd', ToRank: 4})
 	king, _ := b.GetPieceAtSquare('e', 3)
-	fromFile := 'e'
-	fromRank := 3
 	expected := []Move{
 		{FromFile: 'e', FromRank: 3, ToFile: 'd', ToRank: 4, Capture: 'x'},
 		{FromFile: 'e', FromRank: 3, ToFile: 'e', ToRank: 4},
@@ -381,7 +367,7 @@ func TestGetKingMoves(t *testing.T) {
 		{FromFile: 'e', FromRank: 3, ToFile: 'd', ToRank: 3},
 		{FromFile: 'e', FromRank: 3, ToFile: 'f', ToRank: 3},
 	}
-	moves := king.GetPossibleMoves(g, fromFile, fromRank)
+	moves := king.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
 		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
 	}

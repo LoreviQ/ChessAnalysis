@@ -50,10 +50,10 @@ func (g *Game) MovePiece(moveStr string) error {
 // Get all possible moves for the current player
 func (g *Game) GetPossibleMoves() map[Move]*Piece {
 	possibleMoves := map[Move]*Piece{}
-	for rank, row := range g.Board.Squares {
-		for file, p := range row {
+	for _, row := range g.Board.Squares {
+		for _, p := range row {
 			if p != nil && p.Color == g.Turn {
-				pieceMoves := p.GetPossibleMoves(g, intToFile(file), rank)
+				pieceMoves := p.GetPossibleMoves(g)
 				for _, move := range pieceMoves {
 					if possibleMoves[move] == nil {
 						possibleMoves[move] = p
