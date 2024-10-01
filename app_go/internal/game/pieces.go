@@ -88,46 +88,52 @@ func (p *piece) getDirection() int {
 }
 
 // Returns the possible moves for the piece
-func (p *piece) GetPossibleMoves(g *Game, file string, rank int) []Move {
+func (p *piece) GetPossibleMoves(g *Game, fromFile string, fromRank int) []Move {
+	if !p.active {
+		return []Move{}
+	}
 	switch p.pType {
 	case Pawn:
-		return p.getPawnMoves(g, file, rank)
+		return p.getPawnMoves(g, fromFile, fromRank)
 	case King:
-		return p.getKingMoves(g, file, rank)
+		return p.getKingMoves(g, fromFile, fromRank)
 	case Queen:
-		return p.getQueenMoves(g, file, rank)
+		return p.getQueenMoves(g, fromFile, fromRank)
 	case Rook:
-		return p.getRookMoves(g, file, rank)
+		return p.getRookMoves(g, fromFile, fromRank)
 	case Bishop:
-		return p.getBishopMoves(g, file, rank)
+		return p.getBishopMoves(g, fromFile, fromRank)
 	case Knight:
-		return p.getKnightMoves(g, file, rank)
+		return p.getKnightMoves(g, fromFile, fromRank)
 	default:
 		return []Move{}
 	}
 }
 
 // Returns the possible moves for a pawn
-func (p *piece) getPawnMoves(g *Game, file string, rank int) []Move {
+func (p *piece) getPawnMoves(g *Game, fromFile string, fromRank int) []Move {
+	// Forward one square
+	toRank := fromRank + p.getDirection()
+	print(fromFile, toRank)
 	return []Move{}
 }
 
-func (p *piece) getKingMoves(g *Game, file string, rank int) []Move {
+func (p *piece) getKingMoves(g *Game, fromFile string, fromRank int) []Move {
 	return []Move{}
 }
 
-func (p *piece) getQueenMoves(g *Game, file string, rank int) []Move {
+func (p *piece) getQueenMoves(g *Game, fromFile string, fromRank int) []Move {
 	return []Move{}
 }
 
-func (p *piece) getRookMoves(g *Game, file string, rank int) []Move {
+func (p *piece) getRookMoves(g *Game, fromFile string, fromRank int) []Move {
 	return []Move{}
 }
 
-func (p *piece) getBishopMoves(g *Game, file string, rank int) []Move {
+func (p *piece) getBishopMoves(g *Game, fromFile string, fromRank int) []Move {
 	return []Move{}
 }
 
-func (p *piece) getKnightMoves(g *Game, file string, rank int) []Move {
+func (p *piece) getKnightMoves(g *Game, fromFile string, fromRank int) []Move {
 	return []Move{}
 }

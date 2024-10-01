@@ -9,6 +9,8 @@ var (
 	ErrNoPieceAtSquare = errors.New("no piece at square")
 	ErrSquareOccupied  = errors.New("square is occupied")
 	ErrPieceNotPawn    = errors.New("piece is not a pawn")
+	ErrInvalidRank     = errors.New("invalid rank")
+	ErrInvalidFile     = errors.New("invalid file")
 )
 
 type Board struct {
@@ -19,7 +21,6 @@ type Board struct {
 // NewBoard creates a new board with the initial game state
 func NewBoard() Board {
 	b := Board{}
-
 	b.setup_game()
 	return b
 }
@@ -76,18 +77,30 @@ func (b *Board) PrintBoard() string {
 }
 
 // Get the piece at a given square
-func (b *Board) GetPieceAtSquare(file string, rank int) *piece {
-	return b.Squares[rank-1][fileToInt(file)]
+func (b *Board) GetPieceAtSquare(file string, rank int) (*piece, error) {
+	if rank < 1 || rank > 8 {
+		return nil, ErrInvalidRank
+	}
+	if fileToInt(file) < 0 || fileToInt(file) > 7 {
+		return nil, ErrInvalidFile
+	}
+	return b.Squares[rank-1][fileToInt(file)], nil
 }
 
 // Move a piece from one square to another
 // Doesn't check if the move is valid only if the square is occupied
 func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank int) error {
-	fromPiece := b.GetPieceAtSquare(fromFile, fromRank)
+	fromPiece, err := b.GetPieceAtSquare(fromFile, fromRank)
+	if err != nil {
+		return err
+	}
 	if fromPiece == nil {
 		return ErrNoPieceAtSquare
 	}
-	toPiece := b.GetPieceAtSquare(toFile, toRank)
+	toPiece, err := b.GetPieceAtSquare(toFile, toRank)
+	if err != nil {
+		return err
+	}
 	if toPiece != nil {
 		return ErrSquareOccupied
 	}
@@ -98,7 +111,10 @@ func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank i
 
 // Capture a piece from a square
 func (b *Board) CapturePiece(file string, rank int) error {
-	p := b.GetPieceAtSquare(file, rank)
+	p, err := b.GetPieceAtSquare(file, rank)
+	if err != nil {
+		return err
+	}
 	if p == nil {
 		return ErrNoPieceAtSquare
 	}
@@ -110,7 +126,10 @@ func (b *Board) CapturePiece(file string, rank int) error {
 
 // Promote a pawn to another piece type
 func (b *Board) PromotePawn(file string, rank int, pType pieceType) error {
-	p := b.GetPieceAtSquare(file, rank)
+	p, err := b.GetPieceAtSquare(file, rank)
+	if err != nil {
+		return err
+	}
 	if p == nil {
 		return ErrNoPieceAtSquare
 	}

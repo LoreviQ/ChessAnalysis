@@ -30,17 +30,23 @@ func TestGetPieceAtSquare(t *testing.T) {
 		file  string
 		pType pieceType
 		color string
+		err   error
 	}{
-		{1, "a", Rook, "white"},
-		{8, "e", King, "black"},
-		{2, "a", Pawn, "white"},
-		{7, "a", Pawn, "black"},
+		{1, "a", Rook, "white", nil},
+		{8, "e", King, "black", nil},
+		{2, "a", Pawn, "white", nil},
+		{7, "a", Pawn, "black", nil},
+		{12, "a", 0, "", ErrInvalidRank},
+		{1, "i", 0, "", ErrInvalidFile},
 	}
 
 	for _, tt := range tests {
-		p := b.GetPieceAtSquare(tt.file, tt.rank)
-		if p.pType != tt.pType || p.color != tt.color {
-			t.Errorf("Expected %s %v at %s%d, got %v", tt.color, tt.pType, tt.file, tt.rank+1, p)
+		p, err := b.GetPieceAtSquare(tt.file, tt.rank)
+		if err != tt.err {
+			t.Errorf("Expected error %v, got %v", tt.err, err)
+		}
+		if p != nil && (p.pType != tt.pType || p.color != tt.color) {
+			t.Errorf("Expected piece %v, got %v", tt, p)
 		}
 	}
 }
