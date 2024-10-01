@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -70,10 +69,10 @@ func TestMovePiece(t *testing.T) {
 		{"b", 1, "c", 3, nil},
 		{"g", 8, "f", 6, nil},
 		{"f", 2, "f", 4, nil},
-		{"a", 1, "a", 2, fmt.Errorf("square is occupied")},
-		{"d", 1, "e", 8, fmt.Errorf("square is occupied")},
-		{"g", 3, "b", 1, fmt.Errorf("no piece at square")},
-		{"c", 4, "d", 5, fmt.Errorf("no piece at square")},
+		{"a", 1, "a", 2, ErrSquareOccupied},
+		{"d", 1, "e", 8, ErrSquareOccupied},
+		{"g", 3, "b", 1, ErrNoPieceAtSquare},
+		{"c", 4, "d", 5, ErrNoPieceAtSquare},
 	}
 
 	for _, tt := range tests {
@@ -103,8 +102,8 @@ func TestMovePieceCapture(t *testing.T) {
 	}{
 		{"c", 1, nil},
 		{"f", 2, nil},
-		{"f", 6, fmt.Errorf("no piece at square")},
-		{"c", 3, fmt.Errorf("no piece at square")},
+		{"f", 6, ErrNoPieceAtSquare},
+		{"c", 3, ErrNoPieceAtSquare},
 	}
 
 	for _, tt := range tests {
@@ -126,6 +125,31 @@ func TestMovePieceCapture(t *testing.T) {
 	for i, p := range takenByBlack {
 		if p.pType != expectedByBlack[i] {
 			t.Errorf("Expected %v, got %v", expectedByBlack, takenByBlack)
+		}
+	}
+}
+
+func TestPromotePawn(t *testing.T) {
+	b := NewBoard()
+	tests := []struct {
+		file  string
+		rank  int
+		pType pieceType
+		err   error
+	}{
+		{"e", 2, Queen, nil},
+		{"a", 7, Rook, nil},
+		{"e", 4, Queen, ErrNoPieceAtSquare},
+		{"h", 1, Knight, ErrPieceNotPawn},
+	}
+
+	for _, tt := range tests {
+		err := b.PromotePawn(tt.file, tt.rank, tt.pType)
+		if err != nil && tt.err == nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if err == nil && tt.err != nil {
+			t.Errorf("Expected error: %v, got nil", tt.err)
 		}
 	}
 }

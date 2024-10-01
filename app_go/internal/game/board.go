@@ -1,6 +1,15 @@
 package game
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	ErrNoPieceAtSquare = errors.New("no piece at square")
+	ErrSquareOccupied  = errors.New("square is occupied")
+	ErrPieceNotPawn    = errors.New("piece is not a pawn")
+)
 
 type Board struct {
 	Squares  [8][8]*piece
@@ -87,11 +96,11 @@ func (b *Board) GetPieceAtSquare(file string, rank int) *piece {
 func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank int) error {
 	fromPiece := b.GetPieceAtSquare(fromFile, fromRank)
 	if fromPiece == nil {
-		return fmt.Errorf("no piece at square")
+		return ErrNoPieceAtSquare
 	}
 	toPiece := b.GetPieceAtSquare(toFile, toRank)
 	if toPiece != nil {
-		return fmt.Errorf("square is occupied")
+		return ErrSquareOccupied
 	}
 	b.Squares[toRank-1][b.files[toFile]] = fromPiece
 	b.Squares[fromRank-1][b.files[fromFile]] = nil
@@ -102,7 +111,7 @@ func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank i
 func (b *Board) CapturePiece(file string, rank int) error {
 	p := b.GetPieceAtSquare(file, rank)
 	if p == nil {
-		return fmt.Errorf("no piece at square")
+		return ErrNoPieceAtSquare
 	}
 	p.active = false
 	b.captured = append(b.captured, p)
@@ -113,8 +122,11 @@ func (b *Board) CapturePiece(file string, rank int) error {
 // Promote a pawn to another piece type
 func (b *Board) PromotePawn(file string, rank int, pType pieceType) error {
 	p := b.GetPieceAtSquare(file, rank)
-	if p == nil || p.pType != Pawn {
-		return fmt.Errorf("no pawn at square")
+	if p == nil {
+		return ErrNoPieceAtSquare
+	}
+	if p.pType != Pawn {
+		return ErrPieceNotPawn
 	}
 	p.pType = pType
 	return nil
