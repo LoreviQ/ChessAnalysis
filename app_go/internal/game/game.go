@@ -2,7 +2,6 @@ package game
 
 import (
 	"regexp"
-	"strconv"
 )
 
 type Game struct {
@@ -13,17 +12,18 @@ type Game struct {
 }
 
 type Move struct {
-	Piece       string
-	FromFile    string
+	Piece       rune
+	FromFile    rune
 	FromRank    int
-	Capture     string
-	ToFile      string
+	Capture     rune
+	ToFile      rune
 	ToRank      int
-	Promotion   string
-	CheckStatus string
+	Promotion   rune
+	CheckStatus rune
 	Castle      string
 }
 
+// Create a new game
 func NewGame() Game {
 	return Game{
 		Board:       NewBoard(),
@@ -60,6 +60,7 @@ func (g *Game) GetPossibleMoves() []Move {
 	return possibleMoves
 }
 
+// Parse a move string in algebraic notation
 func parseRegex(moveStr string) (Move, error) {
 	// Regex to parse move string
 	pattern := `^([NBRQK])?([a-h])?([1-8])?(x)?([a-h])([1-8])(=[NBRQK])?(\+|#)?$|^O-O(-O)?$`
@@ -77,15 +78,26 @@ func parseRegex(moveStr string) (Move, error) {
 	} else if matches[0] == "O-O-O" {
 		move.Castle = "long"
 	} else {
-		move.Piece = matches[1]
-		move.FromFile = matches[2]
-		move.FromRank, _ = strconv.Atoi(matches[3])
-		move.Capture = matches[4]
-		move.ToFile = matches[5]
-		move.ToRank, _ = strconv.Atoi(matches[6])
-		move.Promotion = matches[7]
-		move.CheckStatus = matches[8]
+		if matches[1] != "" {
+			move.Piece = rune(matches[1][0])
+		}
+		if matches[2] != "" {
+			move.FromFile = rune(matches[2][0])
+		}
+		if matches[3] != "" {
+			move.FromRank = int(matches[3][0] - '0')
+		}
+		if matches[4] != "" {
+			move.Capture = rune(matches[4][0])
+		}
+		move.ToFile = rune(matches[5][0])
+		move.ToRank = int(matches[6][0] - '0')
+		if matches[7] != "" {
+			move.Promotion = rune(matches[7][1])
+		}
+		if matches[8] != "" {
+			move.CheckStatus = rune(matches[8][0])
+		}
 	}
-
 	return move, nil
 }

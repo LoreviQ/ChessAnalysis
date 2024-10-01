@@ -13,14 +13,14 @@ func TestParseRegex(t *testing.T) {
 		{
 			input: "Rgxe4",
 			expected: Move{
-				Piece:       "R",
-				FromFile:    "g",
+				Piece:       'R',
+				FromFile:    'g',
 				FromRank:    0,
-				Capture:     "x",
-				ToFile:      "e",
+				Capture:     'x',
+				ToFile:      'e',
 				ToRank:      4,
-				Promotion:   "",
-				CheckStatus: "",
+				Promotion:   0,
+				CheckStatus: 0,
 				Castle:      "",
 			},
 		},
@@ -33,33 +33,33 @@ func TestParseRegex(t *testing.T) {
 		{
 			input: "e4",
 			expected: Move{
-				ToFile: "e",
+				ToFile: 'e',
 				ToRank: 4,
 			},
 		},
 		{
 			input: "Nf3",
 			expected: Move{
-				Piece:  "N",
-				ToFile: "f",
+				Piece:  'N',
+				ToFile: 'f',
 				ToRank: 3,
 			},
 		},
 		{
 			input: "exd5",
 			expected: Move{
-				FromFile: "e",
-				Capture:  "x",
-				ToFile:   "d",
+				FromFile: 'e',
+				Capture:  'x',
+				ToFile:   'd',
 				ToRank:   5,
 			},
 		},
 		{
 			input: "e8=Q",
 			expected: Move{
-				ToFile:    "e",
+				ToFile:    'e',
 				ToRank:    8,
-				Promotion: "=Q",
+				Promotion: 'Q',
 			},
 		},
 		{

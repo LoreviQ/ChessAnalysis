@@ -65,7 +65,7 @@ func (b *Board) PrintBoard() string {
 			p := b.Squares[i][j]
 			if p != nil {
 				printable, _ := p.getPrintable()
-				board += fmt.Sprintf("%s ", printable)
+				board += fmt.Sprintf("%c ", printable)
 			} else {
 				board += "  "
 			}
@@ -77,19 +77,19 @@ func (b *Board) PrintBoard() string {
 }
 
 // Get the piece at a given square
-func (b *Board) GetPieceAtSquare(file string, rank int) (*piece, error) {
+func (b *Board) GetPieceAtSquare(file rune, rank int) (*piece, error) {
 	if rank < 1 || rank > 8 {
 		return nil, ErrInvalidRank
 	}
-	if fileToInt(file) < 0 || fileToInt(file) > 7 {
+	if fileToInt(file) < 1 || fileToInt(file) > 8 {
 		return nil, ErrInvalidFile
 	}
-	return b.Squares[rank-1][fileToInt(file)], nil
+	return b.Squares[rank-1][fileToInt(file)-1], nil
 }
 
 // Move a piece from one square to another
 // Doesn't check if the move is valid only if the square is occupied
-func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank int) error {
+func (b *Board) MovePiece(fromFile rune, fromRank int, toFile rune, toRank int) error {
 	fromPiece, err := b.GetPieceAtSquare(fromFile, fromRank)
 	if err != nil {
 		return err
@@ -104,13 +104,13 @@ func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank i
 	if toPiece != nil {
 		return ErrSquareOccupied
 	}
-	b.Squares[toRank-1][fileToInt(toFile)] = fromPiece
-	b.Squares[fromRank-1][fileToInt(fromFile)] = nil
+	b.Squares[toRank-1][fileToInt(toFile)-1] = fromPiece
+	b.Squares[fromRank-1][fileToInt(fromFile-1)] = nil
 	return nil
 }
 
 // Capture a piece from a square
-func (b *Board) CapturePiece(file string, rank int) error {
+func (b *Board) CapturePiece(file rune, rank int) error {
 	p, err := b.GetPieceAtSquare(file, rank)
 	if err != nil {
 		return err
@@ -125,7 +125,7 @@ func (b *Board) CapturePiece(file string, rank int) error {
 }
 
 // Promote a pawn to another piece type
-func (b *Board) PromotePawn(file string, rank int, pType pieceType) error {
+func (b *Board) PromotePawn(file rune, rank int, pType pieceType) error {
 	p, err := b.GetPieceAtSquare(file, rank)
 	if err != nil {
 		return err
@@ -153,11 +153,11 @@ func (b *Board) GetCapturedByColour(color string) []*piece {
 }
 
 // converts 1-8 to a-h
-func intToFile(i int) string {
-	return fmt.Sprintf("%c", i+96)
+func intToFile(i int) rune {
+	return rune(i+'a') - 1
 }
 
-// converts a-h to 0-7
-func fileToInt(r string) int {
-	return int(r[0] - 97)
+// converts a-h to 1-8
+func fileToInt(r rune) int {
+	return int(r-'a') + 1
 }

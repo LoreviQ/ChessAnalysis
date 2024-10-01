@@ -26,18 +26,19 @@ func TestGetPieceAtSquare(t *testing.T) {
 	b := NewBoard()
 
 	tests := []struct {
+		file  rune
 		rank  int
-		file  string
 		pType pieceType
 		color string
 		err   error
 	}{
-		{1, "a", Rook, "white", nil},
-		{8, "e", King, "black", nil},
-		{2, "a", Pawn, "white", nil},
-		{7, "a", Pawn, "black", nil},
-		{12, "a", 0, "", ErrInvalidRank},
-		{1, "i", 0, "", ErrInvalidFile},
+		{'a', 1, Rook, "white", nil},
+		{'e', 8, King, "black", nil},
+		{'e', 8, King, "black", nil},
+		{'a', 2, Pawn, "white", nil},
+		{'a', 7, Pawn, "black", nil},
+		{'a', 12, 0, "", ErrInvalidRank},
+		{'i', 1, 0, "", ErrInvalidFile},
 	}
 
 	for _, tt := range tests {
@@ -73,21 +74,21 @@ func TestPrintBoard(t *testing.T) {
 func TestMovePiece(t *testing.T) {
 	b := NewBoard()
 	tests := []struct {
-		fromFile string
+		fromFile rune
 		fromRank int
-		toFile   string
+		toFile   rune
 		toRank   int
 		err      error
 	}{
-		{"e", 2, "e", 4, nil},
-		{"e", 7, "e", 5, nil},
-		{"b", 1, "c", 3, nil},
-		{"g", 8, "f", 6, nil},
-		{"f", 2, "f", 4, nil},
-		{"a", 1, "a", 2, ErrSquareOccupied},
-		{"d", 1, "e", 8, ErrSquareOccupied},
-		{"g", 3, "b", 1, ErrNoPieceAtSquare},
-		{"c", 4, "d", 5, ErrNoPieceAtSquare},
+		{'e', 2, 'e', 4, nil},
+		{'e', 7, 'e', 5, nil},
+		{'b', 1, 'c', 3, nil},
+		{'g', 8, 'f', 6, nil},
+		{'f', 2, 'f', 4, nil},
+		{'a', 1, 'a', 2, ErrSquareOccupied},
+		{'d', 1, 'e', 8, ErrSquareOccupied},
+		{'g', 3, 'b', 1, ErrNoPieceAtSquare},
+		{'c', 4, 'd', 5, ErrNoPieceAtSquare},
 	}
 
 	for _, tt := range tests {
@@ -120,14 +121,14 @@ func TestMovePiece(t *testing.T) {
 func TestMovePieceCapture(t *testing.T) {
 	b := NewBoard()
 	tests := []struct {
-		fromFile string
+		fromFile rune
 		fromRank int
 		err      error
 	}{
-		{"c", 1, nil},
-		{"f", 2, nil},
-		{"f", 6, ErrNoPieceAtSquare},
-		{"c", 3, ErrNoPieceAtSquare},
+		{'c', 1, nil},
+		{'f', 2, nil},
+		{'f', 6, ErrNoPieceAtSquare},
+		{'c', 3, ErrNoPieceAtSquare},
 	}
 
 	for _, tt := range tests {
@@ -156,15 +157,15 @@ func TestMovePieceCapture(t *testing.T) {
 func TestPromotePawn(t *testing.T) {
 	b := NewBoard()
 	tests := []struct {
-		file  string
+		file  rune
 		rank  int
 		pType pieceType
 		err   error
 	}{
-		{"e", 2, Queen, nil},
-		{"a", 7, Rook, nil},
-		{"e", 4, Queen, ErrNoPieceAtSquare},
-		{"h", 1, Knight, ErrPieceNotPawn},
+		{'e', 2, Queen, nil},
+		{'a', 7, Rook, nil},
+		{'e', 4, Queen, ErrNoPieceAtSquare},
+		{'h', 1, Knight, ErrPieceNotPawn},
 	}
 
 	for _, tt := range tests {
