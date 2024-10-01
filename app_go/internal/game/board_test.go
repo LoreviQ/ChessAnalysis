@@ -49,7 +49,16 @@ func TestPrintBoard(t *testing.T) {
 	b := NewBoard()
 	boardStr := b.PrintBoard()
 
-	expected := "8 ♖♘♗♕♔♗♘♖\n7 ♙♙♙♙♙♙♙♙\n6 \u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n5 \u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n4 \u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n3 \u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n2 ♟♟♟♟♟♟♟♟\n1 ♜♞♝♛♚♝♞♜\n  a b c d e f g h\n"
+	expected := `8 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖ 
+7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
+6                 
+5                 
+4                 
+3                 
+2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
+1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
+  a b c d e f g h
+`
 	if boardStr != expected {
 		t.Errorf("Expected board string:\n%s\nGot:\n%s", expected, boardStr)
 	}
@@ -87,7 +96,16 @@ func TestMovePiece(t *testing.T) {
 
 	// Check board after moves
 	board := b.PrintBoard()
-	expected := "8 ♖♘♗♕♔♗\u3000♖\n7 ♙♙♙♙\u3000♙♙♙\n6 \u3000\u3000\u3000\u3000\u3000♘\u3000\u3000\n5 \u3000\u3000\u3000\u3000♙\u3000\u3000\u3000\n4 \u3000\u3000\u3000\u3000♟♟\u3000\u3000\n3 \u3000\u3000♞\u3000\u3000\u3000\u3000\u3000\n2 ♟♟♟♟\u3000\u3000♟♟\n1 ♜\u3000♝♛♚♝♞♜\n  a b c d e f g h\n"
+	expected := `8 ♖ ♘ ♗ ♕ ♔ ♗   ♖ 
+7 ♙ ♙ ♙ ♙   ♙ ♙ ♙ 
+6           ♘     
+5         ♙       
+4         ♟ ♟     
+3     ♞           
+2 ♟ ♟ ♟ ♟     ♟ ♟ 
+1 ♜   ♝ ♛ ♚ ♝ ♞ ♜ 
+  a b c d e f g h
+`
 	if board != expected {
 		t.Errorf("Expected board string:\n%s\nGot:\n%s", expected, board)
 	}

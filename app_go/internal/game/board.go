@@ -14,23 +14,12 @@ var (
 type Board struct {
 	Squares  [8][8]*piece
 	captured []*piece
-	files    map[string]int
 }
 
 // NewBoard creates a new board with the initial game state
 func NewBoard() Board {
-	b := Board{
-		files: map[string]int{
-			"a": 0,
-			"b": 1,
-			"c": 2,
-			"d": 3,
-			"e": 4,
-			"f": 5,
-			"g": 6,
-			"h": 7,
-		},
-	}
+	b := Board{}
+
 	b.setup_game()
 	return b
 }
@@ -75,9 +64,9 @@ func (b *Board) PrintBoard() string {
 			p := b.Squares[i][j]
 			if p != nil {
 				printable, _ := p.getPrintable()
-				board += printable
+				board += fmt.Sprintf("%s ", printable)
 			} else {
-				board += "\u3000"
+				board += "  "
 			}
 		}
 		board += "\n"
@@ -88,7 +77,7 @@ func (b *Board) PrintBoard() string {
 
 // Get the piece at a given square
 func (b *Board) GetPieceAtSquare(file string, rank int) *piece {
-	return b.Squares[rank-1][b.files[file]]
+	return b.Squares[rank-1][fileToInt(file)]
 }
 
 // Move a piece from one square to another
@@ -102,8 +91,8 @@ func (b *Board) MovePiece(fromFile string, fromRank int, toFile string, toRank i
 	if toPiece != nil {
 		return ErrSquareOccupied
 	}
-	b.Squares[toRank-1][b.files[toFile]] = fromPiece
-	b.Squares[fromRank-1][b.files[fromFile]] = nil
+	b.Squares[toRank-1][fileToInt(toFile)] = fromPiece
+	b.Squares[fromRank-1][fileToInt(fromFile)] = nil
 	return nil
 }
 
@@ -115,7 +104,7 @@ func (b *Board) CapturePiece(file string, rank int) error {
 	}
 	p.active = false
 	b.captured = append(b.captured, p)
-	b.Squares[rank-1][b.files[file]] = nil
+	b.Squares[rank-1][fileToInt(file)] = nil
 	return nil
 }
 
@@ -142,4 +131,14 @@ func (b *Board) GetCapturedByColour(color string) []*piece {
 		}
 	}
 	return CapturedByColour
+}
+
+// converts 1-8 to a-h
+func intToFile(i int) string {
+	return fmt.Sprintf("%c", i+96)
+}
+
+// converts a-h to 0-7
+func fileToInt(r string) int {
+	return int(r[0] - 97)
 }

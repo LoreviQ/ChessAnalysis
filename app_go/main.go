@@ -24,12 +24,5 @@ func main() {
 		b.MovePiece(move.fromFile, move.fromRank, move.toFile, move.toRank)
 	}
 	board := b.PrintBoard()
-	expectedBoard := "8 ♖♘♗♕♔♗\u3000♖\n7 ♙♙♙♙\u3000♙♙♙\n6 \u3000\u3000\u3000\u3000\u3000♘\u3000\u3000\n5 \u3000\u3000\u3000\u3000♙\u3000\u3000\u3000\n4 \u3000\u3000\u3000\u3000♟♟\u3000\u3000\n3 \u3000\u3000♞\u3000\u3000\u3000\u3000\u3000\n2 ♟♟♟♟\u3000\u3000♟♟\n1 ♜\u3000♝♛♚♝♞♜\n  a b c d e f g h\n"
-	for i := range board {
-		boardRune := board[i]
-		expectedRune := expectedBoard[i]
-		if boardRune != expectedRune {
-			fmt.Printf("Expected %c, got %c\n", expectedRune, boardRune)
-		}
-	}
+	fmt.Println(board)
 }
