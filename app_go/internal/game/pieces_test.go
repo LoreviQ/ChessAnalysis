@@ -1,4 +1,4 @@
-package chessGame
+package game
 
 import (
 	"testing"
@@ -16,7 +16,6 @@ func TestGetSymbol(t *testing.T) {
 		{piece{pType: Bishop}, "B", false},
 		{piece{pType: Knight}, "N", false},
 		{piece{pType: Pawn}, "", false},
-		{piece{pType: NoPieceType}, "", true},
 	}
 
 	for _, test := range tests {
@@ -48,7 +47,6 @@ func TestGetPrintable(t *testing.T) {
 		{piece{pType: Bishop, color: "black"}, "♗", false},
 		{piece{pType: Knight, color: "white"}, "♞", false},
 		{piece{pType: Knight, color: "black"}, "♘", false},
-		{piece{pType: NoPieceType, color: "white"}, "", true},
 	}
 
 	for _, test := range tests {

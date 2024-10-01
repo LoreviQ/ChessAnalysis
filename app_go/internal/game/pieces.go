@@ -1,4 +1,4 @@
-package chessGame
+package game
 
 import "fmt"
 
@@ -6,15 +6,12 @@ type piece struct {
 	pType  pieceType
 	color  string
 	active bool
-	rank   int
-	file   string
 }
 
 type pieceType int8
 
 const (
-	NoPieceType pieceType = iota
-	King
+	King = iota
 	Queen
 	Rook
 	Bishop
@@ -37,7 +34,7 @@ func (p *piece) getSymbol() (string, error) {
 	case Pawn:
 		return "", nil
 	default:
-		return "", fmt.Errorf("Invalid piece type")
+		return "", fmt.Errorf("invalid piece type")
 	}
 }
 
@@ -74,6 +71,6 @@ func (p *piece) getPrintable() (string, error) {
 		}
 		return "♘", nil
 	default:
-		return "", fmt.Errorf("Invalid piece type")
+		return "", fmt.Errorf("invalid piece type")
 	}
 }
