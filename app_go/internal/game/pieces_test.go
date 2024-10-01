@@ -363,3 +363,39 @@ func TestGetKnightMoves(t *testing.T) {
 		}
 	}
 }
+
+func TestGetKingMoves(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	// Put king at e3 so we can test all directions
+	b.MovePiece(Move{FromFile: 'e', FromRank: 1, ToFile: 'e', ToRank: 3})
+	// Put black pawn at d4 to test capture
+	b.MovePiece(Move{FromFile: 'd', FromRank: 7, ToFile: 'd', ToRank: 4})
+	king, _ := b.GetPieceAtSquare('e', 3)
+	fromFile := 'e'
+	fromRank := 3
+	expected := []Move{
+		{FromFile: 'e', FromRank: 3, ToFile: 'd', ToRank: 4, Capture: 'x'},
+		{FromFile: 'e', FromRank: 3, ToFile: 'e', ToRank: 4},
+		{FromFile: 'e', FromRank: 3, ToFile: 'f', ToRank: 4},
+		{FromFile: 'e', FromRank: 3, ToFile: 'd', ToRank: 3},
+		{FromFile: 'e', FromRank: 3, ToFile: 'f', ToRank: 3},
+	}
+	moves := king.GetPossibleMoves(g, fromFile, fromRank)
+	if len(moves) != len(expected) {
+		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
+	}
+	// check if move is in expected mvoes
+	for _, expectedMove := range expected {
+		found := false
+		for _, move := range moves {
+			if expectedMove == move {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %v not found", expectedMove)
+		}
+	}
+}
