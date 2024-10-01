@@ -226,3 +226,100 @@ func TestGetRookMoves(t *testing.T) {
 		}
 	}
 }
+
+func TestGetBishopMoves(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	// Put bishop at d4 so we can test all directions
+	b.MovePiece(Move{FromFile: 'c', FromRank: 1, ToFile: 'd', ToRank: 4})
+	bishop, _ := b.GetPieceAtSquare('d', 4)
+	fromFile := 'd'
+	fromRank := 4
+	expected := []Move{
+		// Forward left
+		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 5},
+		{FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 6},
+		{FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 7, Capture: 'x'},
+		// Forward right
+		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 5},
+		{FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 6},
+		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 7, Capture: 'x'},
+		// Backward left
+		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 3},
+		// Backward right
+		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
+	}
+	moves := bishop.GetPossibleMoves(&g, fromFile, fromRank)
+	if len(moves) != len(expected) {
+		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
+	}
+	// check if move is in expected mvoes
+	for _, expectedMove := range expected {
+		found := false
+		for _, move := range moves {
+			if expectedMove == move {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %v not found", expectedMove)
+		}
+	}
+}
+
+func TestGetQueenMoves(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	// Put queen at d4 so we can test all directions
+	b.MovePiece(Move{FromFile: 'd', FromRank: 1, ToFile: 'd', ToRank: 4})
+	queen, _ := b.GetPieceAtSquare('d', 4)
+	fromFile := 'd'
+	fromRank := 4
+	expected := []Move{
+		// Forward
+		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 5},
+		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 6},
+		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 7, Capture: 'x'},
+		// Backward
+		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 3},
+		// Left
+		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 4},
+		// Right
+		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'h', ToRank: 4},
+		// Forward left
+		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 5},
+		{FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 6},
+		{FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 7, Capture: 'x'},
+		// Forward right
+		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 5},
+		{FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 6},
+		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 7, Capture: 'x'},
+		// Backward left
+		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 3},
+		// Backward right
+		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
+	}
+	moves := queen.GetPossibleMoves(&g, fromFile, fromRank)
+	if len(moves) != len(expected) {
+		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
+	}
+	// check if move is in expected mvoes
+	for _, expectedMove := range expected {
+		found := false
+		for _, move := range moves {
+			if expectedMove == move {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %v not found", expectedMove)
+		}
+	}
+}
