@@ -11,18 +11,6 @@ type Game struct {
 	CanCastle   map[string]map[string]bool
 }
 
-type Move struct {
-	Piece       rune
-	FromFile    rune
-	FromRank    int
-	Capture     rune
-	ToFile      rune
-	ToRank      int
-	Promotion   rune
-	CheckStatus rune
-	Castle      string
-}
-
 // Create a new game
 func NewGame() *Game {
 	return &Game{
@@ -48,20 +36,12 @@ func (g *Game) MovePiece(moveStr string) error {
 }
 
 // Get all possible moves for the current player
-func (g *Game) GetPossibleMoves() map[Move]*Piece {
-	possibleMoves := map[Move]*Piece{}
+func (g *Game) GetPossibleMoves() []Move {
+	possibleMoves := []Move{}
 	for _, row := range g.Board.Squares {
 		for _, p := range row {
 			if p != nil && p.Color == g.Turn {
-				pieceMoves := p.GetPossibleMoves(g)
-				for _, move := range pieceMoves {
-					if possibleMoves[move] == nil {
-						possibleMoves[move] = p
-					} else {
-						possibleMoves[move] = nil
-						handleDuplicateMove(move)
-					}
-				}
+				possibleMoves = append(possibleMoves, p.GetPossibleMoves(g)...)
 			}
 		}
 	}
