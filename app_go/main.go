@@ -8,6 +8,8 @@ import (
 
 func main() {
 	b := game.NewBoard()
-	board := b.PrintBoard()
-	fmt.Print(board)
+	p1 := b.GetPieceAtSquare("e", 2)
+	p2 := b.Squares[1][4]
+	fmt.Print(p1)
+	fmt.Print(p2)
 }
