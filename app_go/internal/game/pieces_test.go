@@ -182,3 +182,47 @@ func TestGetPawnMoves(t *testing.T) {
 		}
 	}
 }
+
+func TestGetRookMoves(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	// Put rook at d4 so we can test all directions
+	b.MovePiece(Move{FromFile: 'a', FromRank: 1, ToFile: 'd', ToRank: 4})
+	rook, _ := b.GetPieceAtSquare('d', 4)
+	fromFile := 'd'
+	fromRank := 4
+	expected := []Move{
+		// Forward
+		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 5},
+		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 6},
+		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 7, Capture: 'x'},
+		// Backward
+		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 3},
+		// Left
+		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 4},
+		// Right
+		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 4},
+		{FromFile: 'd', FromRank: 4, ToFile: 'h', ToRank: 4},
+	}
+	moves := rook.GetPossibleMoves(&g, fromFile, fromRank)
+	if len(moves) != len(expected) {
+		t.Errorf("Expected %d moves, got %d", len(expected), len(moves))
+	}
+	// check if move is in expected mvoes
+	for _, expectedMove := range expected {
+		found := false
+		for _, move := range moves {
+			if expectedMove == move {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %v not found", expectedMove)
+		}
+	}
+}
