@@ -16,8 +16,8 @@ type serverCfg struct {
 	db  *database.Database
 }
 
-func NewServer() (*http.Server, serverCfg) {
-	cfg := setupCfg()
+func NewServer(test bool) (*http.Server, serverCfg) {
+	cfg := setupCfg(test)
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /readiness", cfg.getReadiness)
 	mux.HandleFunc("POST /moves", cfg.postMoves)
@@ -28,7 +28,7 @@ func NewServer() (*http.Server, serverCfg) {
 
 }
 
-func setupCfg() *serverCfg {
+func setupCfg(test bool) *serverCfg {
 	err := godotenv.Load()
 	if err != nil {
 		log.Printf("Assuming default configuration - .env unreadable: %v", err)
@@ -37,7 +37,7 @@ func setupCfg() *serverCfg {
 	if port == "" {
 		port = "5000" // Default port
 	}
-	db, err := database.NewConnection(false)
+	db, err := database.NewConnection(test)
 	if err != nil {
 		log.Fatalf("Unable to connect to the database: %v", err)
 	}

@@ -9,7 +9,7 @@ import (
 
 func TestNewServer(t *testing.T) {
 	// Create a new server
-	srv, _ := NewServer()
+	srv, _ := NewServer(true)
 
 	// Check that the server is not nil
 	if srv == nil {
@@ -19,7 +19,7 @@ func TestNewServer(t *testing.T) {
 
 func TestReadinessEndpoint(t *testing.T) {
 	// Create a new server
-	srv, cfg := NewServer()
+	srv, cfg := NewServer(true)
 	go srv.ListenAndServe()
 	defer srv.Close()
 
