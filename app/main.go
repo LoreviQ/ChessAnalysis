@@ -1,7 +1,6 @@
 package main
 
 import (
-	"gioui.org/app"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/gui"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/server"
@@ -21,8 +20,8 @@ func startApp() error {
 	defer server.Close()
 
 	// GUI
-	go gui.CreateGUI()
-	app.Main()
+	myGUI := gui.NewGUI()
+	myGUI.CreateGUI()
 	return nil
 }
 

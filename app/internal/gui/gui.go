@@ -1,53 +1,46 @@
 package gui
 
 import (
-	"image/color"
-	"log"
 	"os"
 
 	"gioui.org/app"
 	"gioui.org/op"
-	"gioui.org/text"
 	"gioui.org/widget/material"
 )
 
-func CreateGUI() {
-	// Create new window
-	window := new(app.Window)
-
-	// Update window until exit
-	if err := draw(window); err != nil {
-		log.Fatal(err)
-	}
-	os.Exit(0)
+type GUI struct {
+	window *app.Window
+	ops    *op.Ops
+	theme  *material.Theme
 }
 
-func draw(window *app.Window) error {
-	theme := material.NewTheme()
-	var ops op.Ops
+// Returns a GUI struct
+func NewGUI() *GUI {
+	return &GUI{
+		window: new(app.Window),
+		ops:    new(op.Ops),
+		theme:  material.NewTheme(),
+	}
+}
+
+// CreateGUI creates the GUI
+func (g *GUI) CreateGUI() {
+	go g.draw()
+	app.Main()
+}
+
+// Main event loop
+func (g *GUI) draw() error {
 	for {
-		switch e := window.Event().(type) {
-		case app.DestroyEvent:
-			return e.Err
+		switch e := g.window.Event().(type) {
+
+		// Re-render app
 		case app.FrameEvent:
-			// This graphics context is used for managing the rendering state.
-			gtx := app.NewContext(&ops, e)
+			g.landingPage(e)
 
-			// Define an large label with an appropriate text:
-			title := material.H1(theme, "Hello, Gio")
-
-			// Change the color of the label.
-			maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
-			title.Color = maroon
-
-			// Change the position of the label.
-			title.Alignment = text.Middle
-
-			// Draw the label to the graphics context.
-			title.Layout(gtx)
-
-			// Pass the drawing operations to the GPU.
-			e.Frame(gtx.Ops)
+		// Exit app
+		case app.DestroyEvent:
+			os.Exit(0)
 		}
 	}
 }
