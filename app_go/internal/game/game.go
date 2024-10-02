@@ -39,6 +39,7 @@ func (g *Game) Play() {
 			fmt.Println("Type 'move_history' to see the move history")
 			fmt.Println("      Add '--short' to see the move history in short algebraic notation")
 			fmt.Println("Type 'possible_moves' to see all possible moves")
+			fmt.Println("Type 'new_game' to start a new game")
 			continue
 		case "quit":
 			return
@@ -63,6 +64,9 @@ func (g *Game) Play() {
 			continue
 		case "possible_moves":
 			g.logPossibleMoves()
+			continue
+		case "new_game":
+			g.newGame()
 			continue
 		default:
 			err := g.Move(userInput)
@@ -102,12 +106,11 @@ func (g *Game) Move(moveStr string) error {
 	}
 	// Get all possible moves for the current player
 	possibleMoves := g.GetPossibleMoves()
-	// Find the move that corresponds to the given move
+	// Find the move that corresponds to the given move and play it
 	correspondingMove, err := getCorrespondingMove(move, possibleMoves)
 	if err != nil {
 		return err
 	}
-	// Find the move that produces the given notation and play it
 	if correspondingMove.Castle == "" {
 		err = g.Board.MovePiece(correspondingMove)
 	} else {
@@ -279,6 +282,12 @@ func (g *Game) changeTurn() {
 	} else {
 		g.Turn = "white"
 	}
+}
+
+func (g *Game) newGame() {
+	g.Board = NewBoard()
+	g.Turn = "white"
+	g.MoveHistory = []Move{}
 }
 
 // Parse a move string in algebraic notation
