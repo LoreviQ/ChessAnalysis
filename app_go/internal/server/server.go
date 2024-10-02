@@ -20,7 +20,8 @@ func NewServer(test bool) (*http.Server, serverCfg) {
 	cfg := setupCfg(test)
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /readiness", cfg.getReadiness)
-	mux.HandleFunc("POST /moves", cfg.postMoves)
+	mux.HandleFunc("POST /games/{id}/moves", cfg.postMoves)
+	mux.HandleFunc("GET /games/{id}/moves/latest", cfg.getLatestMoves)
 	return &http.Server{
 		Addr:    cfg.url.Host,
 		Handler: CorsMiddleware(mux),
