@@ -26,6 +26,19 @@ func NewGame() *Game {
 	}
 }
 
+// Converts a slice of moves to long algebraic notation
+// by playing them and getting the long algebraic notation of the move history
+func ConvertNotation(moves []string) ([]string, error) {
+	g := NewGame()
+	for _, move := range moves {
+		err := g.Move(move)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return ConvertMovesToLongAlgebraicNotation(g.MoveHistory), nil
+}
+
 // Starts playing the chess game in the console
 func (g *Game) Play() {
 	for {
@@ -110,6 +123,10 @@ func (g *Game) Move(moveStr string) error {
 	correspondingMove, err := getCorrespondingMove(move, possibleMoves)
 	if err != nil {
 		return err
+	}
+	// inherit check status from the move
+	if move.CheckStatus != 0 {
+		correspondingMove.CheckStatus = move.CheckStatus
 	}
 	if correspondingMove.Castle == "" {
 		err = g.Board.MovePiece(correspondingMove)
