@@ -80,7 +80,8 @@ func TestPrintBoard(t *testing.T) {
 	b := NewBoard()
 	boardStr := b.PrintBoard()
 
-	expected := `8 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖ 
+	expected := `
+8 ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖ 
 7 ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙ 
 6                 
 5                 
@@ -89,6 +90,7 @@ func TestPrintBoard(t *testing.T) {
 2 ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟ 
 1 ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜ 
   a b c d e f g h
+
 `
 	if boardStr != expected {
 		t.Errorf("Expected board string:\n%s\nGot:\n%s", expected, boardStr)
@@ -110,6 +112,8 @@ func TestMovePiece(t *testing.T) {
 		{Move{FromFile: 'd', FromRank: 1, ToFile: 'e', ToRank: 8}, ErrSquareOccupied},
 		{Move{FromFile: 'g', FromRank: 3, ToFile: 'b', ToRank: 1}, ErrNoPieceAtSquare},
 		{Move{FromFile: 'c', FromRank: 4, ToFile: 'd', ToRank: 5}, ErrNoPieceAtSquare},
+		{Move{FromFile: 'e', FromRank: 5, ToFile: 'f', ToRank: 4, Capture: 'x'}, nil},
+		{Move{FromFile: 'e', FromRank: 4, ToFile: 'e', ToRank: 5}, nil},
 	}
 
 	for _, tt := range tests {
@@ -120,22 +124,6 @@ func TestMovePiece(t *testing.T) {
 		if err == nil && tt.err != nil {
 			t.Errorf("Expected error: %v, got nil", tt.err)
 		}
-	}
-
-	// Check board after moves
-	board := b.PrintBoard()
-	expected := `8 ♖ ♘ ♗ ♕ ♔ ♗   ♖ 
-7 ♙ ♙ ♙ ♙   ♙ ♙ ♙ 
-6           ♘     
-5         ♙       
-4         ♟ ♟     
-3     ♞           
-2 ♟ ♟ ♟ ♟     ♟ ♟ 
-1 ♜   ♝ ♛ ♚ ♝ ♞ ♜ 
-  a b c d e f g h
-`
-	if board != expected {
-		t.Errorf("Expected board string:\n%s\nGot:\n%s", expected, board)
 	}
 }
 

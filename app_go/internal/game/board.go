@@ -66,7 +66,14 @@ func (b *Board) setup_game() {
 
 // PrintBoard returns a string representation of the board
 func (b *Board) PrintBoard() string {
+	blackCaptured := b.GetCapturedByColour("black")
+	whiteCaptured := b.GetCapturedByColour("white")
 	var board string
+	for _, p := range blackCaptured {
+		printable, _ := p.getPrintable()
+		board += fmt.Sprintf("%c ", printable)
+	}
+	board += "\n"
 	for i := 7; i >= 0; i-- { // Iterate from 7 to 0
 		board += fmt.Sprintf("%d ", i+1)
 		for j := 0; j < 8; j++ {
@@ -81,6 +88,12 @@ func (b *Board) PrintBoard() string {
 		board += "\n"
 	}
 	board += "  a b c d e f g h\n"
+	for _, p := range whiteCaptured {
+		printable, _ := p.getPrintable()
+		board += fmt.Sprintf("%c ", printable)
+	}
+	board += "\n"
+
 	return board
 }
 
