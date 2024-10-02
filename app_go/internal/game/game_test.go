@@ -114,6 +114,49 @@ func TestPossibleMoves(t *testing.T) {
 	}
 }
 
+func TestPossibleMovesDuplicate(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	// Move rooks up to test multiple pieces of the same type moving to the same square
+	b.MovePiece(Move{FromFile: 'a', FromRank: 1, ToFile: 'a', ToRank: 3})
+	b.MovePiece(Move{FromFile: 'h', FromRank: 1, ToFile: 'h', ToRank: 3})
+	moves := g.GetPossibleMoves()
+	expectedMoves := []string{
+		// Pawn moves
+		"b3", "b4", "c3", "c4",
+		"d3", "d4", "e3", "e4",
+		"f3", "f4", "g3", "g4",
+		// Knight moves
+		"Nc3", "Nf3",
+		// Basic rook moves
+		"Ra4", "Rh4", "Ra5", "Rh5",
+		"Ra6", "Rh6", "Rxa7", "Rxh7",
+		// Rook moves to the same square
+		"Rab3", "Rac3", "Rad3", "Rae3",
+		"Raf3", "Rag3", "Rhb3", "Rhc3",
+		"Rhd3", "Rhe3", "Rhf3", "Rhg3",
+	}
+	if len(moves) != len(expectedMoves) {
+		t.Errorf("Expected 32 possible moves, got %d", len(moves))
+	}
+	notations, err := ConvertMovesToShortAlgebraicNotation(moves)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	for _, move := range expectedMoves {
+		found := false
+		for _, notation := range notations {
+			if move == notation {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %s not found", move)
+		}
+	}
+}
+
 func TestMove(t *testing.T) {
 	g := NewGame()
 	tests := []struct {
