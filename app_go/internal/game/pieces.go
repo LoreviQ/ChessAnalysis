@@ -359,3 +359,19 @@ func (p *Piece) exaluatePossibleMoves(g *Game, possibleMoves [][]int) []Move {
 	}
 	return moves
 }
+
+func (p *Piece) promote(promotion rune) error {
+	switch promotion {
+	case 'N':
+		p.PieceType = Knight
+	case 'B':
+		p.PieceType = Bishop
+	case 'R':
+		p.PieceType = Rook
+	case 'Q':
+		p.PieceType = Queen
+	default:
+		return fmt.Errorf("invalid promotion")
+	}
+	return nil
+}

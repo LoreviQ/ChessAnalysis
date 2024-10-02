@@ -98,6 +98,7 @@ func (b *Board) GetPieceAtSquare(file rune, rank int) (*Piece, error) {
 // Move a piece from one square to another
 // Doesn't check if the move is valid only if the square is occupied
 func (b *Board) MovePiece(move Move) error {
+	// Get the relevant pieces
 	fromPiece, err := b.GetPieceAtSquare(move.FromFile, move.FromRank)
 	if err != nil {
 		return err
@@ -109,6 +110,8 @@ func (b *Board) MovePiece(move Move) error {
 	if err != nil {
 		return err
 	}
+
+	// Move the piece
 	if move.Capture == 'x' {
 		if toPiece == nil {
 			return ErrNoPieceAtSquare
@@ -125,7 +128,17 @@ func (b *Board) MovePiece(move Move) error {
 	}
 	b.Squares[move.ToRank-1][fileToInt(move.ToFile)-1] = fromPiece
 	b.Squares[move.FromRank-1][fileToInt(move.FromFile-1)] = nil
-	// TODO promotion
+
+	// Promotion
+	if move.Promotion != 0 {
+		if fromPiece.PieceType != Pawn {
+			return ErrPieceNotPawn
+		}
+		if move.ToRank != 8 && move.ToRank != 1 {
+			return errors.New("invalid promotion square")
+		}
+		fromPiece.promote(move.Promotion)
+	}
 	return nil
 }
 

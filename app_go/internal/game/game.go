@@ -15,7 +15,6 @@ type Game struct {
 	Board       *Board
 	Turn        string
 	MoveHistory []Move
-	CanCastle   map[string]map[string]bool
 }
 
 // Create a new game
@@ -24,10 +23,6 @@ func NewGame() *Game {
 		Board:       NewBoard(),
 		Turn:        "white",
 		MoveHistory: []Move{},
-		CanCastle: map[string]map[string]bool{
-			"white": {"short": true, "long": true},
-			"black": {"short": true, "long": true},
-		},
 	}
 }
 
@@ -82,6 +77,7 @@ func (g *Game) Play() {
 	}
 }
 
+// Log all possible moves for the current player
 func (g *Game) logPossibleMoves() {
 	possibleMoves := g.GetPossibleMoves()
 	notations, err := ConvertMovesToShortAlgebraicNotation(possibleMoves)
