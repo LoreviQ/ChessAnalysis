@@ -7,7 +7,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	moves_to_insert := []string{
+	moves := []string{
 		"1", "e4", "g6", "2", "d4", "Bg7", "3", "e5", "d6",
 		"4", "exd6", "Qxd6", "5", "Nc3", "Bxd4", "6", "Be3", "Bxc3+",
 		"7", "bxc3", "h5", "8", "f4", "Qxd1+", "9", "Rxd1", "Nd7",
@@ -16,9 +16,18 @@ func main() {
 		"16", "Bf6", "Nxf6", "17", "Ng5", "Nd7", "18", "Nxf7", "Nxf7",
 		"19", "Rd3", "Ke7",
 	}
-	err = db.InsertMoves(moves_to_insert, "123456")
+	err = db.InsertMoves(moves, "123456")
 	if err != nil {
 		panic(err)
 	}
+	moves, err = db.GetMoves("123456")
+	if err != nil {
+		panic(err)
+	}
+	printStr := "\""
+	for move := range moves {
+		printStr += moves[move] + "\", \""
+	}
+	print(printStr[:len(printStr)-3])
 	db.Close()
 }

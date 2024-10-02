@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -54,6 +55,7 @@ func NewConnection(test bool) (Database, error) {
 		"INSERT_MOVES":       "INSERT INTO moves (game_id, move_data) VALUES (?, ?)",
 		"INSERT_GAME":        "INSERT INTO games (chessdotcom_id) VALUES (?) RETURNING id",
 		"GET_LATEST_GAME_ID": "SELECT id FROM games WHERE chessdotcom_id = ? ORDER BY created_at DESC LIMIT 1",
+		"GET_LATEST_MOVES":   "SELECT move_data FROM moves WHERE game_id = ? ORDER BY created_at DESC LIMIT 1",
 	}
 
 	return Database{
@@ -102,6 +104,21 @@ func (d Database) InsertMoves(moves []string, chessdotcomID string) error {
 	// Insert the moves into the database
 	_, err = d.db.Exec(d.queries["INSERT_MOVES"], gameID, standardizedMoves)
 	return err
+}
+
+// GetMoves returns the latest moves of a game with the given chess.com id
+func (d Database) GetMoves(chessdotcomID string) ([]string, error) {
+	var gameID int
+	err := d.db.QueryRow(d.queries["GET_LATEST_GAME_ID"], chessdotcomID).Scan(&gameID)
+	if err != nil {
+		return nil, errors.New("game not found")
+	}
+	var moves string
+	err = d.db.QueryRow(d.queries["GET_LATEST_MOVES"], gameID).Scan(&moves)
+	if err != nil {
+		return nil, errors.New("game has no moves")
+	}
+	return strings.Split(moves, " "), nil
 }
 
 // Converts moves to the format used in the database
