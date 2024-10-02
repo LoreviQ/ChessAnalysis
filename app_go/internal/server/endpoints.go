@@ -45,6 +45,10 @@ func (cfg *serverCfg) postMoves(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+type getLatestMoveResponse struct {
+	Moves []string `json:"moves"`
+}
+
 // GET /games/{id}/moves/latest handler
 //
 // This handler is used to get the latest moves of a game from the database.
@@ -64,5 +68,6 @@ func (cfg *serverCfg) getLatestMoves(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Response
-	respondWithJSON(w, http.StatusOK, moves)
+
+	respondWithJSON(w, http.StatusOK, getLatestMoveResponse{Moves: moves})
 }
