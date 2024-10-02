@@ -385,3 +385,15 @@ func TestGetKingMoves(t *testing.T) {
 		}
 	}
 }
+
+func TestPromotion(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	// Put pawn at a7 so we can test promotion
+	b.MovePiece(Move{FromFile: 'a', FromRank: 2, ToFile: 'a', ToRank: 7, Capture: 'x'})
+	pawn, _ := b.GetPieceAtSquare('a', 7)
+	g.Move("axb8=Q")
+	if pawn.PieceType != Queen {
+		t.Errorf("Expected %v, got %v", Queen, pawn.PieceType)
+	}
+}
