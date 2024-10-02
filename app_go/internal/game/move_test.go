@@ -298,3 +298,114 @@ func TestConvertMovesToLongAlgebraicNotation(t *testing.T) {
 		}
 	}
 }
+
+func TestGetCorrespondingMove(t *testing.T) {
+	tests := []struct {
+		moves    []Move
+		move     Move
+		expected Move
+		err      error
+	}{
+		{
+			[]Move{
+				{
+					Piece:    'R',
+					FromFile: 'a',
+					FromRank: 3,
+					ToFile:   'c',
+					ToRank:   3,
+				},
+				{
+					Piece:    'R',
+					FromFile: 'h',
+					FromRank: 3,
+					ToFile:   'c',
+					ToRank:   3,
+				},
+				{
+					FromFile: 'c',
+					FromRank: 2,
+					ToFile:   'c',
+					ToRank:   3,
+				},
+			},
+			Move{
+				Piece:    'R',
+				FromFile: 'a',
+				ToFile:   'c',
+				ToRank:   3,
+			},
+			Move{
+				Piece:    'R',
+				FromFile: 'a',
+				FromRank: 3,
+				ToFile:   'c',
+				ToRank:   3,
+			},
+			nil,
+		},
+		{
+			[]Move{
+				{
+					FromFile: 'e',
+					FromRank: 2,
+					ToFile:   'e',
+					ToRank:   4,
+				},
+				{
+					FromFile: 'd',
+					FromRank: 2,
+					ToFile:   'd',
+					ToRank:   4,
+				},
+			},
+			Move{
+				ToFile: 'e',
+				ToRank: 5,
+			},
+			Move{},
+			ErrInvalidMove,
+		},
+		{
+			[]Move{
+				{
+					Piece:    'R',
+					FromFile: 'a',
+					FromRank: 3,
+					ToFile:   'c',
+					ToRank:   3,
+				},
+				{
+					Piece:    'R',
+					FromFile: 'h',
+					FromRank: 3,
+					ToFile:   'c',
+					ToRank:   3,
+				},
+				{
+					FromFile: 'c',
+					FromRank: 2,
+					ToFile:   'c',
+					ToRank:   3,
+				},
+			},
+			Move{
+				Piece:  'R',
+				ToFile: 'c',
+				ToRank: 3,
+			},
+			Move{},
+			ErrAmbiguousMove,
+		},
+	}
+
+	for _, tt := range tests {
+		actual, err := getCorrespondingMove(tt.move, tt.moves)
+		if err != tt.err {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if actual != tt.expected {
+			t.Errorf("Expected move %v, got %v", tt.expected, actual)
+		}
+	}
+}

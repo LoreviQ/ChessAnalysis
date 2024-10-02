@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrNotEnoughInfo = errors.New("not enough information to create long algebraic notation")
+	ErrAmbiguousMove = errors.New("ambiguous move, not enough information to determine the move")
 )
 
 type Move struct {
@@ -157,4 +158,81 @@ func ConvertMovesToLongAlgebraicNotation(moves []Move) []string {
 		notations = append(notations, longAlgebraicNotation)
 	}
 	return notations
+}
+
+// Takes a move and a list of possible moves and returns the corresponding move from the list
+// If the move is ambigious it returns an error
+func getCorrespondingMove(move Move, possibleMoves []Move) (Move, error) {
+	// Create a new slice to hold the filtered moves
+	for _, filterType := range []string{"castle", "mandatory", "file", "rank", "promotion", "check"} {
+		filteredMoves := filterMoves(move, possibleMoves, filterType)
+		if len(filteredMoves) == 1 {
+			return filteredMoves[0], nil
+		}
+		if len(filteredMoves) == 0 {
+			return Move{}, ErrInvalidMove
+		}
+	}
+	return Move{}, ErrAmbiguousMove
+}
+
+func filterMoves(move Move, moves []Move, filterType string) []Move {
+	var filteredMoves []Move
+	switch filterType {
+	case "mandatory":
+		for _, m := range moves {
+			if m.Piece == move.Piece &&
+				m.ToFile == move.ToFile &&
+				m.ToRank == move.ToRank &&
+				m.Capture == move.Capture {
+				filteredMoves = append(filteredMoves, m)
+			}
+		}
+	case "file":
+		if move.FromFile == 0 {
+			return moves
+		}
+		for _, m := range moves {
+			if m.FromFile == move.FromFile {
+				filteredMoves = append(filteredMoves, m)
+			}
+		}
+	case "rank":
+		if move.FromRank == 0 {
+			return moves
+		}
+		for _, m := range moves {
+			if m.FromRank == move.FromRank {
+				filteredMoves = append(filteredMoves, m)
+			}
+		}
+	case "promotion":
+		if move.Promotion == 0 {
+			return moves
+		}
+		for _, m := range moves {
+			if m.Promotion == move.Promotion {
+				filteredMoves = append(filteredMoves, m)
+			}
+		}
+	case "check":
+		if move.CheckStatus == 0 {
+			return moves
+		}
+		for _, m := range moves {
+			if m.CheckStatus == move.CheckStatus {
+				filteredMoves = append(filteredMoves, m)
+			}
+		}
+	case "castle":
+		if move.Castle == "" {
+			return moves
+		}
+		for _, m := range moves {
+			if m.Castle == move.Castle {
+				filteredMoves = append(filteredMoves, m)
+			}
+		}
+	}
+	return filteredMoves
 }
