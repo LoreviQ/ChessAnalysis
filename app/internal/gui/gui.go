@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"image/color"
 	"os"
 
 	"gioui.org/app"
@@ -9,9 +10,17 @@ import (
 )
 
 type GUI struct {
-	window *app.Window
-	ops    *op.Ops
-	theme  *material.Theme
+	window  *app.Window
+	ops     *op.Ops
+	theme   *material.Theme
+	colours *colours
+}
+
+type colours struct {
+	bg        color.NRGBA
+	fg        color.NRGBA
+	text      color.NRGBA
+	highlight color.NRGBA
 }
 
 // Returns a GUI struct
@@ -20,6 +29,12 @@ func NewGUI() *GUI {
 		window: new(app.Window),
 		ops:    new(op.Ops),
 		theme:  material.NewTheme(),
+		colours: &colours{
+			bg:        color.NRGBA{41, 40, 45, 255},
+			fg:        color.NRGBA{53, 54, 62, 255},
+			text:      color.NRGBA{255, 255, 255, 255},
+			highlight: color.NRGBA{63, 81, 182, 255},
+		},
 	}
 }
 
