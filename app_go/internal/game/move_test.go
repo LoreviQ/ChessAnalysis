@@ -1,6 +1,8 @@
 package game
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestLongAlgebraicNotation(t *testing.T) {
 	tests := []struct {
@@ -207,4 +209,50 @@ func TestShortAlgebraicNotation(t *testing.T) {
 			t.Errorf("Expected: %s, got: %s", tt.expected, actual)
 		}
 	}
+}
+
+func TestConvertMovesToShortAlgebraicNotation(t *testing.T) {
+	moves := []Move{
+		{
+			Piece:    'R',
+			FromFile: 'a',
+			FromRank: 3,
+			ToFile:   'c',
+			ToRank:   3,
+		},
+		{
+			Piece:    'R',
+			FromFile: 'h',
+			FromRank: 3,
+			ToFile:   'c',
+			ToRank:   3,
+		},
+		{
+			FromFile: 'c',
+			FromRank: 2,
+			ToFile:   'c',
+			ToRank:   3,
+		},
+	}
+	expected := []string{"Rac3", "Rhc3", "c3"}
+	actual, err := ConvertMovesToShortAlgebraicNotation(moves)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if len(actual) != len(expected) {
+		t.Errorf("Expected %d moves, got %d", len(expected), len(actual))
+	}
+	for _, expectedString := range expected {
+		found := false
+		for _, actualString := range actual {
+			if expectedString == actualString {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %s not found", expectedString)
+		}
+	}
+
 }

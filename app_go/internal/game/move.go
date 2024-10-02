@@ -111,7 +111,7 @@ func (m Move) ShortAlgebraicNotation(includeFile, includeRank bool) (string, err
 
 // Get a list of strings represnting the short algebraic notation of provided moves
 // Disambiguates between duplicate moves
-func (g *Game) ConvertMovesToShortAlgebraicNotation(moves []Move) ([]string, error) {
+func ConvertMovesToShortAlgebraicNotation(moves []Move) ([]string, error) {
 	notationToMove := map[string]Move{}
 	for _, move := range moves {
 		shortAlgebraicNotation, err := move.ShortAlgebraicNotation(false, false)
