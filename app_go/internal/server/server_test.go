@@ -7,11 +7,13 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/LoreviQ/ChessAnalysis/app_go/internal/database"
 )
 
 func TestNewServer(t *testing.T) {
 	// Create a new server
-	srv, _ := NewServer(true)
+	srv, _ := NewServer(nil)
 
 	// Check that the server is not nil
 	if srv == nil {
@@ -20,8 +22,13 @@ func TestNewServer(t *testing.T) {
 }
 
 func TestReadinessEndpoint(t *testing.T) {
+	// Create db connection
+	db, err := database.NewConnection(true)
+	if err != nil {
+		t.Errorf("Error creating database connection: %v", err)
+	}
 	// Create a new server
-	srv, cfg := NewServer(true)
+	srv, cfg := NewServer(db)
 	go srv.ListenAndServe()
 	defer srv.Close()
 	url := cfg.url.String()
@@ -42,8 +49,13 @@ func TestReadinessEndpoint(t *testing.T) {
 // First tests the postMoves method by inserting a list of moves into the database
 // and then tests the getLatestMoves method by retrieving the moves from the database
 func TestPostGetMoves(t *testing.T) {
+	// Create db connection
+	db, err := database.NewConnection(true)
+	if err != nil {
+		t.Errorf("Error creating database connection: %v", err)
+	}
 	// Create a new server
-	srv, cfg := NewServer(true)
+	srv, cfg := NewServer(db)
 	go srv.ListenAndServe()
 	defer srv.Close()
 	url := cfg.url.String()

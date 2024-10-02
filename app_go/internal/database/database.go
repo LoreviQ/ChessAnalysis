@@ -20,7 +20,7 @@ type Database struct {
 }
 
 // NewConnection creates a new connection to the SQLite3 database
-func NewConnection(test bool) (Database, error) {
+func NewConnection(test bool) (*Database, error) {
 	// Get file paths
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -36,19 +36,19 @@ func NewConnection(test bool) (Database, error) {
 	// Open a connection to the SQLite3 database
 	db, err := sql.Open("sqlite3", databasePath)
 	if err != nil {
-		return Database{}, err
+		return nil, err
 	}
 
 	// Read the schema.sql file
 	schema, err := os.ReadFile(schemaPath)
 	if err != nil {
-		return Database{}, err
+		return nil, err
 	}
 
 	// Execute the SQL commands in the schema.sql file
 	_, err = db.Exec(string(schema))
 	if err != nil {
-		return Database{}, err
+		return nil, err
 	}
 
 	preparedQueries := map[string]string{
@@ -58,7 +58,7 @@ func NewConnection(test bool) (Database, error) {
 		"GET_LATEST_MOVES":   "SELECT move_data FROM moves WHERE game_id = ? ORDER BY created_at DESC LIMIT 1",
 	}
 
-	return Database{
+	return &Database{
 		db:      db,
 		queries: preparedQueries,
 		testDB:  test,
