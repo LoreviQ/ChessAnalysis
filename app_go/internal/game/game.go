@@ -1,8 +1,12 @@
 package game
 
 import (
+	"bufio"
 	"errors"
+	"fmt"
+	"os"
 	"regexp"
+	"strings"
 )
 
 var ErrInvalidMove = errors.New("invalid move")
@@ -25,6 +29,63 @@ func NewGame() *Game {
 			"black": {"short": true, "long": true},
 		},
 	}
+}
+
+// Starts playing the chess game in the console
+func (g *Game) Play() {
+	for {
+		fmt.Printf("\n%s", g.Board.PrintBoard())
+		userInput := getUserInput(fmt.Sprintf("%s to move: ", g.Turn))
+		userInput = strings.ToLower(userInput)
+		switch userInput {
+		case "help":
+			fmt.Println("Type move in short algebraic notation to play it (e.g. e4)")
+			fmt.Println("Type 'quit' to exit the game")
+			fmt.Println("Type 'move history' to see the move history")
+			fmt.Println("Type 'possible moves' to see all possible moves")
+			continue
+		case "quit":
+			return
+		case "move history":
+			notations, err := ConvertMovesToShortAlgebraicNotation(g.MoveHistory)
+			if err != nil {
+				fmt.Println(err)
+			}
+			printString := ""
+			for notation := range notations {
+				printString += notation + ", "
+			}
+			fmt.Println("Previous moves:")
+			fmt.Println(printString[:len(printString)-2])
+			continue
+		case "possible moves":
+			g.logPossibleMoves()
+			continue
+		default:
+			err := g.Move(userInput)
+			if err == ErrInvalidMove {
+				fmt.Println("Invalid move")
+				g.logPossibleMoves()
+
+			} else if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+}
+
+func (g *Game) logPossibleMoves() {
+	possibleMoves := g.GetPossibleMoves()
+	notations, err := ConvertMovesToShortAlgebraicNotation(possibleMoves)
+	if err != nil {
+		fmt.Println(err)
+	}
+	printString := ""
+	for notation := range notations {
+		printString += notation + ", "
+	}
+	fmt.Println("Possible moves:")
+	fmt.Println(printString[:len(printString)-2])
 }
 
 // Takes a move string in algebraic notation,
@@ -118,4 +179,11 @@ func parseRegex(moveStr string) (Move, error) {
 		}
 	}
 	return move, nil
+}
+
+func getUserInput(prompt string) string {
+	fmt.Print(prompt)
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
 }
