@@ -7,11 +7,13 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/LoreviQ/ChessAnalysis/app_go/internal/database"
 	"github.com/joho/godotenv"
 )
 
 type serverCfg struct {
 	url *url.URL
+	db  *database.Database
 }
 
 func NewServer() (*http.Server, serverCfg) {
@@ -34,11 +36,16 @@ func setupCfg() *serverCfg {
 	if port == "" {
 		port = "5000" // Default port
 	}
+	db, err := database.NewConnection(false)
+	if err != nil {
+		log.Fatalf("Unable to connect to the database: %v", err)
+	}
 	return &serverCfg{
 		url: &url.URL{
 			Scheme: "http",
 			Host:   fmt.Sprintf("localhost:%s", port),
 		},
+		db: &db,
 	}
 }
 
