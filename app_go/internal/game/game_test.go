@@ -82,3 +82,28 @@ func TestParseRegex(t *testing.T) {
 		})
 	}
 }
+
+func TestMove(t *testing.T) {
+	g := NewGame()
+	tests := []struct {
+		move string
+		err  error
+	}{
+		{"e4", nil},
+		{"e5", nil},
+		{"Nc3", nil},
+		{"Nf6", nil},
+		{"f4", nil},
+		{"exf4", nil},
+		{"e5", nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.move, func(t *testing.T) {
+			err := g.Move(tt.move)
+			if err != tt.err {
+				t.Errorf("Expected: %v, got: %v", tt.err, err)
+			}
+		})
+	}
+}

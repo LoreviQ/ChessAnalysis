@@ -1,8 +1,11 @@
 package game
 
 import (
+	"errors"
 	"regexp"
 )
+
+var ErrInvalidMove = errors.New("invalid move")
 
 type Game struct {
 	Board       *Board
@@ -26,8 +29,8 @@ func NewGame() *Game {
 
 // Takes a move string in algebraic notation,
 // checks if it is valid and moves the piece
-func (g *Game) MovePiece(moveStr string) error {
-	_, err := parseRegex(moveStr)
+func (g *Game) Move(moveStr string) error {
+	move, err := parseRegex(moveStr)
 	if err != nil {
 		return err
 	}
@@ -38,19 +41,16 @@ func (g *Game) MovePiece(moveStr string) error {
 	}
 	for _, shortNotation := range shortNotations {
 		if shortNotation == moveStr {
-			move, err := parseRegex(moveStr)
-			if err != nil {
-				return err
-			}
 			err = g.Board.MovePiece(move)
 			if err != nil {
 				return err
 			}
 			g.MoveHistory = append(g.MoveHistory, move)
-			break
+			g.changeTurn()
+			return nil
 		}
 	}
-	return nil
+	return ErrInvalidMove
 }
 
 // Get all possible moves for the current player
@@ -64,6 +64,14 @@ func (g *Game) GetPossibleMoves() []Move {
 		}
 	}
 	return possibleMoves
+}
+
+func (g *Game) changeTurn() {
+	if g.Turn == "white" {
+		g.Turn = "black"
+	} else {
+		g.Turn = "white"
+	}
 }
 
 // Parse a move string in algebraic notation
