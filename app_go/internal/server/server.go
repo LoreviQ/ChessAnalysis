@@ -4,23 +4,25 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/joho/godotenv"
 )
 
 type serverCfg struct {
-	port string
+	url *url.URL
 }
 
-func NewServer() *http.Server {
+func NewServer() (*http.Server, serverCfg) {
 	cfg := setupCfg()
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /readiness", cfg.getReadiness)
 	return &http.Server{
-		Addr:    fmt.Sprintf(":%s", cfg.port),
+		Addr:    cfg.url.Host,
 		Handler: CorsMiddleware(mux),
-	}
+	}, *cfg
+
 }
 
 func setupCfg() *serverCfg {
@@ -33,7 +35,10 @@ func setupCfg() *serverCfg {
 		port = "5000" // Default port
 	}
 	return &serverCfg{
-		port: port,
+		url: &url.URL{
+			Scheme: "http",
+			Host:   fmt.Sprintf("localhost:%s", port),
+		},
 	}
 }
 
