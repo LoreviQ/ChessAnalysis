@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/LoreviQ/ChessAnalysis/app_go/internal/game"
 	_ "github.com/mattn/go-sqlite3"
@@ -16,6 +17,7 @@ type Database struct {
 	queries map[string]string
 }
 
+// NewConnection creates a new connection to the SQLite3 database
 func NewConnection() Database {
 	// Get file paths
 	_, filename, _, ok := runtime.Caller(0)
@@ -53,10 +55,12 @@ func NewConnection() Database {
 	return Database{db: db, queries: preparedQueries}
 }
 
+// Close closes the connection to the SQLite3 database
 func (d Database) Close() {
 	d.db.Close()
 }
 
+// InsertMoves inserts a list of moves into the database
 func (d Database) InsertMoves(moves []string, chessdotcomID string) error {
 	chessdotcomID_NullString := sql.NullString{String: chessdotcomID, Valid: chessdotcomID != ""}
 	standardizedMoves, err := standardizeMoves(moves)
@@ -67,16 +71,14 @@ func (d Database) InsertMoves(moves []string, chessdotcomID string) error {
 	// Get game id of the latest game with the given chess.com id
 	var gameID int
 	err = d.db.QueryRow(d.queries["GET_LATEST_GAME_ID"], chessdotcomID_NullString).Scan(&gameID)
-	if err != nil {
-		return err
-	}
-
-	// If no game with the given chess.com id exists, create a new game
-	if gameID == 0 {
+	if err == sql.ErrNoRows {
+		// If no game with the given chess.com id exists, create a new game
 		err = d.db.QueryRow(d.queries["INSERT_GAME"], chessdotcomID_NullString).Scan(&gameID)
 		if err != nil {
 			return err
 		}
+	} else if err != nil {
+		return err
 	}
 
 	// Insert the moves into the database
@@ -85,7 +87,10 @@ func (d Database) InsertMoves(moves []string, chessdotcomID string) error {
 }
 
 // Converts moves to the format used in the database
-func standardizeMoves(moves []string) ([]string, error) {
+//
+// Expected input: ["1", "e4", "e5", "2", "Nf3", "Nc6", ...]
+// Expected output: "e4 e5 Nf3 Nc6 ..."
+func standardizeMoves(moves []string) (string, error) {
 	// remove turn numbers
 	standardizedMoves := []string{}
 	for i, move := range moves {
@@ -95,7 +100,8 @@ func standardizeMoves(moves []string) ([]string, error) {
 	}
 	standardizedMoves, err := game.ConvertNotation(standardizedMoves)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return standardizedMoves, nil
+	moveString := strings.Join(standardizedMoves, " ")
+	return moveString, nil
 }
