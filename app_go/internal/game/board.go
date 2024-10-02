@@ -128,6 +128,7 @@ func (b *Board) MovePiece(move Move) error {
 	}
 	b.Squares[move.ToRank-1][fileToInt(move.ToFile)-1] = fromPiece
 	b.Squares[move.FromRank-1][fileToInt(move.FromFile-1)] = nil
+	fromPiece.Moved = true
 
 	// Promotion
 	if move.Promotion != 0 {

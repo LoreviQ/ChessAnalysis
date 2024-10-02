@@ -132,6 +132,68 @@ func (g *Game) GetPossibleMoves() []Move {
 			}
 		}
 	}
+	possibleMoves = append(possibleMoves, g.getPossibleCastles()...)
+	return possibleMoves
+}
+
+func (g *Game) getPossibleCastles() []Move {
+	possibleMoves := []Move{}
+	home_rank := 1
+	if g.Turn == "black" {
+		home_rank = 8
+	}
+	king, err := g.Board.GetPieceAtSquare('e', home_rank)
+	if err != nil {
+		return possibleMoves
+	}
+	// Kingside castle
+	kingsideRook, err := g.Board.GetPieceAtSquare('h', home_rank)
+	if err != nil {
+		return possibleMoves
+	}
+	fSquare, err := g.Board.GetPieceAtSquare('f', home_rank)
+	if err != nil {
+		return possibleMoves
+	}
+	gSquare, err := g.Board.GetPieceAtSquare('g', home_rank)
+	if err != nil {
+		return possibleMoves
+	}
+	if kingsideRook != nil && kingsideRook.PieceType == Rook &&
+		kingsideRook.Color == g.Turn && !kingsideRook.Moved &&
+		king != nil && king.PieceType == King &&
+		king.Color == g.Turn && !king.Moved &&
+		fSquare == nil && gSquare == nil {
+		possibleMoves = append(possibleMoves, Move{
+			Castle: "short",
+		})
+	}
+	// Queenside castle
+	queensideRook, err := g.Board.GetPieceAtSquare('a', home_rank)
+	if err != nil {
+		return possibleMoves
+	}
+	bSquare, err := g.Board.GetPieceAtSquare('b', home_rank)
+	if err != nil {
+		return possibleMoves
+	}
+	cSquare, err := g.Board.GetPieceAtSquare('c', home_rank)
+	if err != nil {
+		return possibleMoves
+	}
+	dSquare, err := g.Board.GetPieceAtSquare('d', home_rank)
+	if err != nil {
+		return possibleMoves
+	}
+	if queensideRook != nil && queensideRook.PieceType == Rook &&
+		queensideRook.Color == g.Turn && !queensideRook.Moved &&
+		king != nil && king.PieceType == King &&
+		king.Color == g.Turn && !king.Moved &&
+		bSquare == nil && cSquare == nil && dSquare == nil {
+		possibleMoves = append(possibleMoves, Move{
+			Castle: "long",
+		})
+	}
 	return possibleMoves
 }
 

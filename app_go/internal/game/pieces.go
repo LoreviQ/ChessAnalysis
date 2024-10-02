@@ -6,6 +6,7 @@ type Piece struct {
 	PieceType PieceType
 	Color     string
 	Active    bool
+	Moved     bool
 }
 
 type PieceType int8
