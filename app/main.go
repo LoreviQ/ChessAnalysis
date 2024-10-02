@@ -2,9 +2,9 @@ package main
 
 import (
 	"gioui.org/app"
-	"github.com/LoreviQ/ChessAnalysis/app_go/internal/database"
-	"github.com/LoreviQ/ChessAnalysis/app_go/internal/gui"
-	"github.com/LoreviQ/ChessAnalysis/app_go/internal/server"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/gui"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/server"
 )
 
 func startApp() error {

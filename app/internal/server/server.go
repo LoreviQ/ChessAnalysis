@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/LoreviQ/ChessAnalysis/app_go/internal/database"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
 	"github.com/joho/godotenv"
 )
 

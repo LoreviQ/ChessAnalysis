@@ -1,4 +1,4 @@
-module github.com/LoreviQ/ChessAnalysis/app_go
+module github.com/LoreviQ/ChessAnalysis/app
 
 go 1.22.1
 

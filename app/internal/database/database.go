@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/LoreviQ/ChessAnalysis/app_go/internal/game"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 	_ "github.com/mattn/go-sqlite3"
 )
 
