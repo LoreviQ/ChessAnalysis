@@ -36,29 +36,37 @@ func (g *Game) Play() {
 	for {
 		fmt.Printf("\n%s", g.Board.PrintBoard())
 		userInput := getUserInput(fmt.Sprintf("%s to move: ", g.Turn))
-		userInput = strings.ToLower(userInput)
-		switch userInput {
+		args := strings.Split(strings.ToLower(userInput), " ")
+		switch args[0] {
 		case "help":
 			fmt.Println("Type move in short algebraic notation to play it (e.g. e4)")
 			fmt.Println("Type 'quit' to exit the game")
-			fmt.Println("Type 'move history' to see the move history")
-			fmt.Println("Type 'possible moves' to see all possible moves")
+			fmt.Println("Type 'move_history' to see the move history")
+			fmt.Println("      Add '--short' to see the move history in short algebraic notation")
+			fmt.Println("Type 'possible_moves' to see all possible moves")
 			continue
 		case "quit":
 			return
-		case "move history":
-			notations, err := ConvertMovesToShortAlgebraicNotation(g.MoveHistory)
-			if err != nil {
-				fmt.Println(err)
-			}
+		case "move_history":
 			printString := ""
-			for notation := range notations {
-				printString += notation + ", "
+			if len(args) > 1 && args[1] == "--short" {
+				notations, err := ConvertMovesToShortAlgebraicNotation(g.MoveHistory)
+				if err != nil {
+					fmt.Println(err)
+				}
+				for notation := range notations {
+					printString += notation + ", "
+				}
+			} else {
+				notations := ConvertMovesToLongAlgebraicNotation(g.MoveHistory)
+				for _, notation := range notations {
+					printString += notation + ", "
+				}
 			}
 			fmt.Println("Previous moves:")
 			fmt.Println(printString[:len(printString)-2])
 			continue
-		case "possible moves":
+		case "possible_moves":
 			g.logPossibleMoves()
 			continue
 		default:

@@ -146,3 +146,15 @@ func ConvertMovesToShortAlgebraicNotation(moves []Move) (map[string]Move, error)
 	}
 	return notationToMove, nil
 }
+
+func ConvertMovesToLongAlgebraicNotation(moves []Move) []string {
+	notations := []string{}
+	for _, move := range moves {
+		longAlgebraicNotation, err := move.LongAlgebraicNotation()
+		if err != nil {
+			return []string{}
+		}
+		notations = append(notations, longAlgebraicNotation)
+	}
+	return notations
+}
