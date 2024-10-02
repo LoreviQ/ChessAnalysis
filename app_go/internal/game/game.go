@@ -110,7 +110,11 @@ func (g *Game) Move(moveStr string) error {
 	for notation := range notationToMove {
 		if notation == moveStr {
 			move := notationToMove[notation]
-			err = g.Board.MovePiece(move)
+			if move.Castle == "" {
+				err = g.Board.MovePiece(move)
+			} else {
+				err = g.Castle(move.Castle)
+			}
 			if err != nil {
 				return err
 			}
@@ -138,24 +142,24 @@ func (g *Game) GetPossibleMoves() []Move {
 
 func (g *Game) getPossibleCastles() []Move {
 	possibleMoves := []Move{}
-	home_rank := 1
+	homeRank := 1
 	if g.Turn == "black" {
-		home_rank = 8
+		homeRank = 8
 	}
-	king, err := g.Board.GetPieceAtSquare('e', home_rank)
+	king, err := g.Board.GetPieceAtSquare('e', homeRank)
 	if err != nil {
 		return possibleMoves
 	}
 	// Kingside castle
-	kingsideRook, err := g.Board.GetPieceAtSquare('h', home_rank)
+	kingsideRook, err := g.Board.GetPieceAtSquare('h', homeRank)
 	if err != nil {
 		return possibleMoves
 	}
-	fSquare, err := g.Board.GetPieceAtSquare('f', home_rank)
+	fSquare, err := g.Board.GetPieceAtSquare('f', homeRank)
 	if err != nil {
 		return possibleMoves
 	}
-	gSquare, err := g.Board.GetPieceAtSquare('g', home_rank)
+	gSquare, err := g.Board.GetPieceAtSquare('g', homeRank)
 	if err != nil {
 		return possibleMoves
 	}
@@ -169,19 +173,19 @@ func (g *Game) getPossibleCastles() []Move {
 		})
 	}
 	// Queenside castle
-	queensideRook, err := g.Board.GetPieceAtSquare('a', home_rank)
+	queensideRook, err := g.Board.GetPieceAtSquare('a', homeRank)
 	if err != nil {
 		return possibleMoves
 	}
-	bSquare, err := g.Board.GetPieceAtSquare('b', home_rank)
+	bSquare, err := g.Board.GetPieceAtSquare('b', homeRank)
 	if err != nil {
 		return possibleMoves
 	}
-	cSquare, err := g.Board.GetPieceAtSquare('c', home_rank)
+	cSquare, err := g.Board.GetPieceAtSquare('c', homeRank)
 	if err != nil {
 		return possibleMoves
 	}
-	dSquare, err := g.Board.GetPieceAtSquare('d', home_rank)
+	dSquare, err := g.Board.GetPieceAtSquare('d', homeRank)
 	if err != nil {
 		return possibleMoves
 	}
@@ -195,6 +199,83 @@ func (g *Game) getPossibleCastles() []Move {
 		})
 	}
 	return possibleMoves
+}
+
+func (g *Game) Castle(castletype string) error {
+	homeRank := 1
+	var err error
+	b := g.Board
+	king, err := b.GetPieceAtSquare('e', homeRank)
+	if err != nil {
+		return err
+	}
+	if g.Turn == "black" {
+		homeRank = 8
+	}
+	if castletype == "short" {
+		err = b.MovePiece(Move{
+			Piece:    'K',
+			FromFile: 'e',
+			FromRank: homeRank,
+			ToFile:   'g',
+			ToRank:   homeRank,
+		})
+		if err != nil {
+			return err
+		}
+		err = b.MovePiece(Move{
+			Piece:    'R',
+			FromFile: 'h',
+			FromRank: homeRank,
+			ToFile:   'f',
+			ToRank:   homeRank,
+		})
+		if err != nil {
+			// Undo the king move
+			b.MovePiece(Move{
+				Piece:    'K',
+				FromFile: 'g',
+				FromRank: homeRank,
+				ToFile:   'e',
+				ToRank:   homeRank,
+			})
+			king.Moved = false
+			return err
+		}
+	} else if castletype == "long" {
+		err = b.MovePiece(Move{
+			Piece:    'K',
+			FromFile: 'e',
+			FromRank: homeRank,
+			ToFile:   'c',
+			ToRank:   homeRank,
+		})
+		if err != nil {
+			return err
+		}
+		err = b.MovePiece(Move{
+			Piece:    'R',
+			FromFile: 'a',
+			FromRank: homeRank,
+			ToFile:   'd',
+			ToRank:   homeRank,
+		})
+		if err != nil {
+			// Undo the king move
+			b.MovePiece(Move{
+				Piece:    'K',
+				FromFile: 'c',
+				FromRank: homeRank,
+				ToFile:   'e',
+				ToRank:   homeRank,
+			})
+			king.Moved = false
+			return err
+		}
+	} else {
+		return ErrInvalidMove
+	}
+	return nil
 }
 
 func (g *Game) changeTurn() {
