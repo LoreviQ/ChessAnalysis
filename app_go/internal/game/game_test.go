@@ -157,6 +157,57 @@ func TestPossibleMovesDuplicate(t *testing.T) {
 	}
 }
 
+func TestPossibleMovesCastle(t *testing.T) {
+	g := NewGame()
+	b := g.Board
+	// Move pieces up to open up castling
+	b.MovePiece(Move{FromFile: 'b', FromRank: 1, ToFile: 'b', ToRank: 3})
+	b.MovePiece(Move{FromFile: 'c', FromRank: 1, ToFile: 'c', ToRank: 3})
+	b.MovePiece(Move{FromFile: 'd', FromRank: 1, ToFile: 'd', ToRank: 3})
+	b.MovePiece(Move{FromFile: 'f', FromRank: 1, ToFile: 'f', ToRank: 3})
+	b.MovePiece(Move{FromFile: 'g', FromRank: 1, ToFile: 'g', ToRank: 3})
+	moves := g.GetPossibleMoves()
+	expectedMoves := []string{
+		// Pawn moves
+		"a3", "a4", "e3", "e4", "h3", "h4",
+		// Knight moves
+		"Nc1", "Na5", "Nc5", "Nd4",
+		"Nf1", "Nf5", "Nh5", "Ne4",
+		// Bishop moves
+		"Bb4", "Ba5", "Bd4", "Be5", "Bf6", "Bxg7",
+		"Bg4", "Bh5", "Be4", "Bd5", "Bc6", "Bxb7",
+		// Rook moves
+		"Rb1", "Rc1", "Rd1", "Rf1", "Rg1",
+		// Queen moves
+		"Qd4", "Qd5", "Qd6", "Qxd7",
+		"Qe4", "Qf5", "Qg6", "Qxh7",
+		"Qc4", "Qb5", "Qa6", "Qe3",
+		// King moves
+		"Kd1", "Kf1",
+		// Castling
+		"O-O", "O-O-O",
+	}
+	if len(moves) != len(expectedMoves) {
+		t.Errorf("Expected %d possible moves, got %d", len(expectedMoves), len(moves))
+	}
+	notations, err := ConvertMovesToShortAlgebraicNotation(moves)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	for _, move := range expectedMoves {
+		found := false
+		for notation := range notations {
+			if move == notation {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %s not found", move)
+		}
+	}
+}
+
 func TestMove(t *testing.T) {
 	g := NewGame()
 	tests := []struct {
