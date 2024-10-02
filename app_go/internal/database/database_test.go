@@ -1,11 +1,22 @@
-package main
+package database
 
-import "github.com/LoreviQ/ChessAnalysis/app_go/internal/database"
+import "testing"
 
-func main() {
-	db, err := database.NewConnection(true)
+func TestNewConnection(t *testing.T) {
+	db, err := NewConnection(true)
 	if err != nil {
-		panic(err)
+		t.Error(err)
+	}
+	if db.db == nil {
+		t.Error("Database connection is nil")
+	}
+	db.Close()
+}
+
+func TestInsertMoves(t *testing.T) {
+	db, err := NewConnection(true)
+	if err != nil {
+		t.Error(err)
 	}
 	moves_to_insert := []string{
 		"1", "e4", "g6", "2", "d4", "Bg7", "3", "e5", "d6",
@@ -18,7 +29,7 @@ func main() {
 	}
 	err = db.InsertMoves(moves_to_insert, "123456")
 	if err != nil {
-		panic(err)
+		t.Error(err)
 	}
 	db.Close()
 }

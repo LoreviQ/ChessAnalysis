@@ -15,10 +15,11 @@ import (
 type Database struct {
 	db      *sql.DB
 	queries map[string]string
+	testDB  bool
 }
 
 // NewConnection creates a new connection to the SQLite3 database
-func NewConnection() Database {
+func NewConnection(test bool) (Database, error) {
 	// Get file paths
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -27,23 +28,26 @@ func NewConnection() Database {
 	dir := filepath.Dir(filename)
 	databasePath := filepath.Join(dir, "database.db")
 	schemaPath := filepath.Join(dir, "sql", "schema.sql")
+	if test {
+		databasePath = filepath.Join(dir, "test_database.db")
+	}
 
 	// Open a connection to the SQLite3 database
 	db, err := sql.Open("sqlite3", databasePath)
 	if err != nil {
-		panic(err)
+		return Database{}, err
 	}
 
 	// Read the schema.sql file
 	schema, err := os.ReadFile(schemaPath)
 	if err != nil {
-		log.Fatal(err)
+		return Database{}, err
 	}
 
 	// Execute the SQL commands in the schema.sql file
 	_, err = db.Exec(string(schema))
 	if err != nil {
-		log.Fatal(err)
+		return Database{}, err
 	}
 
 	preparedQueries := map[string]string{
@@ -52,12 +56,26 @@ func NewConnection() Database {
 		"GET_LATEST_GAME_ID": "SELECT id FROM games WHERE chessdotcom_id = ? ORDER BY created_at DESC LIMIT 1",
 	}
 
-	return Database{db: db, queries: preparedQueries}
+	return Database{
+		db:      db,
+		queries: preparedQueries,
+		testDB:  test,
+	}, nil
 }
 
 // Close closes the connection to the SQLite3 database
 func (d Database) Close() {
 	d.db.Close()
+	// Cleanup the test database
+	if d.testDB {
+		_, filename, _, ok := runtime.Caller(0)
+		if !ok {
+			log.Fatal("Unable to get the current file path")
+		}
+		dir := filepath.Dir(filename)
+		databasePath := filepath.Join(dir, "test_database.db")
+		os.Remove(databasePath)
+	}
 }
 
 // InsertMoves inserts a list of moves into the database
