@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS games (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    chessdotcom_id INTEGER
+    chessdotcom_id TEXT
 );
 
 CREATE TABLE IF NOT EXISTS moves (
