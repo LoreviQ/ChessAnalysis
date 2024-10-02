@@ -163,6 +163,7 @@ func TestMove(t *testing.T) {
 		move string
 		err  error
 	}{
+		// First 7 moves of Vienna Game followed by 2 invalid moves
 		{"e4", nil},
 		{"e5", nil},
 		{"Nc3", nil},
