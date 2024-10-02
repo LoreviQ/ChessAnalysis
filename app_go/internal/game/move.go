@@ -165,11 +165,11 @@ func ConvertMovesToLongAlgebraicNotation(moves []Move) []string {
 func getCorrespondingMove(move Move, possibleMoves []Move) (Move, error) {
 	// Create a new slice to hold the filtered moves
 	for _, filterType := range []string{"castle", "mandatory", "file", "rank", "promotion", "check"} {
-		filteredMoves := filterMoves(move, possibleMoves, filterType)
-		if len(filteredMoves) == 1 {
-			return filteredMoves[0], nil
+		possibleMoves = filterMoves(move, possibleMoves, filterType)
+		if len(possibleMoves) == 1 {
+			return possibleMoves[0], nil
 		}
-		if len(filteredMoves) == 0 {
+		if len(possibleMoves) == 0 {
 			return Move{}, ErrInvalidMove
 		}
 	}

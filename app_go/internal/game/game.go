@@ -96,34 +96,29 @@ func (g *Game) logPossibleMoves() {
 // checks if it is valid and moves the piece
 func (g *Game) Move(moveStr string) error {
 	// Check if the move string is valid
-	_, err := parseRegex(moveStr)
+	move, err := parseRegex(moveStr)
 	if err != nil {
 		return err
 	}
 	// Get all possible moves for the current player
 	possibleMoves := g.GetPossibleMoves()
-	notationToMove, err := ConvertMovesToShortAlgebraicNotation(possibleMoves)
+	// Find the move that corresponds to the given move
+	correspondingMove, err := getCorrespondingMove(move, possibleMoves)
 	if err != nil {
 		return err
 	}
 	// Find the move that produces the given notation and play it
-	for notation := range notationToMove {
-		if notation == moveStr {
-			move := notationToMove[notation]
-			if move.Castle == "" {
-				err = g.Board.MovePiece(move)
-			} else {
-				err = g.Castle(move.Castle)
-			}
-			if err != nil {
-				return err
-			}
-			g.MoveHistory = append(g.MoveHistory, move)
-			g.changeTurn()
-			return nil
-		}
+	if correspondingMove.Castle == "" {
+		err = g.Board.MovePiece(correspondingMove)
+	} else {
+		err = g.Castle(correspondingMove.Castle)
 	}
-	return ErrInvalidMove
+	if err != nil {
+		return err
+	}
+	g.MoveHistory = append(g.MoveHistory, correspondingMove)
+	g.changeTurn()
+	return nil
 }
 
 // Get all possible moves for the current player

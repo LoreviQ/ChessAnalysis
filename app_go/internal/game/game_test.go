@@ -235,3 +235,30 @@ func TestMove(t *testing.T) {
 		})
 	}
 }
+
+func TestMoveAmbiguous(t *testing.T) {
+	g := NewGame()
+	tests := []struct {
+		move string
+		err  error
+	}{
+		// Quick move order to produce an ambiguous move
+		{"a4", nil},
+		{"a5", nil},
+		{"h4", nil},
+		{"h5", nil},
+		{"Ra3", nil},
+		{"Ra6", nil},
+		{"Rh3", ErrAmbiguousMove},
+		{"Rhh3", nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.move, func(t *testing.T) {
+			err := g.Move(tt.move)
+			if err != tt.err {
+				t.Errorf("Expected: %v, got: %v", tt.err, err)
+			}
+		})
+	}
+}
