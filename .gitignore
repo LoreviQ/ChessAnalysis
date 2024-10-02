@@ -1,4 +1,4 @@
 app/__pycache__
 .vscode
 *__debug_bin*
-app_go/.env
+*.env*
