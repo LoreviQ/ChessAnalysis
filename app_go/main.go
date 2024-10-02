@@ -1,13 +1,10 @@
 package main
 
 import (
-	"github.com/LoreviQ/ChessAnalysis/app_go/internal/game"
-	"github.com/LoreviQ/ChessAnalysis/app_go/internal/server"
+	"github.com/LoreviQ/ChessAnalysis/app_go/internal/database"
 )
 
 func main() {
-	g := game.NewGame()
-	s := server.NewServer()
-	go s.ListenAndServe()
-	g.Play()
+	d := database.NewConnection()
+	d.Close()
 }
