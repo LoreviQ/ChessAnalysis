@@ -170,6 +170,8 @@ func TestMove(t *testing.T) {
 		{"f4", nil},
 		{"exf4", nil},
 		{"e5", nil},
+		{"Ne1", ErrInvalidMove},
+		{"Qh4", ErrInvalidMove},
 	}
 
 	for _, tt := range tests {
