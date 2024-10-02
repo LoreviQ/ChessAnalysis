@@ -16,6 +16,7 @@ type serverCfg struct {
 func NewServer() *http.Server {
 	cfg := setupCfg()
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /readiness", cfg.getReadiness)
 	return &http.Server{
 		Addr:    fmt.Sprintf(":%s", cfg.port),
 		Handler: CorsMiddleware(mux),
