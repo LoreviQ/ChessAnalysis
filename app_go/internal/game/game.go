@@ -48,11 +48,6 @@ func (g *Game) GetPossibleMoves() []Move {
 	return possibleMoves
 }
 
-// Handle a duplicate move
-func handleDuplicateMove(move Move) {
-	// Handle duplicate move
-}
-
 // Parse a move string in algebraic notation
 func parseRegex(moveStr string) (Move, error) {
 	// Regex to parse move string

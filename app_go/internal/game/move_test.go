@@ -97,7 +97,7 @@ func TestLongAlgebraicNotation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		actual, err := tt.move.longAlgebraicNotation()
+		actual, err := tt.move.LongAlgebraicNotation()
 		if err != tt.err {
 			t.Errorf("Unexpected error: %v", err)
 		}
@@ -199,7 +199,7 @@ func TestShortAlgebraicNotation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		actual, err := tt.move.shortAlgebraicNotation()
+		actual, err := tt.move.ShortAlgebraicNotation(false, false)
 		if err != tt.err {
 			t.Errorf("Unexpected error: %v", err)
 		}
