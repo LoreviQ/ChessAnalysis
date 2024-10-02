@@ -68,6 +68,5 @@ func (cfg *serverCfg) getLatestMoves(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Response
-
 	respondWithJSON(w, http.StatusOK, getLatestMoveResponse{Moves: moves})
 }

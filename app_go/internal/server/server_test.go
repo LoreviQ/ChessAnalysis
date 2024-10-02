@@ -48,20 +48,7 @@ func TestPostGetMoves(t *testing.T) {
 	defer srv.Close()
 	url := cfg.url.String()
 
-	// Wait for server to start
-	for {
-		resp, err := http.Get(fmt.Sprintf("%s/readiness", url))
-		if err != nil {
-			continue
-		}
-		if resp != nil {
-			if resp.StatusCode == http.StatusOK {
-				resp.Body.Close()
-				break
-			}
-			resp.Body.Close()
-		}
-	}
+	waitForServerToStart(url)
 
 	movesToInsert := []string{
 		"1", "e4", "g6", "2", "d4", "Bg7", "3", "e5", "d6",
@@ -121,6 +108,23 @@ func TestPostGetMoves(t *testing.T) {
 	for i := range response.Moves {
 		if response.Moves[i] != expectedMoves[i] {
 			t.Errorf("Expected move %s, got %s", expectedMoves[i], response.Moves[i])
+		}
+	}
+}
+
+// blocking function that waits for the server to start
+func waitForServerToStart(url string) {
+	for {
+		resp, err := http.Get(fmt.Sprintf("%s/readiness", url))
+		if err != nil {
+			continue
+		}
+		if resp != nil {
+			if resp.StatusCode == http.StatusOK {
+				resp.Body.Close()
+				break
+			}
+			resp.Body.Close()
 		}
 	}
 }
