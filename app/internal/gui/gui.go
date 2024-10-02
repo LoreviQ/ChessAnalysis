@@ -6,35 +6,41 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/op"
+	"gioui.org/unit"
 	"gioui.org/widget/material"
 )
 
 type GUI struct {
-	window  *app.Window
-	ops     *op.Ops
-	theme   *material.Theme
-	colours *colours
-}
+	window *app.Window
+	ops    *op.Ops
+	theme  *material.Theme
 
-type colours struct {
-	bg        color.NRGBA
-	fg        color.NRGBA
-	text      color.NRGBA
-	highlight color.NRGBA
+	header  *header
+	sidebar *sidebar
+	board   *board
 }
 
 // Returns a GUI struct
-func NewGUI() *GUI {
+func NewGUI(width, height int) *GUI {
+	w := new(app.Window)
+	w.Option(app.Size(unit.Dp(width), unit.Dp(height)))
+	w.Option(app.Title("Chess Analysis"))
+	ops := new(op.Ops)
+	th := material.NewTheme()
+	th.Palette.Bg = color.NRGBA{48, 46, 42, 255}
+
+	// define components
+	header := newHeader()
+	sidebar := newSidebar()
+	board := newBoard()
+
 	return &GUI{
-		window: new(app.Window),
-		ops:    new(op.Ops),
-		theme:  material.NewTheme(),
-		colours: &colours{
-			bg:        color.NRGBA{41, 40, 45, 255},
-			fg:        color.NRGBA{53, 54, 62, 255},
-			text:      color.NRGBA{255, 255, 255, 255},
-			highlight: color.NRGBA{63, 81, 182, 255},
-		},
+		window:  w,
+		ops:     ops,
+		theme:   th,
+		header:  header,
+		sidebar: sidebar,
+		board:   board,
 	}
 }
 
@@ -51,8 +57,9 @@ func (g *GUI) draw() error {
 
 		// Re-render app
 		case app.FrameEvent:
-			g.landingPage(e)
-
+			gtx := app.NewContext(g.ops, e)
+			g.layout(gtx)
+			e.Frame(gtx.Ops)
 		// Exit app
 		case app.DestroyEvent:
 			os.Exit(0)

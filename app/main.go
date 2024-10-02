@@ -20,7 +20,7 @@ func startApp() error {
 	defer server.Close()
 
 	// GUI
-	myGUI := gui.NewGUI()
+	myGUI := gui.NewGUI(2000, 1200)
 	myGUI.CreateGUI()
 	return nil
 }
