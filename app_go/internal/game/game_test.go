@@ -102,7 +102,7 @@ func TestPossibleMoves(t *testing.T) {
 	}
 	for _, move := range expectedMoves {
 		found := false
-		for _, notation := range notations {
+		for notation := range notations {
 			if move == notation {
 				found = true
 				break
@@ -145,7 +145,7 @@ func TestPossibleMovesDuplicate(t *testing.T) {
 	}
 	for _, move := range expectedMoves {
 		found := false
-		for _, notation := range notations {
+		for notation := range notations {
 			if move == notation {
 				found = true
 				break

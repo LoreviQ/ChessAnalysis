@@ -244,7 +244,7 @@ func TestConvertMovesToShortAlgebraicNotation(t *testing.T) {
 	}
 	for _, expectedString := range expected {
 		found := false
-		for _, actualString := range actual {
+		for actualString := range actual {
 			if expectedString == actualString {
 				found = true
 				break

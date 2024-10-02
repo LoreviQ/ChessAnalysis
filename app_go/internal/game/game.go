@@ -30,17 +30,21 @@ func NewGame() *Game {
 // Takes a move string in algebraic notation,
 // checks if it is valid and moves the piece
 func (g *Game) Move(moveStr string) error {
-	move, err := parseRegex(moveStr)
+	// Check if the move string is valid
+	_, err := parseRegex(moveStr)
 	if err != nil {
 		return err
 	}
+	// Get all possible moves for the current player
 	possibleMoves := g.GetPossibleMoves()
-	shortNotations, err := ConvertMovesToShortAlgebraicNotation(possibleMoves)
+	notationToMove, err := ConvertMovesToShortAlgebraicNotation(possibleMoves)
 	if err != nil {
 		return err
 	}
-	for _, shortNotation := range shortNotations {
-		if shortNotation == moveStr {
+	// Find the move that produces the given notation and play it
+	for notation := range notationToMove {
+		if notation == moveStr {
+			move := notationToMove[notation]
 			err = g.Board.MovePiece(move)
 			if err != nil {
 				return err

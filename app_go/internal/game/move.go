@@ -111,7 +111,7 @@ func (m Move) ShortAlgebraicNotation(includeFile, includeRank bool) (string, err
 
 // Get a list of strings represnting the short algebraic notation of provided moves
 // Disambiguates between duplicate moves
-func ConvertMovesToShortAlgebraicNotation(moves []Move) ([]string, error) {
+func ConvertMovesToShortAlgebraicNotation(moves []Move) (map[string]Move, error) {
 	notationToMove := map[string]Move{}
 	for _, move := range moves {
 		shortAlgebraicNotation, err := move.ShortAlgebraicNotation(false, false)
@@ -144,9 +144,5 @@ func ConvertMovesToShortAlgebraicNotation(moves []Move) ([]string, error) {
 			notationToMove[shortAlgebraicNotation] = move
 		}
 	}
-	notations := make([]string, 0, len(notationToMove))
-	for notation := range notationToMove {
-		notations = append(notations, notation)
-	}
-	return notations, nil
+	return notationToMove, nil
 }

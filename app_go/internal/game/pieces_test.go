@@ -189,20 +189,20 @@ func TestGetRookMoves(t *testing.T) {
 	rook, _ := b.GetPieceAtSquare('d', 4)
 	expected := []Move{
 		// Forward
-		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 5},
-		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 6},
-		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 7, Capture: 'x'},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 5},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 6},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 7, Capture: 'x'},
 		// Backward
-		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 3},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 3},
 		// Left
-		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 4},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 4},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 4},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 4},
 		// Right
-		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'h', ToRank: 4},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 4},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 4},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 4},
+		{Piece: 'R', FromFile: 'd', FromRank: 4, ToFile: 'h', ToRank: 4},
 	}
 	moves := rook.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
@@ -231,17 +231,17 @@ func TestGetBishopMoves(t *testing.T) {
 	bishop, _ := b.GetPieceAtSquare('d', 4)
 	expected := []Move{
 		// Forward left
-		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 5},
-		{FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 6},
-		{FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 7, Capture: 'x'},
+		{Piece: 'B', FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 5},
+		{Piece: 'B', FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 6},
+		{Piece: 'B', FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 7, Capture: 'x'},
 		// Forward right
-		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 5},
-		{FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 6},
-		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 7, Capture: 'x'},
+		{Piece: 'B', FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 5},
+		{Piece: 'B', FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 6},
+		{Piece: 'B', FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 7, Capture: 'x'},
 		// Backward left
-		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 3},
+		{Piece: 'B', FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 3},
 		// Backward right
-		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
+		{Piece: 'B', FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
 	}
 	moves := bishop.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
@@ -270,32 +270,32 @@ func TestGetQueenMoves(t *testing.T) {
 	queen, _ := b.GetPieceAtSquare('d', 4)
 	expected := []Move{
 		// Forward
-		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 5},
-		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 6},
-		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 7, Capture: 'x'},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 5},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 6},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 7, Capture: 'x'},
 		// Backward
-		{FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 3},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'd', ToRank: 3},
 		// Left
-		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 4},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 4},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 4},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 4},
 		// Right
-		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 4},
-		{FromFile: 'd', FromRank: 4, ToFile: 'h', ToRank: 4},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 4},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 4},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 4},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'h', ToRank: 4},
 		// Forward left
-		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 5},
-		{FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 6},
-		{FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 7, Capture: 'x'},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 5},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'b', ToRank: 6},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'a', ToRank: 7, Capture: 'x'},
 		// Forward right
-		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 5},
-		{FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 6},
-		{FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 7, Capture: 'x'},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 5},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'f', ToRank: 6},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'g', ToRank: 7, Capture: 'x'},
 		// Backward left
-		{FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 3},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'c', ToRank: 3},
 		// Backward right
-		{FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
+		{Piece: 'Q', FromFile: 'd', FromRank: 4, ToFile: 'e', ToRank: 3},
 	}
 	moves := queen.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
@@ -325,13 +325,13 @@ func TestGetKnightMoves(t *testing.T) {
 	b.MovePiece(Move{FromFile: 'c', FromRank: 2, ToFile: 'c', ToRank: 3})
 	knight, _ := b.GetPieceAtSquare('d', 5)
 	expected := []Move{
-		{FromFile: 'd', FromRank: 5, ToFile: 'b', ToRank: 4},
-		{FromFile: 'd', FromRank: 5, ToFile: 'b', ToRank: 6},
-		{FromFile: 'd', FromRank: 5, ToFile: 'e', ToRank: 3},
-		{FromFile: 'd', FromRank: 5, ToFile: 'f', ToRank: 4},
-		{FromFile: 'd', FromRank: 5, ToFile: 'f', ToRank: 6},
-		{FromFile: 'd', FromRank: 5, ToFile: 'e', ToRank: 7, Capture: 'x'},
-		{FromFile: 'd', FromRank: 5, ToFile: 'c', ToRank: 7, Capture: 'x'},
+		{Piece: 'N', FromFile: 'd', FromRank: 5, ToFile: 'b', ToRank: 4},
+		{Piece: 'N', FromFile: 'd', FromRank: 5, ToFile: 'b', ToRank: 6},
+		{Piece: 'N', FromFile: 'd', FromRank: 5, ToFile: 'e', ToRank: 3},
+		{Piece: 'N', FromFile: 'd', FromRank: 5, ToFile: 'f', ToRank: 4},
+		{Piece: 'N', FromFile: 'd', FromRank: 5, ToFile: 'f', ToRank: 6},
+		{Piece: 'N', FromFile: 'd', FromRank: 5, ToFile: 'e', ToRank: 7, Capture: 'x'},
+		{Piece: 'N', FromFile: 'd', FromRank: 5, ToFile: 'c', ToRank: 7, Capture: 'x'},
 	}
 	moves := knight.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
@@ -361,11 +361,11 @@ func TestGetKingMoves(t *testing.T) {
 	b.MovePiece(Move{FromFile: 'd', FromRank: 7, ToFile: 'd', ToRank: 4})
 	king, _ := b.GetPieceAtSquare('e', 3)
 	expected := []Move{
-		{FromFile: 'e', FromRank: 3, ToFile: 'd', ToRank: 4, Capture: 'x'},
-		{FromFile: 'e', FromRank: 3, ToFile: 'e', ToRank: 4},
-		{FromFile: 'e', FromRank: 3, ToFile: 'f', ToRank: 4},
-		{FromFile: 'e', FromRank: 3, ToFile: 'd', ToRank: 3},
-		{FromFile: 'e', FromRank: 3, ToFile: 'f', ToRank: 3},
+		{Piece: 'K', FromFile: 'e', FromRank: 3, ToFile: 'd', ToRank: 4, Capture: 'x'},
+		{Piece: 'K', FromFile: 'e', FromRank: 3, ToFile: 'e', ToRank: 4},
+		{Piece: 'K', FromFile: 'e', FromRank: 3, ToFile: 'f', ToRank: 4},
+		{Piece: 'K', FromFile: 'e', FromRank: 3, ToFile: 'd', ToRank: 3},
+		{Piece: 'K', FromFile: 'e', FromRank: 3, ToFile: 'f', ToRank: 3},
 	}
 	moves := king.GetPossibleMoves(g)
 	if len(moves) != len(expected) {
