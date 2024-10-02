@@ -31,7 +31,25 @@ func (g *Game) MovePiece(moveStr string) error {
 	if err != nil {
 		return err
 	}
-	g.GetPossibleMoves()
+	possibleMoves := g.GetPossibleMoves()
+	shortNotations, err := ConvertMovesToShortAlgebraicNotation(possibleMoves)
+	if err != nil {
+		return err
+	}
+	for _, shortNotation := range shortNotations {
+		if shortNotation == moveStr {
+			move, err := parseRegex(moveStr)
+			if err != nil {
+				return err
+			}
+			err = g.Board.MovePiece(move)
+			if err != nil {
+				return err
+			}
+			g.MoveHistory = append(g.MoveHistory, move)
+			break
+		}
+	}
 	return nil
 }
 
