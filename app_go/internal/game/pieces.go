@@ -271,6 +271,10 @@ func (p *Piece) getMovesInDirection(g *Game, moveType string) ([]Move, error) {
 	if err != nil {
 		return []Move{}, err
 	}
+	pieceSymbol, err := p.getSymbol()
+	if err != nil {
+		return []Move{}, err
+	}
 	directions := map[string][]int{}
 	if moveType != "orthogonal" && moveType != "diagonal" && moveType != "both" {
 		return nil, fmt.Errorf("invalid move type")
@@ -301,6 +305,7 @@ func (p *Piece) getMovesInDirection(g *Game, moveType string) ([]Move, error) {
 			if toPiece != nil {
 				if toPiece.Color != p.Color {
 					moves = append(moves, Move{
+						Piece:    pieceSymbol,
 						FromFile: fromFile,
 						FromRank: fromRank,
 						Capture:  'x',
@@ -311,6 +316,7 @@ func (p *Piece) getMovesInDirection(g *Game, moveType string) ([]Move, error) {
 				break
 			}
 			moves = append(moves, Move{
+				Piece:    pieceSymbol,
 				FromFile: fromFile,
 				FromRank: fromRank,
 				ToFile:   toFile,
@@ -327,6 +333,10 @@ func (p *Piece) exaluatePossibleMoves(g *Game, possibleMoves [][]int) []Move {
 	if err != nil {
 		return []Move{}
 	}
+	pieceSymbol, err := p.getSymbol()
+	if err != nil {
+		return []Move{}
+	}
 	for _, move := range possibleMoves {
 		toFile := fromFile + rune(move[0])
 		toRank := fromRank + move[1]
@@ -339,6 +349,7 @@ func (p *Piece) exaluatePossibleMoves(g *Game, possibleMoves [][]int) []Move {
 			capture = 'x'
 		}
 		moves = append(moves, Move{
+			Piece:    pieceSymbol,
 			FromFile: fromFile,
 			FromRank: fromRank,
 			ToFile:   toFile,

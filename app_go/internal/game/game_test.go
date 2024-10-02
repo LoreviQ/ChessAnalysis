@@ -83,6 +83,37 @@ func TestParseRegex(t *testing.T) {
 	}
 }
 
+func TestPossibleMoves(t *testing.T) {
+	g := NewGame()
+	moves := g.GetPossibleMoves()
+	expectedMoves := []string{
+		"a3", "a4", "b3", "b4",
+		"c3", "c4", "d3", "d4",
+		"e3", "e4", "f3", "f4",
+		"g3", "g4", "h3", "h4",
+		"Nc3", "Nf3", "Nh3", "Na3",
+	}
+	if len(moves) != 20 {
+		t.Errorf("Expected 20 possible moves, got %d", len(moves))
+	}
+	notations, err := ConvertMovesToShortAlgebraicNotation(moves)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	for _, move := range expectedMoves {
+		found := false
+		for _, notation := range notations {
+			if move == notation {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %s not found", move)
+		}
+	}
+}
+
 func TestMove(t *testing.T) {
 	g := NewGame()
 	tests := []struct {
