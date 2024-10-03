@@ -53,6 +53,7 @@ func NewConnection(test bool) (*Database, error) {
 		"INSERT_GAME":        "INSERT INTO games (chessdotcom_id) VALUES (?) RETURNING id",
 		"GET_LATEST_GAME_ID": "SELECT id FROM games WHERE chessdotcom_id = ? ORDER BY created_at DESC LIMIT 1",
 		"GET_LATEST_MOVES":   "SELECT move_data FROM moves WHERE game_id = ? ORDER BY created_at DESC LIMIT 1",
+		"GET_GAMES":          "SELECT id, created_at, chessdotcom_id FROM games",
 	}
 
 	return &Database{
