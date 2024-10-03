@@ -18,16 +18,11 @@ type Database struct {
 
 // NewConnection creates a new connection to the SQLite3 database
 func NewConnection(test bool) (*Database, error) {
-	// Get file paths
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		log.Fatal("Unable to get the current file path")
-	}
-	dir := filepath.Dir(filename)
-	databasePath := filepath.Join(dir, "database.db")
-	schemaPath := filepath.Join(dir, "sql", "schema.sql")
+	// Define the database path and schema path
+	databasePath := "database.db"
+	schemaPath := filepath.Join("sql", "schema.sql")
 	if test {
-		databasePath = filepath.Join(dir, "test_database.db")
+		databasePath = "test_database.db"
 	}
 
 	// Open a connection to the SQLite3 database
