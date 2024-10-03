@@ -2,8 +2,8 @@ package database
 
 type Game struct {
 	ID            int
-	createdAt     string
-	chessdotcomID string
+	CreatedAt     string
+	ChessdotcomID string
 }
 
 // GetGames returns all games from the database
@@ -16,7 +16,7 @@ func (d Database) GetGames() ([]Game, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var game Game
-		err := rows.Scan(&game.ID, &game.createdAt, &game.chessdotcomID)
+		err := rows.Scan(&game.ID, &game.CreatedAt, &game.ChessdotcomID)
 		if err != nil {
 			return nil, err
 		}

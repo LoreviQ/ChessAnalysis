@@ -26,8 +26,8 @@ func TestGetGames(t *testing.T) {
 		if game.ID != i+1 {
 			t.Errorf("Expected game ID %d, got %d", i+1, game.ID)
 		}
-		if game.chessdotcomID != gameids[i] {
-			t.Errorf("Expected game chess.com ID %s, got %s", gameids[i], game.chessdotcomID)
+		if game.ChessdotcomID != gameids[i] {
+			t.Errorf("Expected game chess.com ID %s, got %s", gameids[i], game.ChessdotcomID)
 		}
 	}
 

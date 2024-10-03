@@ -2,7 +2,6 @@ package gui
 
 import (
 	"image"
-	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -21,15 +20,6 @@ func newBoard(g *GUI) *board {
 }
 
 func (b *board) Layout(gtx layout.Context) layout.Dimensions {
-	// temp fill for development
-	rect := image.Rectangle{
-		Max: image.Point{
-			X: gtx.Constraints.Max.X,
-			Y: gtx.Constraints.Max.Y,
-		},
-	}
-	paint.FillShape(gtx.Ops, color.NRGBA{0, 0, 255, 255}, clip.Rect(rect).Op())
-
 	return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
 		layout.Flexed(1, layout.Spacer{}.Layout),
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {

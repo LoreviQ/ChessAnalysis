@@ -1,11 +1,15 @@
 package gui
 
 import (
+	"image"
 	"image/color"
 	"os"
 
 	"gioui.org/app"
+	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/clip"
+	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget/material"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
@@ -69,6 +73,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	ops := new(op.Ops)
 	th := NewTheme()
 	th.giouiTheme.Palette.Bg = color.NRGBA{48, 46, 42, 255}
+	th.giouiTheme.Palette.Fg = color.NRGBA{255, 255, 255, 255}
 
 	// define components
 	g := &GUI{
@@ -105,4 +110,31 @@ func (g *GUI) draw() error {
 			os.Exit(0)
 		}
 	}
+}
+
+func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
+	// Set Background
+	rect := image.Rectangle{
+		Max: image.Point{
+			X: gtx.Constraints.Max.X,
+			Y: gtx.Constraints.Max.Y,
+		},
+	}
+	paint.FillShape(gtx.Ops, g.theme.giouiTheme.Palette.Bg, clip.Rect(rect).Op())
+	return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return g.header.Layout(gtx)
+		}),
+		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+			return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
+				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+					return g.sidebar.Layout(gtx)
+				}),
+				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+					return g.board.Layout(gtx)
+				}),
+			)
+		}),
+	)
+
 }
