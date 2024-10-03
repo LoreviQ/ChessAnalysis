@@ -10,12 +10,12 @@ import (
 )
 
 type sidebar struct {
-	theme *chessAnalysisTheme
+	g *GUI
 }
 
-func newSidebar(theme *chessAnalysisTheme) *sidebar {
+func newSidebar(g *GUI) *sidebar {
 	return &sidebar{
-		theme: theme,
+		g: g,
 	}
 }
 

@@ -11,12 +11,12 @@ import (
 
 type board struct {
 	squares [8][8]*image.Rectangle
-	theme   *chessAnalysisTheme
+	g       *GUI
 }
 
-func newBoard(theme *chessAnalysisTheme) *board {
+func newBoard(g *GUI) *board {
 	return &board{
-		theme: theme,
+		g: g,
 	}
 }
 
@@ -63,9 +63,9 @@ func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 			)
 			b.squares[i][j] = &square
 			if (i+j)%2 != 0 {
-				paint.FillShape(gtx.Ops, b.theme.chessBoardTheme.square1Colour, clip.Rect(square).Op())
+				paint.FillShape(gtx.Ops, b.g.theme.chessBoardTheme.square1Colour, clip.Rect(square).Op())
 			} else {
-				paint.FillShape(gtx.Ops, b.theme.chessBoardTheme.square2Colour, clip.Rect(square).Op())
+				paint.FillShape(gtx.Ops, b.g.theme.chessBoardTheme.square2Colour, clip.Rect(square).Op())
 			}
 		}
 	}

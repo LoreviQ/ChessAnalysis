@@ -10,12 +10,12 @@ import (
 )
 
 type header struct {
-	theme *chessAnalysisTheme
+	g *GUI
 }
 
-func newHeader(theme *chessAnalysisTheme) *header {
+func newHeader(g *GUI) *header {
 	return &header{
-		theme: theme,
+		g: g,
 	}
 }
 

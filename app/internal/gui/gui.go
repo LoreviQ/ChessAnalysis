@@ -71,19 +71,17 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	th.giouiTheme.Palette.Bg = color.NRGBA{48, 46, 42, 255}
 
 	// define components
-	header := newHeader(th)
-	sidebar := newSidebar(th)
-	board := newBoard(th)
-
-	return &GUI{
-		window:  w,
-		ops:     ops,
-		theme:   th,
-		header:  header,
-		sidebar: sidebar,
-		board:   board,
-		db:      db,
+	g := &GUI{
+		window: w,
+		ops:    ops,
+		theme:  th,
+		db:     db,
 	}
+	g.header = newHeader(g)
+	g.sidebar = newSidebar(g)
+	g.board = newBoard(g)
+
+	return g
 }
 
 // CreateGUI creates the GUI
