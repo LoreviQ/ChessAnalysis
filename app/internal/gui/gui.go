@@ -8,6 +8,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/unit"
 	"gioui.org/widget/material"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
 )
 
 type GUI struct {
@@ -15,9 +16,13 @@ type GUI struct {
 	ops    *op.Ops
 	theme  *chessAnalysisTheme
 
+	// Components
 	header  *header
 	sidebar *sidebar
 	board   *board
+
+	// Database
+	db *database.Database
 }
 
 type chessAnalysisTheme struct {
@@ -48,7 +53,16 @@ func NewChessBoardTheme(theme string) *chessBoardTheme {
 }
 
 // Returns a GUI struct
-func NewGUI(width, height int) *GUI {
+func NewGUI(width, height int, db *database.Database) *GUI {
+	// Default window size
+	if width == 0 {
+		width = 2000
+	}
+	if height == 0 {
+		height = 1200
+	}
+
+	// Create window
 	w := new(app.Window)
 	w.Option(app.Size(unit.Dp(width), unit.Dp(height)))
 	w.Option(app.Title("Chess Analysis"))
@@ -68,6 +82,7 @@ func NewGUI(width, height int) *GUI {
 		header:  header,
 		sidebar: sidebar,
 		board:   board,
+		db:      db,
 	}
 }
 
