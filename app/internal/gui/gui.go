@@ -37,6 +37,8 @@ type chessAnalysisTheme struct {
 type chessBoardTheme struct {
 	square1Colour color.NRGBA
 	square2Colour color.NRGBA
+	player1Colour color.NRGBA
+	player2Colour color.NRGBA
 }
 
 func NewTheme() *chessAnalysisTheme {
@@ -50,8 +52,10 @@ func NewChessBoardTheme(theme string) *chessBoardTheme {
 	switch theme {
 	default: // chess.com theme
 		return &chessBoardTheme{
-			square1Colour: color.NRGBA{114, 148, 82, 255},
-			square2Colour: color.NRGBA{234, 236, 206, 255},
+			square1Colour: color.NRGBA{234, 236, 206, 255},
+			square2Colour: color.NRGBA{114, 148, 82, 255},
+			player1Colour: color.NRGBA{255, 255, 255, 255},
+			player2Colour: color.NRGBA{64, 61, 57, 255},
 		}
 	}
 }
