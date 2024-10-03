@@ -58,7 +58,7 @@ func (g *GUI) draw() error {
 		// Re-render app
 		case app.FrameEvent:
 			gtx := app.NewContext(g.ops, e)
-			g.layout(gtx)
+			g.Layout(gtx)
 			e.Frame(gtx.Ops)
 		// Exit app
 		case app.DestroyEvent:

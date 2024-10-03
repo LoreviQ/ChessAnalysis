@@ -8,7 +8,7 @@ import (
 	"gioui.org/op/paint"
 )
 
-func (g *GUI) layout(gtx layout.Context) layout.Dimensions {
+func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 	// Set Background
 	rect := image.Rectangle{
 		Max: image.Point{
