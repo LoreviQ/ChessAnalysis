@@ -42,7 +42,7 @@ type chessBoardTheme struct {
 	square2Colour color.NRGBA
 	player1Colour color.NRGBA
 	player2Colour color.NRGBA
-	pieces        map[string]*paint.ImageOp
+	pieces        map[string]*image.Image
 }
 
 func NewTheme() *chessAnalysisTheme {
@@ -153,8 +153,8 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 	)
 }
 
-func loadImages(themeName string) (map[string]*paint.ImageOp, error) {
-	pieces := make(map[string]*paint.ImageOp)
+func loadImages(themeName string) (map[string]*image.Image, error) {
+	pieces := make(map[string]*image.Image)
 	dir := filepath.Join("assets", "images", themeName)
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -166,7 +166,7 @@ func loadImages(themeName string) (map[string]*paint.ImageOp, error) {
 			if err != nil {
 				return err
 			}
-			pieces[imageName] = &img
+			pieces[imageName] = img
 		}
 		return nil
 	})
@@ -176,17 +176,17 @@ func loadImages(themeName string) (map[string]*paint.ImageOp, error) {
 	return pieces, nil
 }
 
-func loadImage(filename string) (paint.ImageOp, error) {
+func loadImage(filename string) (*image.Image, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return paint.ImageOp{}, err
+		return nil, err
 	}
 	defer file.Close()
 
 	img, _, err := image.Decode(file)
 	if err != nil {
-		return paint.ImageOp{}, err
+		return nil, err
 	}
 
-	return paint.NewImageOp(img), nil
+	return &img, nil
 }

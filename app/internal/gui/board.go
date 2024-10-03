@@ -99,6 +99,8 @@ func (b *board) drawSquares(maxRow, maxCol int) [][]layout.FlexChild {
 	return children
 }
 
+func drawImage()
+
 func (b *board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	rect1 := image.Rectangle{
 		Max: image.Point{
