@@ -30,11 +30,9 @@ func NewGame() *Game {
 // by playing them and getting the long algebraic notation of the move history
 func ConvertNotation(moves []string) ([]string, error) {
 	g := NewGame()
-	for _, move := range moves {
-		err := g.Move(move)
-		if err != nil {
-			return nil, err
-		}
+	err := g.Moves(moves)
+	if err != nil {
+		return nil, err
 	}
 	return ConvertMovesToLongAlgebraicNotation(g.MoveHistory), nil
 }
@@ -138,6 +136,17 @@ func (g *Game) Move(moveStr string) error {
 	}
 	g.MoveHistory = append(g.MoveHistory, correspondingMove)
 	g.changeTurn()
+	return nil
+}
+
+// Takes a slice of move strings in algebraic notation and plays them
+func (g *Game) Moves(moveStrs []string) error {
+	for _, moveStr := range moveStrs {
+		err := g.Move(moveStr)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
