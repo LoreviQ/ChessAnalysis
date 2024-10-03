@@ -20,24 +20,31 @@ func newBoard(g *GUI) *board {
 }
 
 func (b *board) Layout(gtx layout.Context) layout.Dimensions {
-	return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
-		layout.Flexed(1, layout.Spacer{}.Layout),
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
-				layout.Flexed(1, layout.Spacer{}.Layout),
-				layout.Rigid(b.drawBoard),
-				layout.Flexed(1, layout.Spacer{}.Layout),
-			)
-		}),
-		layout.Flexed(1, layout.Spacer{}.Layout),
-	)
+	margins := layout.Inset{
+		Top:    100,
+		Bottom: 100,
+	}
+
+	return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
+			layout.Flexed(1, layout.Spacer{}.Layout),
+			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+				return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
+					layout.Flexed(1, layout.Spacer{}.Layout),
+					layout.Rigid(b.drawBoard),
+					layout.Flexed(1, layout.Spacer{}.Layout),
+				)
+			}),
+			layout.Flexed(1, layout.Spacer{}.Layout),
+		)
+	})
 }
 
 func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 	// Calculate square size
 	largest := gtx.Constraints.Max.X
-	if (gtx.Constraints.Max.Y - 200) < largest {
-		largest = gtx.Constraints.Max.Y - 200
+	if (gtx.Constraints.Max.Y) < largest {
+		largest = gtx.Constraints.Max.Y
 	}
 	squareSize := (largest) / 8
 	boardSize := image.Point{X: squareSize * 8, Y: squareSize * 8}
