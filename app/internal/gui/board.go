@@ -8,6 +8,8 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
+	"gioui.org/widget"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 )
 
 type board struct {
@@ -15,6 +17,7 @@ type board struct {
 	squares      [][]layout.FlexChild
 	squareSize   image.Point
 	activeGameID int
+	gameState    *game.Game
 }
 
 func newBoard(g *GUI) *board {
@@ -30,6 +33,17 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 		Left:   50,
 		Right:  50,
 	}
+
+	// Get the moves for the active game
+	moves, err := b.gui.db.GetMovesByID(b.activeGameID)
+	if err != nil {
+		panic(err)
+	}
+
+	// Get the board state for the active game
+	game := game.NewGame()
+	game.Moves(moves)
+	b.gameState = game
 
 	return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		smallest := gtx.Constraints.Max.X
@@ -79,11 +93,31 @@ func (b *board) drawRows() []layout.FlexChild {
 
 func (b *board) drawSquare(i, j int) layout.FlexChild {
 	return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-		square := image.Rectangle{
-			Max: b.squareSize,
-		}
-		paint.FillShape(gtx.Ops, b.getSquareColour(i, j), clip.Rect(square).Op())
-		return layout.Dimensions{Size: square.Max}
+		return layout.Stack{}.Layout(gtx,
+			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+				// Draw the square
+				square := image.Rectangle{
+					Max: b.squareSize,
+				}
+				paint.FillShape(gtx.Ops, b.getSquareColour(i, j), clip.Rect(square).Op())
+				return layout.Dimensions{Size: square.Max}
+			}),
+			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+				// Draw the piece
+				piece := b.gameState.Board.Squares[i][j]
+				if piece == nil {
+					return layout.Dimensions{}
+				}
+				img := b.gui.theme.chessBoardTheme.pieces[piece.GetImageName()]
+				return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
+							layout.Rigid(b.drawImage(*img)),
+						)
+					}),
+				)
+			}),
+		)
 	})
 }
 
@@ -99,7 +133,15 @@ func (b *board) drawSquares(maxRow, maxCol int) [][]layout.FlexChild {
 	return children
 }
 
-func drawImage()
+func (b *board) drawImage(image image.Image) func(layout.Context) layout.Dimensions {
+	scale := float32(b.squareSize.X) / float32(image.Bounds().Dx())
+	return func(gtx layout.Context) layout.Dimensions {
+		return widget.Image{
+			Src:   paint.NewImageOp(image),
+			Scale: scale,
+		}.Layout(gtx)
+	}
+}
 
 func (b *board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	rect1 := image.Rectangle{
