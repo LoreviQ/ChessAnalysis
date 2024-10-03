@@ -8,6 +8,10 @@ import (
 	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 )
 
+var (
+	ErrNoMoves = errors.New("game has no moves")
+)
+
 // InsertMoves inserts a list of moves into the database
 func (d Database) InsertMoves(moves []string, chessdotcomID string) error {
 	chessdotcomID_NullString := sql.NullString{String: chessdotcomID, Valid: chessdotcomID != ""}
@@ -49,7 +53,7 @@ func (d Database) GetMovesByID(id int) ([]string, error) {
 	var moves string
 	err := d.db.QueryRow(d.queries["GET_LATEST_MOVES"], id).Scan(&moves)
 	if err != nil {
-		return nil, errors.New("game has no moves")
+		return nil, ErrNoMoves
 	}
 	return strings.Split(moves, " "), nil
 }

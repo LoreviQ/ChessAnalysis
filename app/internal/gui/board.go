@@ -7,6 +7,7 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
 )
 
 type board struct {
@@ -63,8 +64,9 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 	// Get move data
 	_, err := b.gui.db.GetMovesByID(b.activeGameID)
-	if err != nil {
-		return layout.Dimensions{}
+	if err == database.ErrNoMoves {
+	} else if err != nil {
+		panic(err)
 	}
 
 	// Layout board squares
