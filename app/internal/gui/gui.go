@@ -37,12 +37,16 @@ type chessAnalysisTheme struct {
 }
 
 type chessBoardTheme struct {
-	themeName     string
-	square1Colour color.NRGBA
-	square2Colour color.NRGBA
-	player1Colour color.NRGBA
-	player2Colour color.NRGBA
-	pieces        map[string]*image.Image
+	themeName  string
+	bg         color.NRGBA
+	fg         color.NRGBA
+	contrastBg color.NRGBA
+	contrastFg color.NRGBA
+	square1    color.NRGBA
+	square2    color.NRGBA
+	player1    color.NRGBA
+	player2    color.NRGBA
+	pieces     map[string]*image.Image
 }
 
 func NewTheme() *chessAnalysisTheme {
@@ -61,12 +65,16 @@ func NewChessBoardTheme(theme string) *chessBoardTheme {
 			return nil
 		}
 		return &chessBoardTheme{
-			themeName:     themeName,
-			square1Colour: color.NRGBA{234, 236, 206, 255},
-			square2Colour: color.NRGBA{114, 148, 82, 255},
-			player1Colour: color.NRGBA{255, 255, 255, 255},
-			player2Colour: color.NRGBA{64, 61, 57, 255},
-			pieces:        imageMap,
+			themeName:  themeName,
+			bg:         color.NRGBA{48, 46, 42, 255},
+			fg:         color.NRGBA{255, 255, 255, 255},
+			contrastBg: color.NRGBA{39, 37, 35, 255},
+			contrastFg: color.NRGBA{251, 65, 45, 255},
+			square1:    color.NRGBA{234, 236, 206, 255},
+			square2:    color.NRGBA{114, 148, 82, 255},
+			player1:    color.NRGBA{255, 255, 255, 255},
+			player2:    color.NRGBA{64, 61, 57, 255},
+			pieces:     imageMap,
 		}
 	}
 }
@@ -87,8 +95,6 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	w.Option(app.Title("Chess Analysis"))
 	ops := new(op.Ops)
 	th := NewTheme()
-	th.giouiTheme.Palette.Bg = color.NRGBA{48, 46, 42, 255}
-	th.giouiTheme.Palette.Fg = color.NRGBA{255, 255, 255, 255}
 
 	// define components
 	g := &GUI{
@@ -135,7 +141,7 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 			Y: gtx.Constraints.Max.Y,
 		},
 	}
-	paint.FillShape(gtx.Ops, g.theme.giouiTheme.Palette.Bg, clip.Rect(rect).Op())
+	paint.FillShape(gtx.Ops, g.theme.chessBoardTheme.bg, clip.Rect(rect).Op())
 	return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			return g.header.Layout(gtx)

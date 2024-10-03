@@ -156,14 +156,14 @@ func (b *board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 			Y: b.squareSize.Y * 4,
 		},
 	}
-	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player1Colour, clip.Rect(rect1).Op())
-	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player2Colour, clip.Rect(rect2).Op())
+	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player1, clip.Rect(rect1).Op())
+	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player2, clip.Rect(rect2).Op())
 	return layout.Dimensions{Size: rect1.Max}
 }
 
 func (b *board) getSquareColour(i, j int) color.NRGBA {
 	if (i+j)%2 == 0 {
-		return b.gui.theme.chessBoardTheme.square1Colour
+		return b.gui.theme.chessBoardTheme.square1
 	}
-	return b.gui.theme.chessBoardTheme.square2Colour
+	return b.gui.theme.chessBoardTheme.square2
 }
