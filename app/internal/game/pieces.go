@@ -80,7 +80,7 @@ func (p *Piece) getPrintable() (rune, error) {
 	}
 }
 
-func (p *Piece) getImageName() string {
+func (p *Piece) GetImageName() string {
 	firstChar := 'b'
 	if p.Color == "white" {
 		firstChar = 'w'

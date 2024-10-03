@@ -80,7 +80,7 @@ func TestGetImageName(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := test.piece.getImageName()
+		result := test.piece.GetImageName()
 		if result != test.expected {
 			t.Errorf("Expected: %s, got: %s", test.expected, result)
 		}

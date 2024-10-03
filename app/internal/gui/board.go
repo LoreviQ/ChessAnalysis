@@ -2,12 +2,14 @@ package gui
 
 import (
 	"image"
+	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 )
 
 type board struct {
@@ -63,11 +65,15 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 
 func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 	// Get move data
-	_, err := b.gui.db.GetMovesByID(b.activeGameID)
+	moves, err := b.gui.db.GetMovesByID(b.activeGameID)
 	if err == database.ErrNoMoves {
 	} else if err != nil {
 		panic(err)
 	}
+
+	// Get board state by processing moves
+	game := game.NewGame()
+	game.Moves(moves)
 
 	// Layout board squares
 	for i := 0; i < 8; i++ {
@@ -79,10 +85,10 @@ func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 				(j+1)*b.squareSize,
 			)
 			b.squares[i][j] = &square
-			if (i+j)%2 == 0 {
-				paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.square1Colour, clip.Rect(square).Op())
-			} else {
-				paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.square2Colour, clip.Rect(square).Op())
+			paint.FillShape(gtx.Ops, b.getSquareColour(i, j), clip.Rect(square).Op())
+			piece := game.Board.Squares[i][j]
+			if piece != nil {
+
 			}
 		}
 	}
@@ -105,4 +111,11 @@ func (b *board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player1Colour, clip.Rect(rect1).Op())
 	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player2Colour, clip.Rect(rect2).Op())
 	return layout.Dimensions{Size: rect1.Max}
+}
+
+func (b *board) getSquareColour(i, j int) color.NRGBA {
+	if (i+j)%2 == 0 {
+		return b.gui.theme.chessBoardTheme.square1Colour
+	}
+	return b.gui.theme.chessBoardTheme.square2Colour
 }

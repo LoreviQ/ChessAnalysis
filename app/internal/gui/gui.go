@@ -4,6 +4,8 @@ import (
 	"image"
 	"image/color"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"gioui.org/app"
 	"gioui.org/layout"
@@ -40,6 +42,7 @@ type chessBoardTheme struct {
 	square2Colour color.NRGBA
 	player1Colour color.NRGBA
 	player2Colour color.NRGBA
+	pieces        *map[string]paint.ImageOp
 }
 
 func NewTheme() *chessAnalysisTheme {
@@ -52,12 +55,18 @@ func NewTheme() *chessAnalysisTheme {
 func NewChessBoardTheme(theme string) *chessBoardTheme {
 	switch theme {
 	default: // chess.com theme
+		themeName := "chess.com"
+		imageMap, err := loadImages(themeName)
+		if err != nil {
+			return nil
+		}
 		return &chessBoardTheme{
-			themeName:     "chess.com",
+			themeName:     themeName,
 			square1Colour: color.NRGBA{234, 236, 206, 255},
 			square2Colour: color.NRGBA{114, 148, 82, 255},
 			player1Colour: color.NRGBA{255, 255, 255, 255},
 			player2Colour: color.NRGBA{64, 61, 57, 255},
+			pieces:        imageMap,
 		}
 	}
 }
@@ -142,5 +151,42 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 			)
 		}),
 	)
+}
 
+func loadImages(themeName string) (*map[string]paint.ImageOp, error) {
+	pieces := make(map[string]paint.ImageOp)
+	dir := filepath.Join("assets", "images", themeName)
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() && strings.HasSuffix(info.Name(), ".png") {
+			imageName := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+			img, err := loadImage(path)
+			if err != nil {
+				return err
+			}
+			pieces[imageName] = img
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pieces, nil
+}
+
+func loadImage(filename string) (paint.ImageOp, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return paint.ImageOp{}, err
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return paint.ImageOp{}, err
+	}
+
+	return paint.NewImageOp(img), nil
 }
