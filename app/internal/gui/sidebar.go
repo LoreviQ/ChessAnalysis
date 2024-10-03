@@ -17,7 +17,7 @@ func newSidebar() *sidebar {
 	return &sidebar{}
 }
 
-func (h *sidebar) Layout(gtx layout.Context, th *material.Theme) layout.Dimensions {
+func (s *sidebar) Layout(gtx layout.Context, th *material.Theme) layout.Dimensions {
 	// Define the fixed size for the header
 	sidebarSize := image.Point{X: 500, Y: gtx.Constraints.Max.Y} // Fixed height of 50 pixels
 
