@@ -41,7 +41,6 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 			layout.Flexed(1, layout.Spacer{}.Layout),
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
-					layout.Flexed(1, layout.Spacer{}.Layout),
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						if largest == gtx.Constraints.Max.Y {
 							return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
