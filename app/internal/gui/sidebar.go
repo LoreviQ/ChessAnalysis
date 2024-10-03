@@ -12,13 +12,13 @@ import (
 )
 
 type sidebar struct {
-	g    *GUI
+	gui  *GUI
 	list *widget.List
 }
 
 func newSidebar(g *GUI) *sidebar {
 	return &sidebar{
-		g: g,
+		gui: g,
 		list: &widget.List{
 			List: layout.List{
 				Axis: layout.Vertical,
@@ -36,23 +36,24 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 	gtx.Constraints.Max = sidebarSize
 
 	//Make games components
-	games, err := s.g.db.GetGames()
+	games, err := s.gui.db.GetGames()
 	if err != nil {
 		return layout.Dimensions{}
 	}
+	s.gui.board.activeGameID = games[0].ID
 	return s.list.Layout(gtx, len(games), func(gtx layout.Context, i int) layout.Dimensions {
 		game := games[i]
 		return layout.Inset{Top: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 			return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
 				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-					gameid := material.Label(s.g.theme.giouiTheme,
+					gameid := material.Label(s.gui.theme.giouiTheme,
 						unit.Sp(16),
 						fmt.Sprintf("%d:%s", game.ID, game.ChessdotcomID))
 					gameid.Alignment = text.Start
 					return gameid.Layout(gtx)
 				}),
 				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-					date := material.Label(s.g.theme.giouiTheme,
+					date := material.Label(s.gui.theme.giouiTheme,
 						unit.Sp(16),
 						fmt.Sprintf(game.CreatedAt))
 					date.Alignment = text.End

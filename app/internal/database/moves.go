@@ -34,15 +34,20 @@ func (d Database) InsertMoves(moves []string, chessdotcomID string) error {
 	return err
 }
 
-// GetMoves returns the latest moves of a game with the given chess.com id
-func (d Database) GetMoves(chessdotcomID string) ([]string, error) {
+// GetMovesByChessdotcomID returns the latest moves of a game with the given chess.com id
+func (d Database) GetMovesByChessdotcomID(chessdotcomID string) ([]string, error) {
 	var gameID int
 	err := d.db.QueryRow(d.queries["GET_LATEST_GAME_ID"], chessdotcomID).Scan(&gameID)
 	if err != nil {
 		return nil, errors.New("game not found")
 	}
+	return d.GetMovesByID(gameID)
+}
+
+// GetMoves returns the latest moves of a game with the given id
+func (d Database) GetMovesByID(id int) ([]string, error) {
 	var moves string
-	err = d.db.QueryRow(d.queries["GET_LATEST_MOVES"], gameID).Scan(&moves)
+	err := d.db.QueryRow(d.queries["GET_LATEST_MOVES"], id).Scan(&moves)
 	if err != nil {
 		return nil, errors.New("game has no moves")
 	}

@@ -10,15 +10,16 @@ import (
 )
 
 type board struct {
-	g          *GUI
-	squares    [8][8]*image.Rectangle
-	squareSize int
-	boardSize  image.Point
+	gui          *GUI
+	squares      [8][8]*image.Rectangle
+	squareSize   int
+	boardSize    image.Point
+	activeGameID int
 }
 
 func newBoard(g *GUI) *board {
 	return &board{
-		g: g,
+		gui: g,
 	}
 }
 
@@ -60,7 +61,11 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 }
 
 func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
-	// Calculate square size
+	// Get move data
+	_, err := b.gui.db.GetMovesByID(b.activeGameID)
+	if err != nil {
+		return layout.Dimensions{}
+	}
 
 	// Layout board squares
 	for i := 0; i < 8; i++ {
@@ -73,9 +78,9 @@ func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 			)
 			b.squares[i][j] = &square
 			if (i+j)%2 == 0 {
-				paint.FillShape(gtx.Ops, b.g.theme.chessBoardTheme.square1Colour, clip.Rect(square).Op())
+				paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.square1Colour, clip.Rect(square).Op())
 			} else {
-				paint.FillShape(gtx.Ops, b.g.theme.chessBoardTheme.square2Colour, clip.Rect(square).Op())
+				paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.square2Colour, clip.Rect(square).Op())
 			}
 		}
 	}
@@ -95,7 +100,7 @@ func (b *board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 			Y: b.boardSize.Y / 2,
 		},
 	}
-	paint.FillShape(gtx.Ops, b.g.theme.chessBoardTheme.player1Colour, clip.Rect(rect1).Op())
-	paint.FillShape(gtx.Ops, b.g.theme.chessBoardTheme.player2Colour, clip.Rect(rect2).Op())
+	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player1Colour, clip.Rect(rect1).Op())
+	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player2Colour, clip.Rect(rect2).Op())
 	return layout.Dimensions{Size: rect1.Max}
 }

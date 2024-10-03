@@ -10,12 +10,12 @@ import (
 )
 
 type header struct {
-	g *GUI
+	gui *GUI
 }
 
 func newHeader(g *GUI) *header {
 	return &header{
-		g: g,
+		gui: g,
 	}
 }
 

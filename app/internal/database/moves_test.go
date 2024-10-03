@@ -33,7 +33,7 @@ func TestInsertGetMoves(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	moves, err := db.GetMoves("123456")
+	moves, err := db.GetMovesByChessdotcomID("123456")
 	if err != nil {
 		t.Error(err)
 	}
