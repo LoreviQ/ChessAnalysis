@@ -7,24 +7,20 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/widget/material"
 )
 
 type board struct {
 	squares [8][8]*image.Rectangle
+	theme   *chessAnalysisTheme
 }
 
-// temp fill for development will be incorporated into theme
-var (
-	square1_colour = color.NRGBA{114, 148, 82, 255}
-	square2_colour = color.NRGBA{234, 236, 206, 255}
-)
-
-func newBoard() *board {
-	return &board{}
+func newBoard(theme *chessAnalysisTheme) *board {
+	return &board{
+		theme: theme,
+	}
 }
 
-func (b *board) Layout(gtx layout.Context, th *material.Theme) layout.Dimensions {
+func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 	// temp fill for development
 	rect := image.Rectangle{
 		Max: image.Point{
@@ -67,9 +63,9 @@ func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 			)
 			b.squares[i][j] = &square
 			if (i+j)%2 != 0 {
-				paint.FillShape(gtx.Ops, square1_colour, clip.Rect(square).Op())
+				paint.FillShape(gtx.Ops, b.theme.chessBoardTheme.square1Colour, clip.Rect(square).Op())
 			} else {
-				paint.FillShape(gtx.Ops, square2_colour, clip.Rect(square).Op())
+				paint.FillShape(gtx.Ops, b.theme.chessBoardTheme.square2Colour, clip.Rect(square).Op())
 			}
 		}
 	}

@@ -16,18 +16,18 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 			Y: gtx.Constraints.Max.Y,
 		},
 	}
-	paint.FillShape(gtx.Ops, g.theme.Palette.Bg, clip.Rect(rect).Op())
+	paint.FillShape(gtx.Ops, g.theme.giouiTheme.Palette.Bg, clip.Rect(rect).Op())
 	return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return g.header.Layout(gtx, g.theme)
+			return g.header.Layout(gtx)
 		}),
 		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 			return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
 				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return g.sidebar.Layout(gtx, g.theme)
+					return g.sidebar.Layout(gtx)
 				}),
 				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-					return g.board.Layout(gtx, g.theme)
+					return g.board.Layout(gtx)
 				}),
 			)
 		}),

@@ -13,11 +13,38 @@ import (
 type GUI struct {
 	window *app.Window
 	ops    *op.Ops
-	theme  *material.Theme
+	theme  *chessAnalysisTheme
 
 	header  *header
 	sidebar *sidebar
 	board   *board
+}
+
+type chessAnalysisTheme struct {
+	giouiTheme      *material.Theme
+	chessBoardTheme *chessBoardTheme
+}
+
+type chessBoardTheme struct {
+	square1Colour color.NRGBA
+	square2Colour color.NRGBA
+}
+
+func NewTheme() *chessAnalysisTheme {
+	return &chessAnalysisTheme{
+		giouiTheme:      material.NewTheme(),
+		chessBoardTheme: NewChessBoardTheme(""),
+	}
+}
+
+func NewChessBoardTheme(theme string) *chessBoardTheme {
+	switch theme {
+	default: // chess.com theme
+		return &chessBoardTheme{
+			square1Colour: color.NRGBA{114, 148, 82, 255},
+			square2Colour: color.NRGBA{234, 236, 206, 255},
+		}
+	}
 }
 
 // Returns a GUI struct
@@ -26,13 +53,13 @@ func NewGUI(width, height int) *GUI {
 	w.Option(app.Size(unit.Dp(width), unit.Dp(height)))
 	w.Option(app.Title("Chess Analysis"))
 	ops := new(op.Ops)
-	th := material.NewTheme()
-	th.Palette.Bg = color.NRGBA{48, 46, 42, 255}
+	th := NewTheme()
+	th.giouiTheme.Palette.Bg = color.NRGBA{48, 46, 42, 255}
 
 	// define components
-	header := newHeader()
-	sidebar := newSidebar()
-	board := newBoard()
+	header := newHeader(th)
+	sidebar := newSidebar(th)
+	board := newBoard(th)
 
 	return &GUI{
 		window:  w,

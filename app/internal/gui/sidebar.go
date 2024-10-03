@@ -7,17 +7,19 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/widget/material"
 )
 
 type sidebar struct {
+	theme *chessAnalysisTheme
 }
 
-func newSidebar() *sidebar {
-	return &sidebar{}
+func newSidebar(theme *chessAnalysisTheme) *sidebar {
+	return &sidebar{
+		theme: theme,
+	}
 }
 
-func (s *sidebar) Layout(gtx layout.Context, th *material.Theme) layout.Dimensions {
+func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 	// Define the fixed size for the header
 	sidebarSize := image.Point{X: 500, Y: gtx.Constraints.Max.Y} // Fixed height of 50 pixels
 
