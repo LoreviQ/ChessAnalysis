@@ -3,6 +3,10 @@ package database
 import "testing"
 
 func TestGetGames(t *testing.T) {
+	// Change the working directory to the root of the project
+	restore := changeDirectoryToRoot()
+	defer restore()
+
 	db, err := NewConnection(true)
 	if err != nil {
 		t.Error(err)

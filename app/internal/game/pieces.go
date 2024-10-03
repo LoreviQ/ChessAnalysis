@@ -80,6 +80,29 @@ func (p *Piece) getPrintable() (rune, error) {
 	}
 }
 
+func (p *Piece) getImageName() string {
+	firstChar := 'b'
+	if p.Color == "white" {
+		firstChar = 'w'
+	}
+	var secondChar rune
+	switch p.PieceType {
+	case King:
+		secondChar = 'k'
+	case Queen:
+		secondChar = 'q'
+	case Rook:
+		secondChar = 'r'
+	case Bishop:
+		secondChar = 'b'
+	case Knight:
+		secondChar = 'n'
+	case Pawn:
+		secondChar = 'p'
+	}
+	return fmt.Sprintf("%c%c", firstChar, secondChar)
+}
+
 // Returns the direction the piece moves
 func (p *Piece) getDirection() int {
 	if p.Color == "white" {

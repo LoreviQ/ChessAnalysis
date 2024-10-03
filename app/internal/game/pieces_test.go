@@ -60,6 +60,33 @@ func TestGetPrintable(t *testing.T) {
 	}
 }
 
+func TestGetImageName(t *testing.T) {
+	tests := []struct {
+		piece    Piece
+		expected string
+	}{
+		{Piece{PieceType: Pawn, Color: "white"}, "wp"},
+		{Piece{PieceType: Pawn, Color: "black"}, "bp"},
+		{Piece{PieceType: King, Color: "white"}, "wk"},
+		{Piece{PieceType: King, Color: "black"}, "bk"},
+		{Piece{PieceType: Queen, Color: "white"}, "wq"},
+		{Piece{PieceType: Queen, Color: "black"}, "bq"},
+		{Piece{PieceType: Rook, Color: "white"}, "wr"},
+		{Piece{PieceType: Rook, Color: "black"}, "br"},
+		{Piece{PieceType: Bishop, Color: "white"}, "wb"},
+		{Piece{PieceType: Bishop, Color: "black"}, "bb"},
+		{Piece{PieceType: Knight, Color: "white"}, "wn"},
+		{Piece{PieceType: Knight, Color: "black"}, "bn"},
+	}
+
+	for _, test := range tests {
+		result := test.piece.getImageName()
+		if result != test.expected {
+			t.Errorf("Expected: %s, got: %s", test.expected, result)
+		}
+	}
+}
+
 func TestGetPawnMoves(t *testing.T) {
 	g := NewGame()
 	g.Board = CustomBoard([8][8]*Piece{

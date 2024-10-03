@@ -5,6 +5,10 @@ import "testing"
 // First tests the InsertMoves method by inserting a list of moves into the database
 // and then tests the GetMoves method by retrieving the moves from the database
 func TestInsertGetMoves(t *testing.T) {
+	// Change the working directory to the root of the project
+	restore := changeDirectoryToRoot()
+	defer restore()
+
 	db, err := NewConnection(true)
 	if err != nil {
 		t.Error(err)

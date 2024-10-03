@@ -2,10 +2,8 @@ package database
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -63,12 +61,6 @@ func (d Database) Close() {
 	d.db.Close()
 	// Cleanup the test database
 	if d.testDB {
-		_, filename, _, ok := runtime.Caller(0)
-		if !ok {
-			log.Fatal("Unable to get the current file path")
-		}
-		dir := filepath.Dir(filename)
-		databasePath := filepath.Join(dir, "test_database.db")
-		os.Remove(databasePath)
+		os.Remove("test_database.db")
 	}
 }
