@@ -65,21 +65,13 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 	rect := image.Rectangle{
 		Max: sidebarSize,
 	}
-	paint.FillShape(gtx.Ops, s.gui.theme.chessBoardTheme.contrastBg, clip.Rect(rect).Op())
+	paint.FillShape(gtx.Ops, s.gui.theme.contrastBg, clip.Rect(rect).Op())
 
 	err := s.updateState()
 	if err != nil {
 		return layout.Dimensions{Size: sidebarSize}
 	}
-
 	return s.list.Layout(gtx, len(s.games), func(gtx layout.Context, i int) layout.Dimensions {
-		return s.sidebarListElement(gtx, i)
-	})
-}
-
-func (s *sidebar) sidebarListElement(gtx layout.Context, i int) layout.Dimensions {
-	margins := layout.Inset{Top: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
-	return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		return s.games[i].Layout(gtx, s.gui.theme, i, -1)
 	})
 }
@@ -122,7 +114,7 @@ func (gb *gameButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i, widt
 	button := material.Button(th.giouiTheme, gb.widget, "")
 	button.CornerRadius = unit.Dp(0)
 	if i%2 == 0 {
-		button.Background = th.chessBoardTheme.bg
+		button.Background = th.bg
 	} else {
 		button.Background = color.NRGBA{0, 0, 0, 0}
 	}
@@ -144,7 +136,7 @@ func (gb *gameButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i, widt
 			return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				labelStr := fmt.Sprintf("%d:%s", gb.game.ID, gb.game.ChessdotcomID)
 				gameLabel := material.Label(th.giouiTheme, unit.Sp(16), labelStr)
-				gameLabel.Color = th.chessBoardTheme.text
+				gameLabel.Color = th.text
 				gameLabel.Alignment = text.Start
 				return layout.W.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					return layout.Center.Layout(gtx, gameLabel.Layout)
@@ -154,7 +146,7 @@ func (gb *gameButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i, widt
 		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
 			labelStr := gb.game.CreatedAt
 			dateLabel := material.Label(th.giouiTheme, unit.Sp(12), labelStr)
-			dateLabel.Color = th.chessBoardTheme.textMuted
+			dateLabel.Color = th.textMuted
 			dateLabel.Alignment = text.End
 			return layout.SE.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				margins := layout.Inset{Right: unit.Dp(6), Bottom: unit.Dp(4)}

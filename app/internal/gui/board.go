@@ -244,7 +244,7 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 			rect := image.Rectangle{
 				Max: gtx.Constraints.Max,
 			}
-			paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.contrastBg, clip.Rect(rect).Op())
+			paint.FillShape(gtx.Ops, b.gui.theme.contrastBg, clip.Rect(rect).Op())
 			return layout.Dimensions{Size: rect.Max}
 		}),
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
@@ -314,7 +314,7 @@ func button(gtx layout.Context, th *chessAnalysisTheme, text string, i, width in
 	button := material.Button(th.giouiTheme, widget, text)
 	button.CornerRadius = unit.Dp(0)
 	if i%2 == 0 {
-		button.Background = th.chessBoardTheme.bg
+		button.Background = th.bg
 	} else {
 		button.Background = color.NRGBA{0, 0, 0, 0}
 	}

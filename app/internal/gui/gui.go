@@ -34,27 +34,33 @@ type GUI struct {
 type chessAnalysisTheme struct {
 	giouiTheme      *material.Theme
 	chessBoardTheme *chessBoardTheme
+	bg              color.NRGBA
+	fg              color.NRGBA
+	contrastBg      color.NRGBA
+	contrastFg      color.NRGBA
+	text            color.NRGBA
+	textMuted       color.NRGBA
 }
 
 type chessBoardTheme struct {
-	themeName  string
-	bg         color.NRGBA
-	fg         color.NRGBA
-	contrastBg color.NRGBA
-	contrastFg color.NRGBA
-	text       color.NRGBA
-	textMuted  color.NRGBA
-	square1    color.NRGBA
-	square2    color.NRGBA
-	player1    color.NRGBA
-	player2    color.NRGBA
-	pieces     map[string]*image.Image
+	themeName string
+	square1   color.NRGBA
+	square2   color.NRGBA
+	player1   color.NRGBA
+	player2   color.NRGBA
+	pieces    map[string]*image.Image
 }
 
 func NewTheme() *chessAnalysisTheme {
 	return &chessAnalysisTheme{
 		giouiTheme:      material.NewTheme(),
 		chessBoardTheme: NewChessBoardTheme(""),
+		bg:              color.NRGBA{48, 46, 42, 255},
+		fg:              color.NRGBA{255, 255, 255, 255},
+		contrastBg:      color.NRGBA{39, 37, 35, 255},
+		contrastFg:      color.NRGBA{251, 65, 45, 255},
+		text:            color.NRGBA{255, 255, 255, 255},
+		textMuted:       color.NRGBA{255, 255, 255, 122},
 	}
 }
 
@@ -67,18 +73,12 @@ func NewChessBoardTheme(theme string) *chessBoardTheme {
 			return nil
 		}
 		return &chessBoardTheme{
-			themeName:  themeName,
-			bg:         color.NRGBA{48, 46, 42, 255},
-			fg:         color.NRGBA{255, 255, 255, 255},
-			contrastBg: color.NRGBA{39, 37, 35, 255},
-			contrastFg: color.NRGBA{251, 65, 45, 255},
-			text:       color.NRGBA{255, 255, 255, 255},
-			textMuted:  color.NRGBA{255, 255, 255, 122},
-			square1:    color.NRGBA{234, 236, 206, 255},
-			square2:    color.NRGBA{114, 148, 82, 255},
-			player1:    color.NRGBA{255, 255, 255, 255},
-			player2:    color.NRGBA{64, 61, 57, 255},
-			pieces:     imageMap,
+			themeName: themeName,
+			square1:   color.NRGBA{234, 236, 206, 255},
+			square2:   color.NRGBA{114, 148, 82, 255},
+			player1:   color.NRGBA{255, 255, 255, 255},
+			player2:   color.NRGBA{64, 61, 57, 255},
+			pieces:    imageMap,
 		}
 	}
 }
@@ -144,7 +144,7 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 			Y: gtx.Constraints.Max.Y,
 		},
 	}
-	paint.FillShape(gtx.Ops, g.theme.chessBoardTheme.bg, clip.Rect(rect).Op())
+	paint.FillShape(gtx.Ops, g.theme.bg, clip.Rect(rect).Op())
 	return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			return g.header.Layout(gtx)
