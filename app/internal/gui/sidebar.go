@@ -48,7 +48,10 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 	if err != nil {
 		return layout.Dimensions{}
 	}
-	s.gui.board.activeGameID = games[0].ID
+	gameID := games[0].ID
+	if s.gui.board != nil && s.gui.board.activeGameID != gameID {
+		s.gui.board = newBoard(s.gui, games[0].ID)
+	}
 	return s.list.Layout(gtx, len(games), func(gtx layout.Context, i int) layout.Dimensions {
 		game := games[i]
 		return layout.Inset{Top: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {

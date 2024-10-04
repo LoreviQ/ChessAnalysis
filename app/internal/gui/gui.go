@@ -107,7 +107,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	}
 	g.header = newHeader(g)
 	g.sidebar = newSidebar(g)
-	g.board = newBoard(g)
+	g.board = newBoard(g, 0)
 
 	return g
 }

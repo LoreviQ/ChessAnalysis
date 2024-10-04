@@ -31,46 +31,54 @@ type MoveButton struct {
 	gameState *game.Game
 }
 
-func newBoard(g *GUI) *Board {
+func newBoard(g *GUI, activeGameID int) *Board {
+	// Get the moves for the active game
+	moveStrs, err := g.db.GetMovesByID(activeGameID)
+	if err != nil {
+		return &Board{
+			gui:          g,
+			activeGameID: activeGameID,
+			movesList:    &widget.List{},
+			gameState:    game.NewGame(),
+			moves:        nil,
+		}
+	}
+	// Get the board state for the active game
+	gameState := game.NewGame()
+	moves := make([]*MoveButton, len(moveStrs))
+	for i, moveStr := range moveStrs {
+		move, err := gameState.Move(moveStr)
+		if err != nil {
+			break
+		}
+		moves[i] = &MoveButton{
+			move:      move,
+			notation:  moveStr,
+			widget:    &widget.Clickable{},
+			gameState: gameState.Clone(),
+		}
+	}
 	return &Board{
-		gui: g,
+		gui:          g,
+		activeGameID: activeGameID,
 		movesList: &widget.List{
 			List: layout.List{
 				Axis:        layout.Vertical,
 				ScrollToEnd: true,
 			},
 		},
+		gameState: gameState,
+		moves:     moves,
 	}
 }
 
 func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
+	b.checkButtonClicks(gtx)
 	margins := layout.Inset{
 		Top:    50,
 		Bottom: 50,
 		Left:   50,
 		Right:  50,
-	}
-
-	// Get the moves for the active game
-	moveStrs, err := b.gui.db.GetMovesByID(b.activeGameID)
-	if err != nil {
-		panic(err)
-	}
-
-	// Get the board state for the active game
-	b.gameState = game.NewGame()
-	b.moves = make([]*MoveButton, len(moveStrs))
-	for i, moveStr := range moveStrs {
-		move, err := b.gameState.Move(moveStr)
-		if err != nil {
-			break
-		}
-		b.moves[i] = &MoveButton{
-			move:      move,
-			notation:  moveStr,
-			widget:    &widget.Clickable{},
-			gameState: b.gameState.Clone(),
-		}
 	}
 
 	return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
@@ -104,7 +112,7 @@ func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
 	})
 }
 
-// Alternative drawBoard function using flex layout
+// Draw the chess board
 func (b *Board) drawBoard(gtx layout.Context) layout.Dimensions {
 	b.squares = b.drawSquares(8, 8)
 	return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
@@ -118,6 +126,7 @@ func (b *Board) drawBoard(gtx layout.Context) layout.Dimensions {
 	)
 }
 
+// Draw the rows of the chess board
 func (b *Board) drawRows() []layout.FlexChild {
 	rows := make([]layout.FlexChild, len(b.squares))
 	for i, row := range b.squares {
@@ -128,6 +137,7 @@ func (b *Board) drawRows() []layout.FlexChild {
 	return rows
 }
 
+// Draw a square on the chess board
 func (b *Board) drawSquare(i, j int) layout.FlexChild {
 	return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 		return layout.Stack{}.Layout(gtx,
@@ -158,6 +168,7 @@ func (b *Board) drawSquare(i, j int) layout.FlexChild {
 	})
 }
 
+// Draw all the squares on the chess board
 func (b *Board) drawSquares(maxRow, maxCol int) [][]layout.FlexChild {
 	children := make([][]layout.FlexChild, maxRow)
 	for i := 0; i < maxRow; i++ {
@@ -170,6 +181,7 @@ func (b *Board) drawSquares(maxRow, maxCol int) [][]layout.FlexChild {
 	return children
 }
 
+// Draw an image
 func (b *Board) drawImage(image image.Image) func(layout.Context) layout.Dimensions {
 	scale := float32(b.squareSize.X) / float32(image.Bounds().Dx())
 	return func(gtx layout.Context) layout.Dimensions {
@@ -180,6 +192,7 @@ func (b *Board) drawImage(image image.Image) func(layout.Context) layout.Dimensi
 	}
 }
 
+// Draw the evaluation bar
 func (b *Board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	rect1 := image.Rectangle{
 		Min: image.Point{
@@ -206,6 +219,7 @@ func (b *Board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	return layout.Dimensions{Size: rect1.Max}
 }
 
+// Draw the analysis pane
 func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
@@ -232,6 +246,7 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 	)
 }
 
+// Get the colour of a square
 func (b *Board) getSquareColour(i, j int) color.NRGBA {
 	if (i+j)%2 == 0 {
 		return b.gui.theme.chessBoardTheme.square1
@@ -239,6 +254,7 @@ func (b *Board) getSquareColour(i, j int) color.NRGBA {
 	return b.gui.theme.chessBoardTheme.square2
 }
 
+// Draw a move list element
 func (b *Board) moveListElement(gtx layout.Context, i int) layout.Dimensions {
 	buttonWidth := b.squareSize.X*2 - 40
 	return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
@@ -265,10 +281,12 @@ func (b *Board) moveListElement(gtx layout.Context, i int) layout.Dimensions {
 
 }
 
+// Layout the move button
 func (m *MoveButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i, width int) layout.Dimensions {
 	return button(gtx, th, m.notation, i, width, m.widget)
 }
 
+// Layout the button
 func button(gtx layout.Context, th *chessAnalysisTheme, text string, i, width int, widget *widget.Clickable) layout.Dimensions {
 	button := material.Button(th.giouiTheme, widget, text)
 	button.CornerRadius = unit.Dp(0)
@@ -291,4 +309,17 @@ func button(gtx layout.Context, th *chessAnalysisTheme, text string, i, width in
 			return button.Layout(gtx)
 		}),
 	)
+}
+
+// Checks if a button has been clicked
+func (b *Board) checkButtonClicks(gtx layout.Context) {
+	if b.moves == nil || len(b.moves) == 0 {
+		return
+	}
+	for _, move := range b.moves {
+		if move.widget.Clicked(gtx) {
+			b.gameState = move.gameState.Clone()
+			b.gameState = move.gameState
+		}
+	}
 }
