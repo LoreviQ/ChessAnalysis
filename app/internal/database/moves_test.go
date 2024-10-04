@@ -9,7 +9,7 @@ func TestInsertGetMoves(t *testing.T) {
 	restore := changeDirectoryToRoot()
 	defer restore()
 
-	db, err := NewConnection(true)
+	db, err := NewConnection(3)
 	if err != nil {
 		t.Error(err)
 	}

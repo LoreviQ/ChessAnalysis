@@ -28,6 +28,7 @@ type MoveButton struct {
 	move          game.Move
 	shortNotation string
 	widget        *widget.Clickable
+	gameState     *game.Game
 }
 
 func newBoard(g *GUI) *Board {
@@ -58,15 +59,13 @@ func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
 
 	// Get the board state for the active game
 	b.gameState = game.NewGame()
-	b.gameState.Moves(moves)
-	b.moves = make([]*MoveButton, len(moves))
-	moveHistory := b.gameState.MoveHistory
-	notations := game.ConvertMovesToLongAlgebraicNotation(moveHistory)
-	for i, move := range moveHistory {
+	for i, move := range moves {
+		b.gameState.Move(move)
 		b.moves[i] = &MoveButton{
-			move:          move,
-			shortNotation: notations[i],
+			move:          b.gameState.MoveHistory[i],
+			shortNotation: move,
 			widget:        &widget.Clickable{},
+			gameState:     b.gameState,
 		}
 	}
 

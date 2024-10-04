@@ -7,7 +7,7 @@ func TestGetGames(t *testing.T) {
 	restore := changeDirectoryToRoot()
 	defer restore()
 
-	db, err := NewConnection(true)
+	db, err := NewConnection(2)
 	if err != nil {
 		t.Error(err)
 	}

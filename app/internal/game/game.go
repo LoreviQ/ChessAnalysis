@@ -80,7 +80,7 @@ func (g *Game) Play() {
 			g.newGame()
 			continue
 		default:
-			err := g.Move(userInput)
+			_, err := g.Move(userInput)
 			if err == ErrInvalidMove {
 				fmt.Println("Invalid move")
 				g.logPossibleMoves()
@@ -109,18 +109,18 @@ func (g *Game) logPossibleMoves() {
 
 // Takes a move string in algebraic notation,
 // checks if it is valid and moves the piece
-func (g *Game) Move(moveStr string) error {
+func (g *Game) Move(moveStr string) (Move, error) {
 	// Check if the move string is valid
 	move, err := parseRegex(moveStr)
 	if err != nil {
-		return err
+		return Move{}, err
 	}
 	// Get all possible moves for the current player
 	possibleMoves := g.GetPossibleMoves()
 	// Find the move that corresponds to the given move and play it
 	correspondingMove, err := getCorrespondingMove(move, possibleMoves)
 	if err != nil {
-		return err
+		return Move{}, err
 	}
 	// inherit check status from the move
 	if move.CheckStatus != 0 {
@@ -132,17 +132,17 @@ func (g *Game) Move(moveStr string) error {
 		err = g.Castle(correspondingMove.Castle)
 	}
 	if err != nil {
-		return err
+		return Move{}, err
 	}
 	g.MoveHistory = append(g.MoveHistory, correspondingMove)
 	g.changeTurn()
-	return nil
+	return correspondingMove, nil
 }
 
 // Takes a slice of move strings in algebraic notation and plays them
 func (g *Game) Moves(moveStrs []string) error {
 	for _, moveStr := range moveStrs {
-		err := g.Move(moveStr)
+		_, err := g.Move(moveStr)
 		if err != nil {
 			return err
 		}

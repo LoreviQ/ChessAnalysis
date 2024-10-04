@@ -30,7 +30,7 @@ func TestReadinessEndpoint(t *testing.T) {
 	defer restore()
 
 	// Create db connection
-	db, err := database.NewConnection(true)
+	db, err := database.NewConnection(4)
 	if err != nil {
 		t.Errorf("Error creating database connection: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestPostGetMoves(t *testing.T) {
 	defer restore()
 
 	// Create db connection
-	db, err := database.NewConnection(true)
+	db, err := database.NewConnection(5)
 	if err != nil {
 		t.Errorf("Error creating database connection: %v", err)
 	}

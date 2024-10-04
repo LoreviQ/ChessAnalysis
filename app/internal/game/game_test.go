@@ -228,7 +228,7 @@ func TestMove(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.move, func(t *testing.T) {
-			err := g.Move(tt.move)
+			_, err := g.Move(tt.move)
 			if err != tt.err {
 				t.Errorf("Expected: %v, got: %v", tt.err, err)
 			}
@@ -255,7 +255,7 @@ func TestMoveAmbiguous(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.move, func(t *testing.T) {
-			err := g.Move(tt.move)
+			_, err := g.Move(tt.move)
 			if err != tt.err {
 				t.Errorf("Expected: %v, got: %v", tt.err, err)
 			}

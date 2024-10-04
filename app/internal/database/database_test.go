@@ -12,7 +12,7 @@ func TestNewConnection(t *testing.T) {
 	restore := changeDirectoryToRoot()
 	defer restore()
 
-	db, err := NewConnection(true)
+	db, err := NewConnection(1)
 	if err != nil {
 		t.Error(err)
 	}

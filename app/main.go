@@ -8,7 +8,7 @@ import (
 
 func startApp() error {
 	// Database
-	db, err := database.NewConnection(false)
+	db, err := database.NewConnection(0)
 	if err != nil {
 		return err
 	}

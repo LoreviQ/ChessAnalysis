@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -11,16 +12,16 @@ import (
 type Database struct {
 	db      *sql.DB
 	queries map[string]string
-	testDB  bool
+	testDB  int
 }
 
 // NewConnection creates a new connection to the SQLite3 database
-func NewConnection(test bool) (*Database, error) {
+func NewConnection(test int) (*Database, error) {
 	// Define the database path and schema path
 	databasePath := "database.db"
 	schemaPath := filepath.Join("sql", "schema.sql")
-	if test {
-		databasePath = "test_database.db"
+	if test != 0 {
+		databasePath = fmt.Sprintf("test_database_%d.db", test)
 	}
 
 	// Open a connection to the SQLite3 database
@@ -60,7 +61,7 @@ func NewConnection(test bool) (*Database, error) {
 func (d Database) Close() {
 	d.db.Close()
 	// Cleanup the test database
-	if d.testDB {
-		os.Remove("test_database.db")
+	if d.testDB != 0 {
+		os.Remove(fmt.Sprintf("test_database_%d.db", d.testDB))
 	}
 }
