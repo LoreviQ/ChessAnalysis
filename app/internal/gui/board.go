@@ -28,7 +28,7 @@ type Board struct {
 }
 
 type MoveButton struct {
-	move      game.Move
+	move      *game.Move
 	notation  string
 	widget    *widget.Clickable
 	gameState *game.Game
@@ -50,14 +50,20 @@ func newBoard(g *GUI, activeGameID int) *Board {
 	}
 	// Get the board state for the active game
 	gameState := game.NewGame()
-	moves := make([]*MoveButton, len(moveStrs))
+	moves := make([]*MoveButton, len(moveStrs)+1)
+	moves[0] = &MoveButton{
+		move:      nil,
+		notation:  "",
+		widget:    &widget.Clickable{},
+		gameState: gameState.Clone(),
+	}
 	for i, moveStr := range moveStrs {
 		move, err := gameState.Move(moveStr)
 		if err != nil {
 			break
 		}
-		moves[i] = &MoveButton{
-			move:      move,
+		moves[i+1] = &MoveButton{
+			move:      &move,
 			notation:  moveStr,
 			widget:    &widget.Clickable{},
 			gameState: gameState.Clone(),
@@ -249,7 +255,7 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 				Right:  20,
 			}
 			return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				return b.movesList.Layout(gtx, (len(b.moves)+1)/2, func(gtx layout.Context, i int) layout.Dimensions {
+				return b.movesList.Layout(gtx, (len(b.moves))/2, func(gtx layout.Context, i int) layout.Dimensions {
 					return b.moveListElement(gtx, i)
 				})
 			})
@@ -278,12 +284,15 @@ func (b *Board) moveListElement(gtx layout.Context, i int) layout.Dimensions {
 		}),
 		// player 1 move
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return b.moves[i*2].Layout(gtx, b.gui.theme, i, buttonWidth)
+			if i*2+1 < len(b.moves) {
+				return b.moves[i*2+1].Layout(gtx, b.gui.theme, i, buttonWidth)
+			}
+			return layout.Dimensions{}
 		}),
 		// player 2 move
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			if i*2+1 < len(b.moves) {
-				return b.moves[i*2+1].Layout(gtx, b.gui.theme, i, buttonWidth)
+			if i*2+2 < len(b.moves) {
+				return b.moves[i*2+2].Layout(gtx, b.gui.theme, i, buttonWidth)
 			}
 			return layout.Dimensions{}
 		}),
