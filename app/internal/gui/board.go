@@ -12,21 +12,34 @@ import (
 	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 )
 
-type board struct {
+type Board struct {
 	gui          *GUI
 	squares      [][]layout.FlexChild
 	squareSize   image.Point
 	activeGameID int
+	movesList    *widget.List
 	gameState    *game.Game
+	moves        []*MoveButton
 }
 
-func newBoard(g *GUI) *board {
-	return &board{
+type MoveButton struct {
+	move          game.Move
+	shortNotation string
+	widget        *widget.Clickable
+}
+
+func newBoard(g *GUI) *Board {
+	return &Board{
 		gui: g,
+		movesList: &widget.List{
+			List: layout.List{
+				Axis: layout.Vertical,
+			},
+		},
 	}
 }
 
-func (b *board) Layout(gtx layout.Context) layout.Dimensions {
+func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
 	margins := layout.Inset{
 		Top:    50,
 		Bottom: 50,
@@ -41,9 +54,25 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 	}
 
 	// Get the board state for the active game
-	game := game.NewGame()
-	game.Moves(moves)
-	b.gameState = game
+	b.gameState = game.NewGame()
+	b.gameState.Moves(moves)
+	b.moves = make([]*MoveButton, len(moves))
+	moveHistory := b.gameState.MoveHistory
+	shortNotation, err := game.ConvertMovesToShortAlgebraicNotation(moveHistory)
+	if err != nil {
+		panic(err)
+	}
+	notationList := make([]string, 0, len(shortNotation))
+	for k := range shortNotation {
+		notationList = append(notationList, k)
+	}
+	for i, move := range b.gameState.MoveHistory {
+		b.moves = append(b.moves, &MoveButton{
+			move:          move,
+			shortNotation: notationList[i],
+			widget:        &widget.Clickable{},
+		})
+	}
 
 	return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		squareHeight := (gtx.Constraints.Max.Y - 100) / 8
@@ -77,7 +106,7 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 }
 
 // Alternative drawBoard function using flex layout
-func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
+func (b *Board) drawBoard(gtx layout.Context) layout.Dimensions {
 	b.squares = b.drawSquares(8, 8)
 	return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
 		layout.Rigid(layout.Spacer{Height: 50}.Layout),
@@ -90,7 +119,7 @@ func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 	)
 }
 
-func (b *board) drawRows() []layout.FlexChild {
+func (b *Board) drawRows() []layout.FlexChild {
 	rows := make([]layout.FlexChild, len(b.squares))
 	for i, row := range b.squares {
 		rows[i] = layout.Rigid(func(gtx layout.Context) layout.Dimensions {
@@ -100,7 +129,7 @@ func (b *board) drawRows() []layout.FlexChild {
 	return rows
 }
 
-func (b *board) drawSquare(i, j int) layout.FlexChild {
+func (b *Board) drawSquare(i, j int) layout.FlexChild {
 	return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 		return layout.Stack{}.Layout(gtx,
 			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
@@ -130,7 +159,7 @@ func (b *board) drawSquare(i, j int) layout.FlexChild {
 	})
 }
 
-func (b *board) drawSquares(maxRow, maxCol int) [][]layout.FlexChild {
+func (b *Board) drawSquares(maxRow, maxCol int) [][]layout.FlexChild {
 	children := make([][]layout.FlexChild, maxRow)
 	for i := 0; i < maxRow; i++ {
 		children[i] = make([]layout.FlexChild, maxCol)
@@ -142,7 +171,7 @@ func (b *board) drawSquares(maxRow, maxCol int) [][]layout.FlexChild {
 	return children
 }
 
-func (b *board) drawImage(image image.Image) func(layout.Context) layout.Dimensions {
+func (b *Board) drawImage(image image.Image) func(layout.Context) layout.Dimensions {
 	scale := float32(b.squareSize.X) / float32(image.Bounds().Dx())
 	return func(gtx layout.Context) layout.Dimensions {
 		return widget.Image{
@@ -152,7 +181,7 @@ func (b *board) drawImage(image image.Image) func(layout.Context) layout.Dimensi
 	}
 }
 
-func (b *board) drawEvalBar(gtx layout.Context) layout.Dimensions {
+func (b *Board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	rect1 := image.Rectangle{
 		Min: image.Point{
 			X: 0,
@@ -178,15 +207,31 @@ func (b *board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	return layout.Dimensions{Size: rect1.Max}
 }
 
-func (b *board) drawAnalysis(gtx layout.Context) layout.Dimensions {
-	rect := image.Rectangle{
-		Max: gtx.Constraints.Max,
-	}
-	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.contrastBg, clip.Rect(rect).Op())
-	return layout.Dimensions{Size: rect.Max}
+func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
+	return layout.Stack{}.Layout(gtx,
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			// Fill the background
+			rect := image.Rectangle{
+				Max: gtx.Constraints.Max,
+			}
+			paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.contrastBg, clip.Rect(rect).Op())
+			return layout.Dimensions{Size: rect.Max}
+		}),
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			/*
+				margins := layout.Inset{
+					Top:    20,
+					Bottom: 20,
+					Left:   20,
+					Right:  20,
+				}
+			*/
+			return layout.Dimensions{}
+		}),
+	)
 }
 
-func (b *board) getSquareColour(i, j int) color.NRGBA {
+func (b *Board) getSquareColour(i, j int) color.NRGBA {
 	if (i+j)%2 == 0 {
 		return b.gui.theme.chessBoardTheme.square1
 	}

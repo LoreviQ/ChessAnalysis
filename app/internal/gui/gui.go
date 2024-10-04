@@ -25,7 +25,7 @@ type GUI struct {
 	// Components
 	header  *header
 	sidebar *sidebar
-	board   *board
+	board   *Board
 
 	// Database
 	db *database.Database
@@ -42,6 +42,7 @@ type chessBoardTheme struct {
 	fg         color.NRGBA
 	contrastBg color.NRGBA
 	contrastFg color.NRGBA
+	text       color.NRGBA
 	square1    color.NRGBA
 	square2    color.NRGBA
 	player1    color.NRGBA
@@ -70,6 +71,7 @@ func NewChessBoardTheme(theme string) *chessBoardTheme {
 			fg:         color.NRGBA{255, 255, 255, 255},
 			contrastBg: color.NRGBA{39, 37, 35, 255},
 			contrastFg: color.NRGBA{251, 65, 45, 255},
+			text:       color.NRGBA{255, 255, 255, 255},
 			square1:    color.NRGBA{234, 236, 206, 255},
 			square2:    color.NRGBA{114, 148, 82, 255},
 			player1:    color.NRGBA{255, 255, 255, 255},

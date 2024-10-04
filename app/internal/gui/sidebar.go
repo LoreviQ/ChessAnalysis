@@ -58,7 +58,7 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 						unit.Sp(16),
 						fmt.Sprintf("%d:%s", game.ID, game.ChessdotcomID))
 					gameid.Alignment = text.Start
-					gameid.Color = s.gui.theme.chessBoardTheme.fg
+					gameid.Color = s.gui.theme.chessBoardTheme.text
 					return gameid.Layout(gtx)
 				}),
 				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
@@ -66,7 +66,7 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 						unit.Sp(16),
 						fmt.Sprintf(game.CreatedAt))
 					date.Alignment = text.End
-					date.Color = s.gui.theme.chessBoardTheme.fg
+					date.Color = s.gui.theme.chessBoardTheme.text
 					return date.Layout(gtx)
 				}),
 			)
