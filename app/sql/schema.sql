@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS games (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    chessdotcom_id TEXT UNIQUE
+    chessdotcom_id TEXT UNIQUE,
+    playerIsWhite BOOLEAN NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS moves (

@@ -14,7 +14,7 @@ func TestGetGames(t *testing.T) {
 	// First insert moves so games are created
 	gameids := []string{"123", "456", "789"}
 	for _, gameid := range gameids {
-		err = db.InsertMoves([]string{"1", "e4", "e5"}, gameid)
+		err = db.InsertMoves([]string{"1", "e4", "e5"}, gameid, true)
 		if err != nil {
 			t.Error(err)
 		}

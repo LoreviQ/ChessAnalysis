@@ -13,7 +13,7 @@ var (
 )
 
 // InsertMoves inserts a list of moves into the database
-func (d Database) InsertMoves(moves []string, chessdotcomID string) error {
+func (d Database) InsertMoves(moves []string, chessdotcomID string, playerIsWhite bool) error {
 	chessdotcomID_NullString := sql.NullString{String: chessdotcomID, Valid: chessdotcomID != ""}
 	standardizedMoves, err := standardizeMoves(moves)
 	if err != nil {
@@ -25,7 +25,7 @@ func (d Database) InsertMoves(moves []string, chessdotcomID string) error {
 	err = d.db.QueryRow(d.queries["GET_LATEST_GAME_ID"], chessdotcomID_NullString).Scan(&gameID)
 	if err == sql.ErrNoRows {
 		// If no game with the given chess.com id exists, create a new game
-		err = d.db.QueryRow(d.queries["INSERT_GAME"], chessdotcomID_NullString).Scan(&gameID)
+		err = d.db.QueryRow(d.queries["INSERT_GAME"], chessdotcomID_NullString, playerIsWhite).Scan(&gameID)
 		if err != nil {
 			return err
 		}

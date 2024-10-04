@@ -29,7 +29,7 @@ func TestInsertGetMoves(t *testing.T) {
 		"Be3d4", "Ne5xc4", "Bd4xh8", "Nc4b6", "Ng1f3", "Nb6d7", "O-O", "Ng8h6",
 		"Bh8f6", "Nd7xf6", "Nf3g5", "Nf6d7", "Ng5xf7", "Nh6xf7", "Rd1d3", "Ke8e7",
 	}
-	err = db.InsertMoves(movesToInsert, "123456")
+	err = db.InsertMoves(movesToInsert, "123456", true)
 	if err != nil {
 		t.Error(err)
 	}

@@ -35,7 +35,7 @@ func (cfg *serverCfg) postMoves(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Insert moves into database
-	err = cfg.db.InsertMoves(request.Moves, id)
+	err = cfg.db.InsertMoves(request.Moves, id, true)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error inserting moves into db")
 		return
