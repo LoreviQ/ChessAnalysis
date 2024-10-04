@@ -145,5 +145,10 @@ func (h *header) updateState(gtx layout.Context) {
 	h.size = image.Point{X: gtx.Constraints.Max.X, Y: 50}
 	for _, button := range h.buttons {
 		button.menu.Options = button.getSubButtonsLayout(h.gui.theme)
+		for _, subButton := range button.subButtons {
+			for subButton.widget.Clicked(gtx) {
+				subButton.callback()
+			}
+		}
 	}
 }
