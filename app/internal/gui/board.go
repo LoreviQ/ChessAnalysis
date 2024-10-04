@@ -35,7 +35,8 @@ func newBoard(g *GUI) *Board {
 		gui: g,
 		movesList: &widget.List{
 			List: layout.List{
-				Axis: layout.Vertical,
+				Axis:        layout.Vertical,
+				ScrollToEnd: true,
 			},
 		},
 	}
@@ -60,18 +61,11 @@ func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
 	b.gameState.Moves(moves)
 	b.moves = make([]*MoveButton, len(moves))
 	moveHistory := b.gameState.MoveHistory
-	shortNotation, err := game.ConvertMovesToShortAlgebraicNotation(moveHistory)
-	if err != nil {
-		panic(err)
-	}
-	notationList := make([]string, 0, len(shortNotation))
-	for k := range shortNotation {
-		notationList = append(notationList, k)
-	}
-	for i, move := range b.gameState.MoveHistory {
+	notations := game.ConvertMovesToLongAlgebraicNotation(moveHistory)
+	for i, move := range moveHistory {
 		b.moves[i] = &MoveButton{
 			move:          move,
-			shortNotation: notationList[i],
+			shortNotation: notations[i],
 			widget:        &widget.Clickable{},
 		}
 	}
