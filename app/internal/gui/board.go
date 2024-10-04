@@ -237,52 +237,36 @@ func (b *Board) getSquareColour(i, j int) color.NRGBA {
 }
 
 func (b *Board) moveListElement(gtx layout.Context, i int) layout.Dimensions {
+	buttonWidth := b.squareSize.X*2 - 40
 	return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
 		// move number
 		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return fakeButton(gtx, b.gui.theme, fmt.Sprintf("%d.", i+1), i, 40)
+			return button(gtx, b.gui.theme, fmt.Sprintf("%d.", i+1), i, 40, &widget.Clickable{})
 		}),
 		// player 1 move
-		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-			return b.moves[i*2].Layout(gtx, b.gui.theme, i)
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return b.moves[i*2].Layout(gtx, b.gui.theme, i, buttonWidth)
 		}),
 		// player 2 move
-		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 			if i*2+1 < len(b.moves) {
-				return b.moves[i*2+1].Layout(gtx, b.gui.theme, i)
+				return b.moves[i*2+1].Layout(gtx, b.gui.theme, i, buttonWidth)
 			}
 			return layout.Dimensions{}
 		}),
 		// spacer
-		layout.Flexed(3, func(gtx layout.Context) layout.Dimensions {
-			return fakeButton(gtx, b.gui.theme, "", i, -1)
+		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+			return button(gtx, b.gui.theme, "", i, -1, &widget.Clickable{})
 		}),
 	)
 
 }
 
-func (m *MoveButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i int) layout.Dimensions {
-	button := material.Button(th.giouiTheme, m.widget, m.shortNotation)
-	button.CornerRadius = unit.Dp(0)
-	if i%2 == 0 {
-		button.Background = th.chessBoardTheme.bg
-	} else {
-		button.Background = color.NRGBA{0, 0, 0, 0}
-	}
-	button.Inset = layout.UniformInset(unit.Dp(1))
-	height := 40
-	return layout.Stack{}.Layout(gtx,
-		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-			gtx.Constraints.Min.Y = height
-			gtx.Constraints.Max.Y = height
-			gtx.Constraints.Min.X = gtx.Constraints.Max.X
-			return button.Layout(gtx)
-		}),
-	)
+func (m *MoveButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i, width int) layout.Dimensions {
+	return button(gtx, th, m.shortNotation, i, width, m.widget)
 }
 
-func fakeButton(gtx layout.Context, th *chessAnalysisTheme, text string, i, width int) layout.Dimensions {
-	widget := &widget.Clickable{}
+func button(gtx layout.Context, th *chessAnalysisTheme, text string, i, width int, widget *widget.Clickable) layout.Dimensions {
 	button := material.Button(th.giouiTheme, widget, text)
 	button.CornerRadius = unit.Dp(0)
 	if i%2 == 0 {
