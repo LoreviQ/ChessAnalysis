@@ -18,8 +18,13 @@ import (
 type sidebar struct {
 	gui            *GUI
 	list           *widget.List
-	games          []database.Game
 	selectedGameID int
+	games          []*gameButton
+}
+
+type gameButton struct {
+	game   database.Game
+	widget *widget.Clickable
 }
 
 func newSidebar(g *GUI) *sidebar {
@@ -28,6 +33,13 @@ func newSidebar(g *GUI) *sidebar {
 	if err == nil {
 		gameId = games[0].ID
 	}
+	gameButtons := make([]*gameButton, len(games))
+	for i, game := range games {
+		gameButtons[i] = &gameButton{
+			game:   game,
+			widget: &widget.Clickable{},
+		}
+	}
 	return &sidebar{
 		gui: g,
 		list: &widget.List{
@@ -35,8 +47,8 @@ func newSidebar(g *GUI) *sidebar {
 				Axis: layout.Vertical,
 			},
 		},
-		games:          games,
 		selectedGameID: gameId,
+		games:          gameButtons,
 	}
 }
 
@@ -65,7 +77,7 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 }
 
 func (s *sidebar) sidebarListelement(gtx layout.Context, i int) layout.Dimensions {
-	game := s.games[i]
+	game := s.games[i].game
 	return layout.Inset{Top: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 		return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
 			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
@@ -91,7 +103,18 @@ func (s *sidebar) sidebarListelement(gtx layout.Context, i int) layout.Dimension
 func (s *sidebar) updateState() error {
 	// Update games from db
 	var err error
-	s.games, err = s.gui.db.GetGames()
+	games, err := s.gui.db.GetGames()
+	if len(games) > len(s.games) {
+		// new game added to db, need to create a new gameButton
+		for _, game := range games {
+			if !s.gameExists(game.ID) {
+				s.games = append(s.games, &gameButton{
+					game:   game,
+					widget: &widget.Clickable{},
+				})
+			}
+		}
+	}
 	if err != nil || len(s.games) == 0 {
 		return errors.New("failed to get games")
 	}
@@ -100,4 +123,13 @@ func (s *sidebar) updateState() error {
 		s.gui.board = newBoard(s.gui, s.selectedGameID)
 	}
 	return nil
+}
+
+func (s *sidebar) gameExists(id int) bool {
+	for _, gameButton := range s.games {
+		if gameButton.game.ID == id {
+			return true
+		}
+	}
+	return false
 }
