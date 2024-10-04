@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/color"
 
-	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -21,12 +20,11 @@ type header struct {
 }
 
 type headerButton struct {
-	name            string
-	widget          *widget.Clickable
-	menu            *component.MenuState
-	menuContextArea *component.ContextArea
-	subButtons      []*headerDropDownButton
-	show            bool
+	name       string
+	widget     *widget.Clickable
+	menu       *component.MenuState
+	subButtons []*headerDropDownButton
+	show       bool
 }
 
 type headerDropDownButton struct {
@@ -51,13 +49,9 @@ func newHeader(g *GUI) *header {
 		}
 	}
 	buttons[0] = &headerButton{
-		name:   "Themes",
-		widget: &widget.Clickable{},
-		menu:   &component.MenuState{},
-		menuContextArea: &component.ContextArea{
-			Activation:       pointer.ButtonPrimary,
-			AbsolutePosition: true,
-		},
+		name:       "Themes",
+		widget:     &widget.Clickable{},
+		menu:       &component.MenuState{},
 		subButtons: subButtons,
 		show:       false,
 	}
