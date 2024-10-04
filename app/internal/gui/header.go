@@ -158,7 +158,7 @@ func (h *header) updateState(gtx layout.Context) {
 	// Header button click
 	for _, headerButton := range h.buttons {
 		if headerButton.widget.Clicked(gtx) {
-			headerButton.show = true
+			headerButton.show = !headerButton.show
 		}
 	}
 }
