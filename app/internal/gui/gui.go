@@ -122,7 +122,6 @@ func (g *GUI) CreateGUI() {
 func (g *GUI) draw() error {
 	for {
 		switch e := g.window.Event().(type) {
-
 		// Re-render app
 		case app.FrameEvent:
 			gtx := app.NewContext(g.ops, e)

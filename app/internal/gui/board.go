@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 
+	"gioui.org/io/key"
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
@@ -21,6 +22,7 @@ type Board struct {
 	activeGameID int
 	movesList    *widget.List
 	gameState    *game.Game
+	stateNum     int
 	moves        []*MoveButton
 }
 
@@ -68,12 +70,13 @@ func newBoard(g *GUI, activeGameID int) *Board {
 			},
 		},
 		gameState: gameState,
+		stateNum:  len(moves) - 1,
 		moves:     moves,
 	}
 }
 
 func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
-	b.checkButtonClicks(gtx)
+	b.manageState(gtx)
 	margins := layout.Inset{
 		Top:    50,
 		Bottom: 50,
@@ -312,14 +315,56 @@ func button(gtx layout.Context, th *chessAnalysisTheme, text string, i, width in
 }
 
 // Checks if a button has been clicked
-func (b *Board) checkButtonClicks(gtx layout.Context) {
+func (b *Board) manageState(gtx layout.Context) {
+	// keypress
+	for {
+		keyEvent, ok := gtx.Event(
+			key.Filter{},
+		)
+		if !ok {
+			break
+		}
+		if ev, ok := keyEvent.(key.Event); ok {
+			if (ev.Name == key.NameLeftArrow ||
+				ev.Name == key.NameRightArrow) &&
+				ev.State == key.Press {
+				b.arrowKeys(ev)
+			}
+		}
+	}
+
+	// Buttons
 	if b.moves == nil || len(b.moves) == 0 {
 		return
 	}
-	for _, move := range b.moves {
+	for i, move := range b.moves {
 		if move.widget.Clicked(gtx) {
-			b.gameState = move.gameState.Clone()
 			b.gameState = move.gameState
+			b.stateNum = i
 		}
 	}
+}
+
+func (b *Board) arrowKeys(e key.Event) {
+	if b.moves == nil {
+		return
+	}
+	var newState *game.Game
+	switch e.Name {
+	case key.NameLeftArrow:
+		if b.stateNum == 0 {
+			return
+		}
+		newState = b.moves[b.stateNum-1].gameState
+		b.stateNum--
+	case key.NameRightArrow:
+		if b.stateNum == len(b.moves)-1 {
+			return
+		}
+		newState = b.moves[b.stateNum+1].gameState
+		b.stateNum++
+	default:
+		return
+	}
+	b.gameState = newState
 }
