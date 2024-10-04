@@ -45,8 +45,8 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 
 	//Make games components
 	games, err := s.gui.db.GetGames()
-	if err != nil {
-		return layout.Dimensions{}
+	if err != nil || len(games) == 0 {
+		return layout.Dimensions{Size: sidebarSize}
 	}
 	gameID := games[0].ID
 	if s.gui.board != nil && s.gui.board.activeGameID != gameID {
