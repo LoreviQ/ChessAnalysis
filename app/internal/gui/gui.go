@@ -32,6 +32,7 @@ type GUI struct {
 }
 
 type chessAnalysisTheme struct {
+	themeName       string
 	giouiTheme      *material.Theme
 	chessBoardTheme *chessBoardTheme
 	bg              color.NRGBA
@@ -43,42 +44,71 @@ type chessAnalysisTheme struct {
 }
 
 type chessBoardTheme struct {
-	themeName string
-	square1   color.NRGBA
-	square2   color.NRGBA
-	player1   color.NRGBA
-	player2   color.NRGBA
-	pieces    map[string]*image.Image
+	square1 color.NRGBA
+	square2 color.NRGBA
+	player1 color.NRGBA
+	player2 color.NRGBA
+	pieces  map[string]*image.Image
 }
 
-func NewTheme() *chessAnalysisTheme {
-	return &chessAnalysisTheme{
-		giouiTheme:      material.NewTheme(),
-		chessBoardTheme: NewChessBoardTheme(""),
-		bg:              color.NRGBA{48, 46, 42, 255},
-		fg:              color.NRGBA{255, 255, 255, 255},
-		contrastBg:      color.NRGBA{39, 37, 35, 255},
-		contrastFg:      color.NRGBA{251, 65, 45, 255},
-		text:            color.NRGBA{255, 255, 255, 255},
-		textMuted:       color.NRGBA{255, 255, 255, 122},
+func NewTheme(theme string) *chessAnalysisTheme {
+	switch theme {
+	case "HotDogStand":
+		return &chessAnalysisTheme{
+			themeName:       "HotDogStand",
+			giouiTheme:      material.NewTheme(),
+			chessBoardTheme: NewChessBoardTheme("HotDogStand"),
+			bg:              color.NRGBA{0, 0, 0, 255},
+			fg:              color.NRGBA{255, 255, 255, 255},
+			contrastBg:      color.NRGBA{255, 0, 0, 255},
+			contrastFg:      color.NRGBA{0, 0, 0, 255},
+			text:            color.NRGBA{255, 255, 255, 255},
+			textMuted:       color.NRGBA{255, 255, 255, 122},
+		}
+	default: // chess.com theme
+		return &chessAnalysisTheme{
+			themeName:       "chess.com",
+			giouiTheme:      material.NewTheme(),
+			chessBoardTheme: NewChessBoardTheme("chess.com"),
+			bg:              color.NRGBA{48, 46, 42, 255},
+			fg:              color.NRGBA{255, 255, 255, 255},
+			contrastBg:      color.NRGBA{39, 37, 35, 255},
+			contrastFg:      color.NRGBA{251, 65, 45, 255},
+			text:            color.NRGBA{255, 255, 255, 255},
+			textMuted:       color.NRGBA{255, 255, 255, 122},
+		}
 	}
 }
 
 func NewChessBoardTheme(theme string) *chessBoardTheme {
 	switch theme {
+	case "HotDogStand":
+		imageMap, err := loadImages(theme)
+		if err != nil {
+			imageMap, err = loadImages("chess.com")
+			if err != nil {
+				panic("Failed to load piece images")
+			}
+		}
+		return &chessBoardTheme{
+			square1: color.NRGBA{255, 0, 0, 255},
+			square2: color.NRGBA{255, 255, 0, 255},
+			player1: color.NRGBA{255, 0, 0, 255},
+			player2: color.NRGBA{255, 255, 0, 255},
+			pieces:  imageMap,
+		}
 	default: // chess.com theme
-		themeName := "chess.com"
-		imageMap, err := loadImages(themeName)
+		theme = "chess.com"
+		imageMap, err := loadImages(theme)
 		if err != nil {
 			return nil
 		}
 		return &chessBoardTheme{
-			themeName: themeName,
-			square1:   color.NRGBA{234, 236, 206, 255},
-			square2:   color.NRGBA{114, 148, 82, 255},
-			player1:   color.NRGBA{255, 255, 255, 255},
-			player2:   color.NRGBA{64, 61, 57, 255},
-			pieces:    imageMap,
+			square1: color.NRGBA{234, 236, 206, 255},
+			square2: color.NRGBA{114, 148, 82, 255},
+			player1: color.NRGBA{255, 255, 255, 255},
+			player2: color.NRGBA{64, 61, 57, 255},
+			pieces:  imageMap,
 		}
 	}
 }
@@ -98,7 +128,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	w.Option(app.Size(unit.Dp(width), unit.Dp(height)))
 	w.Option(app.Title("Chess Analysis"))
 	ops := new(op.Ops)
-	th := NewTheme()
+	th := NewTheme("HotDogStand")
 
 	// define components
 	g := &GUI{
