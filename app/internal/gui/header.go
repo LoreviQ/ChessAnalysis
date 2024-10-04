@@ -25,34 +25,50 @@ type headerButton struct {
 	widget          *widget.Clickable
 	menu            *component.MenuState
 	menuContextArea *component.ContextArea
+	subButtons      []*headerDropDownButton
+}
+
+type headerDropDownButton struct {
+	name     string
+	widget   *widget.Clickable
+	callback func()
 }
 
 func newHeader(g *GUI) *header {
-	return &header{
-		gui: g,
-		buttons: []*headerButton{
-			{
-				name:   "Themes",
-				widget: &widget.Clickable{},
-				menu: &component.MenuState{
-					Options: []func(gtx layout.Context) layout.Dimensions{
-						material.Label(g.theme.giouiTheme, unit.Sp(16), "HotDogStand").Layout,
-					},
-				},
-				menuContextArea: &component.ContextArea{
-					Activation:       pointer.ButtonPrimary,
-					AbsolutePosition: true,
-				},
+	// Themes header button
+	buttons := make([]*headerButton, 1)
+	themes := []string{"chess.com", "HotDogStand"}
+	subButtons := make([]*headerDropDownButton, len(themes))
+	for i, theme := range themes {
+		subButtons[i] = &headerDropDownButton{
+			name:   theme,
+			widget: &widget.Clickable{},
+			callback: func() {
+				g.theme = NewTheme(theme)
 			},
+		}
+	}
+	buttons[0] = &headerButton{
+		name:   "Themes",
+		widget: &widget.Clickable{},
+		menu:   &component.MenuState{},
+		menuContextArea: &component.ContextArea{
+			Activation:       pointer.ButtonPrimary,
+			AbsolutePosition: true,
 		},
+		subButtons: subButtons,
+	}
+	// Add more buttons here
+	return &header{
+		gui:     g,
+		buttons: buttons,
+		size:    image.Point{X: 0, Y: 0},
 	}
 }
 
 func (h *header) Layout(gtx layout.Context) layout.Dimensions {
-	// Define the fixed size for the header
-	h.size = image.Point{X: gtx.Constraints.Max.X, Y: 50} // Fixed height of 50 pixels
-
-	// Adjust the constraints to enforce the fixed size
+	h.updateState(gtx)
+	// Header size
 	gtx.Constraints.Min = h.size
 	gtx.Constraints.Max = h.size
 
@@ -98,4 +114,36 @@ func (hb *headerButton) Layout(gtx layout.Context, th *chessAnalysisTheme) layou
 
 		}),
 	)
+}
+
+func (hddb *headerDropDownButton) Layout(gtx layout.Context, th *chessAnalysisTheme) layout.Dimensions {
+	button := material.Button(th.giouiTheme, hddb.widget, hddb.name)
+	button.CornerRadius = unit.Dp(0)
+	button.Inset = layout.UniformInset(unit.Dp(1))
+	button.Color = th.text
+	button.Background = color.NRGBA{0, 0, 0, 0}
+	return layout.Stack{}.Layout(gtx,
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			gtx.Constraints.Min.Y = 50
+			gtx.Constraints.Min.X = gtx.Constraints.Min.X + 100
+			return button.Layout(gtx)
+		}),
+	)
+}
+
+func (hb *headerButton) getSubButtonsLayout(th *chessAnalysisTheme) []func(gtx layout.Context) layout.Dimensions {
+	children := make([]func(gtx layout.Context) layout.Dimensions, len(hb.subButtons))
+	for i, button := range hb.subButtons {
+		children[i] = func(gtx layout.Context) layout.Dimensions {
+			return button.Layout(gtx, th)
+		}
+	}
+	return children
+}
+
+func (h *header) updateState(gtx layout.Context) {
+	h.size = image.Point{X: gtx.Constraints.Max.X, Y: 50}
+	for _, button := range h.buttons {
+		button.menu.Options = button.getSubButtonsLayout(h.gui.theme)
+	}
 }
