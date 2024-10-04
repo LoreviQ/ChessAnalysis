@@ -26,12 +26,13 @@ type headerButton struct {
 	menu            *component.MenuState
 	menuContextArea *component.ContextArea
 	subButtons      []*headerDropDownButton
+	show            bool
 }
 
 type headerDropDownButton struct {
 	name     string
 	widget   *widget.Clickable
-	callback func()
+	callback func(*headerButton)
 }
 
 func newHeader(g *GUI) *header {
@@ -43,7 +44,8 @@ func newHeader(g *GUI) *header {
 		subButtons[i] = &headerDropDownButton{
 			name:   theme,
 			widget: &widget.Clickable{},
-			callback: func() {
+			callback: func(hb *headerButton) {
+				hb.show = false
 				g.theme = NewTheme(theme)
 			},
 		}
@@ -57,6 +59,7 @@ func newHeader(g *GUI) *header {
 			AbsolutePosition: true,
 		},
 		subButtons: subButtons,
+		show:       false,
 	}
 	// Add more buttons here
 	return &header{
@@ -84,8 +87,11 @@ func (h *header) Layout(gtx layout.Context) layout.Dimensions {
 		}),
 		// Buttons
 		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+			button := h.buttons[0]
 			return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
-				h.buttonsLayout()...,
+				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+					return button.Layout(gtx, h.gui.theme)
+				}),
 			)
 		}),
 	)
@@ -143,12 +149,25 @@ func (hb *headerButton) getSubButtonsLayout(th *chessAnalysisTheme) []func(gtx l
 
 func (h *header) updateState(gtx layout.Context) {
 	h.size = image.Point{X: gtx.Constraints.Max.X, Y: 50}
+	// Execute subbutton callbacks
 	for _, button := range h.buttons {
 		button.menu.Options = button.getSubButtonsLayout(h.gui.theme)
 		for _, subButton := range button.subButtons {
 			for subButton.widget.Clicked(gtx) {
-				subButton.callback()
+				subButton.callback(button)
 			}
 		}
 	}
+	themeButton := h.buttons[0]
+	// button click
+	if themeButton.widget.Clicked(gtx) {
+		themeButton.show = true
+	}
+}
+
+func (hb *headerButton) layoutDropDown(gtx layout.Context, w layout.Widget) layout.Dimensions {
+	if hb.show {
+		return w(gtx)
+	}
+	return layout.Dimensions{}
 }

@@ -197,7 +197,7 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 		// Header Dropdown Menus
 		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
 			themeButton := g.header.buttons[0]
-			return themeButton.menuContextArea.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			return themeButton.layoutDropDown(gtx, func(gtx layout.Context) layout.Dimensions {
 				offset := layout.Inset{
 					Top:  unit.Dp(float32(g.header.size.Y) / +1),
 					Left: unit.Dp(1),
@@ -208,6 +208,7 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 					menu.SurfaceStyle.Fill = g.theme.contrastFg
 					return menu.Layout(gtx)
 				})
+
 			})
 		}),
 	)
