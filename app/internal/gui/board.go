@@ -24,6 +24,7 @@ type Board struct {
 	gameState    *game.Game
 	stateNum     int
 	moves        []*MoveButton
+	flipped      bool
 }
 
 type MoveButton struct {
@@ -42,7 +43,9 @@ func newBoard(g *GUI, activeGameID int) *Board {
 			activeGameID: activeGameID,
 			movesList:    &widget.List{},
 			gameState:    game.NewGame(),
+			stateNum:     0,
 			moves:        nil,
+			flipped:      false,
 		}
 	}
 	// Get the board state for the active game
@@ -72,6 +75,7 @@ func newBoard(g *GUI, activeGameID int) *Board {
 		gameState: gameState,
 		stateNum:  len(moves) - 1,
 		moves:     moves,
+		flipped:   false,
 	}
 }
 
@@ -153,8 +157,12 @@ func (b *Board) drawSquare(i, j int) layout.FlexChild {
 				return layout.Dimensions{Size: square.Max}
 			}),
 			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+				row := 7 - i
+				if b.flipped {
+					row = i
+				}
 				// Draw the piece
-				piece := b.gameState.Board.Squares[i][j]
+				piece := b.gameState.Board.Squares[row][j]
 				if piece == nil {
 					return layout.Dimensions{}
 				}
@@ -251,6 +259,9 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 
 // Get the colour of a square
 func (b *Board) getSquareColour(i, j int) color.NRGBA {
+	if b.flipped {
+		i++
+	}
 	if (i+j)%2 == 0 {
 		return b.gui.theme.chessBoardTheme.square1
 	}
