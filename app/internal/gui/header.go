@@ -87,11 +87,8 @@ func (h *header) Layout(gtx layout.Context) layout.Dimensions {
 		}),
 		// Buttons
 		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
-			button := h.buttons[0]
-			return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
-				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return button.Layout(gtx, h.gui.theme)
-				}),
+			return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
+				h.buttonsLayout()...,
 			)
 		}),
 	)
@@ -158,10 +155,11 @@ func (h *header) updateState(gtx layout.Context) {
 			}
 		}
 	}
-	themeButton := h.buttons[0]
-	// button click
-	if themeButton.widget.Clicked(gtx) {
-		themeButton.show = true
+	// Header button click
+	for _, headerButton := range h.buttons {
+		if headerButton.widget.Clicked(gtx) {
+			headerButton.show = true
+		}
 	}
 }
 
