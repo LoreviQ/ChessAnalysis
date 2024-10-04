@@ -14,6 +14,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget/material"
+	"gioui.org/x/component"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
 )
 
@@ -175,19 +176,39 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 		},
 	}
 	paint.FillShape(gtx.Ops, g.theme.bg, clip.Rect(rect).Op())
-	return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			return g.header.Layout(gtx)
-		}),
-		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-			return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
+	return layout.Stack{}.Layout(gtx,
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
 				layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-					return g.sidebar.Layout(gtx)
+					return g.header.Layout(gtx)
 				}),
 				layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-					return g.board.Layout(gtx)
+					return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
+						layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+							return g.sidebar.Layout(gtx)
+						}),
+						layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+							return g.board.Layout(gtx)
+						}),
+					)
 				}),
 			)
+		}),
+		// Header Dropdown Menus
+		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+			themeButton := g.header.buttons[0]
+			return themeButton.menuContextArea.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				offset := layout.Inset{
+					Top:  unit.Dp(float32(g.header.size.Y) / +1),
+					Left: unit.Dp(1),
+				}
+				return offset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					gtx.Constraints.Min = image.Point{}
+					menu := component.Menu(g.theme.giouiTheme, themeButton.menu)
+					menu.SurfaceStyle.Fill = g.theme.contrastFg
+					return menu.Layout(gtx)
+				})
+			})
 		}),
 	)
 }
