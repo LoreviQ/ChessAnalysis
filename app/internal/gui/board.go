@@ -162,20 +162,54 @@ func (b *Board) drawRows() []layout.FlexChild {
 func (b *Board) drawSquare(i, j int) layout.FlexChild {
 	return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 		return layout.Stack{}.Layout(gtx,
+			// Draw the square
 			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-				// Draw the square
 				square := image.Rectangle{
 					Max: b.squareSize,
 				}
 				paint.FillShape(gtx.Ops, b.getSquareColour(i, j), clip.Rect(square).Op())
 				return layout.Dimensions{Size: square.Max}
 			}),
-			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			// Draw the file labels
+			layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+				if i != 7 {
+					return layout.Dimensions{}
+				}
+				label := material.Label(b.gui.theme.giouiTheme, unit.Sp(30), fmt.Sprintf("%c", 'a'+j))
+				label.Color = b.getSquareColour(i+1, j)
+				return layout.SE.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					margins := layout.Inset{
+						Right:  6,
+						Bottom: 1,
+					}
+					return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+						return label.Layout(gtx)
+					})
+				})
+			}),
+			// Draw the rank labels
+			layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+				if j != 0 {
+					return layout.Dimensions{}
+				}
+				label := material.Label(b.gui.theme.giouiTheme, unit.Sp(30), fmt.Sprintf("%d", 8-i))
+				label.Color = b.getSquareColour(i, j-1)
+				return layout.NW.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					margins := layout.Inset{
+						Left: 6,
+						Top:  4,
+					}
+					return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+						return label.Layout(gtx)
+					})
+				})
+			}),
+			// Draw the piece
+			layout.Expanded(func(gtx layout.Context) layout.Dimensions {
 				row := 7 - i
 				if b.flipped {
 					row = i
 				}
-				// Draw the piece
 				piece := b.gameState.Board.Squares[row][j]
 				if piece == nil {
 					return layout.Dimensions{}
