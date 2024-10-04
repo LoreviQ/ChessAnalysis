@@ -52,23 +52,24 @@ func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
 	}
 
 	// Get the moves for the active game
-	moves, err := b.gui.db.GetMovesByID(b.activeGameID)
+	moveStrs, err := b.gui.db.GetMovesByID(b.activeGameID)
 	if err != nil {
 		panic(err)
 	}
 
 	// Get the board state for the active game
 	b.gameState = game.NewGame()
-	for i, move := range moves {
-		moveStruct, err := b.gameState.Move(move)
+	b.moves = make([]*MoveButton, len(moveStrs))
+	for i, moveStr := range moveStrs {
+		move, err := b.gameState.Move(moveStr)
 		if err != nil {
 			break
 		}
 		b.moves[i] = &MoveButton{
-			move:      moveStruct,
-			notation:  move,
+			move:      move,
+			notation:  moveStr,
 			widget:    &widget.Clickable{},
-			gameState: b.gameState,
+			gameState: b.gameState.Clone(),
 		}
 	}
 
