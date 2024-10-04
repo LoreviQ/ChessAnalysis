@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 
@@ -243,15 +244,24 @@ func (b *Board) getSquareColour(i, j int) color.NRGBA {
 
 func (b *Board) moveListElement(gtx layout.Context, i int) layout.Dimensions {
 	return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
+		// move number
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return fakeButton(gtx, b.gui.theme, fmt.Sprintf("%d.", i+1), i, 40)
+		}),
+		// player 1 move
 		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
 			return b.moves[i*2].Layout(gtx, b.gui.theme, i)
 		}),
+		// player 2 move
 		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-
 			if i*2+1 < len(b.moves) {
 				return b.moves[i*2+1].Layout(gtx, b.gui.theme, i)
 			}
 			return layout.Dimensions{}
+		}),
+		// spacer
+		layout.Flexed(3, func(gtx layout.Context) layout.Dimensions {
+			return fakeButton(gtx, b.gui.theme, "", i, -1)
 		}),
 	)
 
@@ -272,6 +282,31 @@ func (m *MoveButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i int) l
 			gtx.Constraints.Min.Y = height
 			gtx.Constraints.Max.Y = height
 			gtx.Constraints.Min.X = gtx.Constraints.Max.X
+			return button.Layout(gtx)
+		}),
+	)
+}
+
+func fakeButton(gtx layout.Context, th *chessAnalysisTheme, text string, i, width int) layout.Dimensions {
+	widget := &widget.Clickable{}
+	button := material.Button(th.giouiTheme, widget, text)
+	button.CornerRadius = unit.Dp(0)
+	if i%2 == 0 {
+		button.Background = th.chessBoardTheme.bg
+	} else {
+		button.Background = color.NRGBA{0, 0, 0, 0}
+	}
+	button.Inset = layout.UniformInset(unit.Dp(1))
+	height := 40
+	if width == -1 {
+		width = gtx.Constraints.Max.X
+	}
+	return layout.Stack{}.Layout(gtx,
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			gtx.Constraints.Min.Y = height
+			gtx.Constraints.Max.Y = height
+			gtx.Constraints.Min.X = width
+			gtx.Constraints.Max.X = width
 			return button.Layout(gtx)
 		}),
 	)
