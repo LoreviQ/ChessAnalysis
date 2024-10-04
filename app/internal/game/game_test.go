@@ -313,3 +313,53 @@ func TestConvertNotation(t *testing.T) {
 		}
 	}
 }
+
+func TestClone(t *testing.T) {
+	g := NewGame()
+	moves := []string{
+		"e4",
+		"e5",
+		"f4",
+		"exf4",
+		"d4",
+		"Nc6",
+		"Bxf4",
+	}
+	// Make first four  moves
+	for _, move := range moves[:4] {
+		_, err := g.Move(move)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+	}
+
+	// Clone the game
+	clone := g.Clone()
+
+	// Make the rest of the moves
+	for _, move := range moves[4:] {
+		_, err := g.Move(move)
+		if err != nil {
+			t.Errorf("Unexpected error: %v", err)
+		}
+	}
+
+	// Clone should possess board state after four moves
+	clone_g4, err := clone.Board.GetPieceAtSquare('f', 4)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	if clone_g4 == nil {
+		t.Errorf("Expected piece at f4")
+	} else {
+		if clone_g4.PieceType != Pawn {
+			t.Errorf("Expected pawn at f4")
+		}
+		if clone_g4.Color != "black" {
+			t.Errorf("Expected black pawn at f4")
+		}
+		if !clone_g4.Active {
+			t.Errorf("Expected active black pawn at f4")
+		}
+	}
+}

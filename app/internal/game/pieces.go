@@ -399,3 +399,12 @@ func (p *Piece) promote(promotion rune) error {
 	}
 	return nil
 }
+
+func (p *Piece) Clone() *Piece {
+	return &Piece{
+		PieceType: p.PieceType,
+		Color:     p.Color,
+		Active:    p.Active,
+		Moved:     p.Moved,
+	}
+}

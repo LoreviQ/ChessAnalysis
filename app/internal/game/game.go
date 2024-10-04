@@ -316,6 +316,14 @@ func (g *Game) newGame() {
 	g.MoveHistory = []Move{}
 }
 
+func (g *Game) Clone() *Game {
+	return &Game{
+		Board:       g.Board.Clone(),
+		Turn:        g.Turn,
+		MoveHistory: g.MoveHistory,
+	}
+}
+
 // Parse a move string in algebraic notation
 func parseRegex(moveStr string) (Move, error) {
 	// Regex to parse move string

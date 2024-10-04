@@ -184,6 +184,27 @@ func (b *Board) GetCapturedByColour(color string) []*Piece {
 	return CapturedByColour
 }
 
+func (b *Board) Clone() *Board {
+	neqSquares := [8][8]*Piece{}
+	for i, row := range b.Squares {
+		for j, p := range row {
+			if p == nil {
+				neqSquares[i][j] = nil
+				continue
+			}
+			neqSquares[i][j] = p.Clone()
+		}
+	}
+	newCaptured := make([]*Piece, len(b.captured))
+	for i, p := range b.captured {
+		newCaptured[i] = p.Clone()
+	}
+	return &Board{
+		Squares:  neqSquares,
+		captured: newCaptured,
+	}
+}
+
 // converts 1-8 to a-h
 func intToFile(i int) rune {
 	return rune(i+'a') - 1
