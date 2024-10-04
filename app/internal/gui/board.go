@@ -9,6 +9,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
+	"gioui.org/widget/material"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 )
 
@@ -67,11 +68,11 @@ func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
 		notationList = append(notationList, k)
 	}
 	for i, move := range b.gameState.MoveHistory {
-		b.moves = append(b.moves, &MoveButton{
+		b.moves[i] = &MoveButton{
 			move:          move,
 			shortNotation: notationList[i],
 			widget:        &widget.Clickable{},
-		})
+		}
 	}
 
 	return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
@@ -83,7 +84,7 @@ func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
 		}
 		b.squareSize = image.Point{X: smallest, Y: smallest}
 
-		// Board width = squareSize * 8
+		// board width = squareSize * 8
 		// eval width = squareSize * 5/15
 		// analysis width = squareSize * 4
 		// spacer width = squareSize * 3/15
@@ -218,15 +219,17 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 			return layout.Dimensions{Size: rect.Max}
 		}),
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-			/*
-				margins := layout.Inset{
-					Top:    20,
-					Bottom: 20,
-					Left:   20,
-					Right:  20,
-				}
-			*/
-			return layout.Dimensions{}
+			margins := layout.Inset{
+				Top:    20,
+				Bottom: 20,
+				Left:   20,
+				Right:  20,
+			}
+			return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return b.movesList.Layout(gtx, (len(b.moves)+1)/2, func(gtx layout.Context, i int) layout.Dimensions {
+					return b.moveListElement(gtx, i)
+				})
+			})
 		}),
 	)
 }
@@ -236,4 +239,40 @@ func (b *Board) getSquareColour(i, j int) color.NRGBA {
 		return b.gui.theme.chessBoardTheme.square1
 	}
 	return b.gui.theme.chessBoardTheme.square2
+}
+
+func (b *Board) moveListElement(gtx layout.Context, i int) layout.Dimensions {
+	return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
+		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+			return b.moves[i*2].Layout(gtx, b.gui.theme, i)
+		}),
+		layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+
+			if i*2+1 < len(b.moves) {
+				return b.moves[i*2+1].Layout(gtx, b.gui.theme, i)
+			}
+			return layout.Dimensions{}
+		}),
+	)
+
+}
+
+func (m *MoveButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i int) layout.Dimensions {
+	button := material.Button(th.giouiTheme, m.widget, m.shortNotation)
+	button.CornerRadius = unit.Dp(0)
+	if i%2 == 0 {
+		button.Background = th.chessBoardTheme.bg
+	} else {
+		button.Background = color.NRGBA{0, 0, 0, 0}
+	}
+	button.Inset = layout.UniformInset(unit.Dp(1))
+	height := 40
+	return layout.Stack{}.Layout(gtx,
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			gtx.Constraints.Min.Y = height
+			gtx.Constraints.Max.Y = height
+			gtx.Constraints.Min.X = gtx.Constraints.Max.X
+			return button.Layout(gtx)
+		}),
+	)
 }
