@@ -28,8 +28,8 @@ func newBoard(g *GUI) *board {
 
 func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 	margins := layout.Inset{
-		Top:    100,
-		Bottom: 100,
+		Top:    50,
+		Bottom: 50,
 		Left:   50,
 		Right:  50,
 	}
@@ -46,26 +46,29 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 	b.gameState = game
 
 	return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		smallest := gtx.Constraints.Max.X
-		if gtx.Constraints.Max.Y < smallest {
-			smallest = gtx.Constraints.Max.Y
+		squareHeight := (gtx.Constraints.Max.Y - 100) / 8
+		squareWidth := (gtx.Constraints.Max.X * 15) / 191
+		smallest := squareHeight
+		if squareWidth < squareHeight {
+			smallest = squareWidth
 		}
-		b.squareSize = image.Point{X: smallest / 8, Y: smallest / 8}
+		b.squareSize = image.Point{X: smallest, Y: smallest}
+
+		// Board width = squareSize * 8
+		// eval width = squareSize * 5/15
+		// analysis width = squareSize * 4
+		// spacer width = squareSize * 3/15
+		// total width = squareSize * 191/15
+
 		return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
 			layout.Flexed(1, layout.Spacer{}.Layout),
 			layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 				return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
-					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						if smallest == gtx.Constraints.Max.Y {
-							return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
-								layout.Rigid(b.drawEvalBar),
-								layout.Rigid(layout.Spacer{Width: unit.Dp(b.squareSize.Y / 5)}.Layout),
-							)
-						}
-						return layout.Dimensions{}
-					}),
+					layout.Rigid(b.drawEvalBar),
+					layout.Rigid(layout.Spacer{Width: unit.Dp(b.squareSize.Y / 5)}.Layout),
 					layout.Rigid(b.drawBoard),
-					layout.Flexed(1, layout.Spacer{}.Layout),
+					layout.Rigid(layout.Spacer{Width: unit.Dp(b.squareSize.Y / 5)}.Layout),
+					layout.Flexed(1, b.drawAnalysis),
 				)
 			}),
 			layout.Flexed(1, layout.Spacer{}.Layout),
@@ -77,7 +80,13 @@ func (b *board) Layout(gtx layout.Context) layout.Dimensions {
 func (b *board) drawBoard(gtx layout.Context) layout.Dimensions {
 	b.squares = b.drawSquares(8, 8)
 	return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
-		b.drawRows()...,
+		layout.Rigid(layout.Spacer{Height: 50}.Layout),
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
+				b.drawRows()...,
+			)
+		}),
+		layout.Rigid(layout.Spacer{Height: 50}.Layout),
 	)
 }
 
@@ -145,20 +154,36 @@ func (b *board) drawImage(image image.Image) func(layout.Context) layout.Dimensi
 
 func (b *board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	rect1 := image.Rectangle{
+		Min: image.Point{
+			X: 0,
+			Y: 50,
+		},
 		Max: image.Point{
 			X: b.squareSize.Y / 3,
-			Y: b.squareSize.Y * 8,
+			Y: b.squareSize.Y*8 + 50,
 		},
 	}
 	rect2 := image.Rectangle{
+		Min: image.Point{
+			X: 0,
+			Y: 50,
+		},
 		Max: image.Point{
 			X: b.squareSize.Y / 3,
-			Y: b.squareSize.Y * 4,
+			Y: b.squareSize.Y*4 + 50,
 		},
 	}
 	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player1, clip.Rect(rect1).Op())
 	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player2, clip.Rect(rect2).Op())
 	return layout.Dimensions{Size: rect1.Max}
+}
+
+func (b *board) drawAnalysis(gtx layout.Context) layout.Dimensions {
+	rect := image.Rectangle{
+		Max: gtx.Constraints.Max,
+	}
+	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.contrastBg, clip.Rect(rect).Op())
+	return layout.Dimensions{Size: rect.Max}
 }
 
 func (b *board) getSquareColour(i, j int) color.NRGBA {
