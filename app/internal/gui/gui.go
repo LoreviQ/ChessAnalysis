@@ -73,7 +73,7 @@ func NewTheme(theme string) *chessAnalysisTheme {
 			bg:              color.NRGBA{48, 46, 42, 255},
 			fg:              color.NRGBA{255, 255, 255, 255},
 			contrastBg:      color.NRGBA{39, 37, 35, 255},
-			contrastFg:      color.NRGBA{251, 65, 45, 255},
+			contrastFg:      color.NRGBA{30, 30, 27, 255},
 			text:            color.NRGBA{255, 255, 255, 255},
 			textMuted:       color.NRGBA{255, 255, 255, 122},
 		}
@@ -128,7 +128,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	w.Option(app.Size(unit.Dp(width), unit.Dp(height)))
 	w.Option(app.Title("Chess Analysis"))
 	ops := new(op.Ops)
-	th := NewTheme("HotDogStand")
+	th := NewTheme("")
 
 	// define components
 	g := &GUI{
