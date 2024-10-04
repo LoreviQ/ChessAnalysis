@@ -111,6 +111,14 @@ func (s *sidebar) updateState(gtx layout.Context) error {
 
 	// Change board if selected game is different
 	if s.gui.board != nil && s.gui.board.activeGameID != s.selectedGameID {
+		if selectedGame.ID == 0 {
+			for _, gameButton := range s.games {
+				if gameButton.game.ID == s.selectedGameID {
+					selectedGame = gameButton.game
+					break
+				}
+			}
+		}
 		s.gui.board = newBoard(s.gui, &selectedGame)
 	}
 	return nil
