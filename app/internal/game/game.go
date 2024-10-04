@@ -77,7 +77,7 @@ func (g *Game) Play() {
 			g.logPossibleMoves()
 			continue
 		case "new_game":
-			g.newGame()
+			g.NewGame()
 			continue
 		default:
 			_, err := g.Move(userInput)
@@ -310,7 +310,7 @@ func (g *Game) changeTurn() {
 	}
 }
 
-func (g *Game) newGame() {
+func (g *Game) NewGame() {
 	g.Board = NewBoard()
 	g.Turn = "white"
 	g.MoveHistory = []Move{}

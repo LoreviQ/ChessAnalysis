@@ -32,7 +32,9 @@ func newSidebar(g *GUI) *sidebar {
 	var gameId int
 	games, err := g.db.GetGames()
 	if err == nil {
-		gameId = games[0].ID
+		// gameId = games[0].ID
+		// default gameid for testing
+		gameId = 1
 	}
 	gameButtons := make([]*gameButton, len(games))
 	for i, game := range games {
@@ -67,7 +69,7 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 	}
 	paint.FillShape(gtx.Ops, s.gui.theme.contrastBg, clip.Rect(rect).Op())
 
-	err := s.updateState()
+	err := s.updateState(gtx)
 	if err != nil {
 		return layout.Dimensions{Size: sidebarSize}
 	}
@@ -76,7 +78,7 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 	})
 }
 
-func (s *sidebar) updateState() error {
+func (s *sidebar) updateState(gtx layout.Context) error {
 	// Update games from db
 	var err error
 	games, err := s.gui.db.GetGames()
@@ -94,6 +96,17 @@ func (s *sidebar) updateState() error {
 	if err != nil || len(s.games) == 0 {
 		return errors.New("failed to get games")
 	}
+
+	// Buttons
+	if s.games == nil || len(s.games) == 0 {
+		return nil
+	}
+	for _, gameButton := range s.games {
+		if gameButton.widget.Clicked(gtx) {
+			s.selectedGameID = gameButton.game.ID
+		}
+	}
+
 	// Change board if selected game is different
 	if s.gui.board != nil && s.gui.board.activeGameID != s.selectedGameID {
 		s.gui.board = newBoard(s.gui, s.selectedGameID)

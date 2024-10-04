@@ -36,20 +36,28 @@ type MoveButton struct {
 
 func newBoard(g *GUI, activeGameID int) *Board {
 	// Get the moves for the active game
+	errBoard := &Board{
+		gui:          g,
+		activeGameID: activeGameID,
+		movesList:    &widget.List{},
+		gameState:    game.NewGame(),
+		stateNum:     0,
+		moves:        nil,
+		flipped:      false,
+	}
 	moveStrs, err := g.db.GetMovesByID(activeGameID)
 	if err != nil {
-		return &Board{
-			gui:          g,
-			activeGameID: activeGameID,
-			movesList:    &widget.List{},
-			gameState:    game.NewGame(),
-			stateNum:     0,
-			moves:        nil,
-			flipped:      false,
-		}
+		return errBoard
 	}
 	// Get the board state for the active game
 	gameState := game.NewGame()
+	// check if the move string is valid
+	err = gameState.Moves(moveStrs)
+	if err != nil {
+		return errBoard
+	}
+	// turn the move strings into moves
+	gameState.NewGame()
 	moves := make([]*MoveButton, len(moveStrs)+1)
 	moves[0] = &MoveButton{
 		move:      nil,
@@ -86,7 +94,7 @@ func newBoard(g *GUI, activeGameID int) *Board {
 }
 
 func (b *Board) Layout(gtx layout.Context) layout.Dimensions {
-	b.manageState(gtx)
+	b.updateState(gtx)
 	margins := layout.Inset{
 		Top:    50,
 		Bottom: 50,
@@ -335,7 +343,7 @@ func button(gtx layout.Context, th *chessAnalysisTheme, text string, i, width in
 }
 
 // Checks if a button has been clicked
-func (b *Board) manageState(gtx layout.Context) {
+func (b *Board) updateState(gtx layout.Context) {
 	// keypress
 	for {
 		keyEvent, ok := gtx.Event(
