@@ -43,6 +43,7 @@ type chessBoardTheme struct {
 	contrastBg color.NRGBA
 	contrastFg color.NRGBA
 	text       color.NRGBA
+	textMuted  color.NRGBA
 	square1    color.NRGBA
 	square2    color.NRGBA
 	player1    color.NRGBA
@@ -72,6 +73,7 @@ func NewChessBoardTheme(theme string) *chessBoardTheme {
 			contrastBg: color.NRGBA{39, 37, 35, 255},
 			contrastFg: color.NRGBA{251, 65, 45, 255},
 			text:       color.NRGBA{255, 255, 255, 255},
+			textMuted:  color.NRGBA{255, 255, 255, 122},
 			square1:    color.NRGBA{234, 236, 206, 255},
 			square2:    color.NRGBA{114, 148, 82, 255},
 			player1:    color.NRGBA{255, 255, 255, 255},

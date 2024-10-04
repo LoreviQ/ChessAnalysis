@@ -139,14 +139,26 @@ func (gb *gameButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i, widt
 			gtx.Constraints.Max.X = width
 			return button.Layout(gtx)
 		}),
-		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-			margins := layout.Inset{Left: unit.Dp(8), Top: unit.Dp(8)}
+		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+			margins := layout.Inset{Left: unit.Dp(8)}
 			return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				labelStr := fmt.Sprintf("%d:%s", gb.game.ID, gb.game.ChessdotcomID)
 				gameLabel := material.Label(th.giouiTheme, unit.Sp(16), labelStr)
 				gameLabel.Color = th.chessBoardTheme.text
 				gameLabel.Alignment = text.Start
-				return gameLabel.Layout(gtx)
+				return layout.W.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					return layout.Center.Layout(gtx, gameLabel.Layout)
+				})
+			})
+		}),
+		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+			labelStr := gb.game.CreatedAt
+			dateLabel := material.Label(th.giouiTheme, unit.Sp(12), labelStr)
+			dateLabel.Color = th.chessBoardTheme.textMuted
+			dateLabel.Alignment = text.End
+			return layout.SE.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				margins := layout.Inset{Right: unit.Dp(6), Bottom: unit.Dp(4)}
+				return margins.Layout(gtx, dateLabel.Layout)
 			})
 		}),
 	)
