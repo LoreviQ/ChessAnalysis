@@ -32,9 +32,8 @@ func newSidebar(g *GUI) *sidebar {
 	var gameId int
 	games, err := g.db.GetGames()
 	if err == nil {
-		// gameId = games[0].ID
-		// default gameid for testing
-		gameId = 1
+		// default to last game
+		gameId = games[len(games)-1].ID
 	}
 	gameButtons := make([]*gameButton, len(games))
 	for i, game := range games {
@@ -101,15 +100,18 @@ func (s *sidebar) updateState(gtx layout.Context) error {
 	if s.games == nil || len(s.games) == 0 {
 		return nil
 	}
+
+	var selectedGame database.Game
 	for _, gameButton := range s.games {
 		if gameButton.widget.Clicked(gtx) {
 			s.selectedGameID = gameButton.game.ID
+			selectedGame = gameButton.game
 		}
 	}
 
 	// Change board if selected game is different
 	if s.gui.board != nil && s.gui.board.activeGameID != s.selectedGameID {
-		s.gui.board = newBoard(s.gui, s.selectedGameID)
+		s.gui.board = newBoard(s.gui, &selectedGame)
 	}
 	return nil
 }

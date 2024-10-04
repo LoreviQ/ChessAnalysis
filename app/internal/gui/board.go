@@ -12,6 +12,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 )
 
@@ -34,18 +35,22 @@ type MoveButton struct {
 	gameState *game.Game
 }
 
-func newBoard(g *GUI, activeGameID int) *Board {
-	// Get the moves for the active game
+func newBoard(g *GUI, selectedGame *database.Game) *Board {
+	// default board if no game is selected
 	errBoard := &Board{
 		gui:          g,
-		activeGameID: activeGameID,
+		activeGameID: 0,
 		movesList:    &widget.List{},
 		gameState:    game.NewGame(),
 		stateNum:     0,
 		moves:        nil,
 		flipped:      false,
 	}
-	moveStrs, err := g.db.GetMovesByID(activeGameID)
+	if selectedGame == nil {
+		return errBoard
+	}
+	// Get the moves for the active game
+	moveStrs, err := g.db.GetMovesByID(selectedGame.ID)
 	if err != nil {
 		return errBoard
 	}
@@ -77,9 +82,13 @@ func newBoard(g *GUI, activeGameID int) *Board {
 			gameState: gameState.Clone(),
 		}
 	}
+	flipped := true
+	if selectedGame.PlayerIsWhite {
+		flipped = false
+	}
 	return &Board{
 		gui:          g,
-		activeGameID: activeGameID,
+		activeGameID: selectedGame.ID,
 		movesList: &widget.List{
 			List: layout.List{
 				Axis:        layout.Vertical,
@@ -89,7 +98,7 @@ func newBoard(g *GUI, activeGameID int) *Board {
 		gameState: gameState,
 		stateNum:  len(moves) - 1,
 		moves:     moves,
-		flipped:   false,
+		flipped:   flipped,
 	}
 }
 
