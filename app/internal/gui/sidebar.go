@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/color"
 
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -72,31 +73,14 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 	}
 
 	return s.list.Layout(gtx, len(s.games), func(gtx layout.Context, i int) layout.Dimensions {
-		return s.sidebarListelement(gtx, i)
+		return s.sidebarListElement(gtx, i)
 	})
 }
 
-func (s *sidebar) sidebarListelement(gtx layout.Context, i int) layout.Dimensions {
-	game := s.games[i].game
-	return layout.Inset{Top: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-		return layout.Flex{Axis: layout.Horizontal, Spacing: 0}.Layout(gtx,
-			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-				gameid := material.Label(s.gui.theme.giouiTheme,
-					unit.Sp(16),
-					fmt.Sprintf("%d:%s", game.ID, game.ChessdotcomID))
-				gameid.Alignment = text.Start
-				gameid.Color = s.gui.theme.chessBoardTheme.text
-				return gameid.Layout(gtx)
-			}),
-			layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
-				date := material.Label(s.gui.theme.giouiTheme,
-					unit.Sp(16),
-					fmt.Sprintf(game.CreatedAt))
-				date.Alignment = text.End
-				date.Color = s.gui.theme.chessBoardTheme.text
-				return date.Layout(gtx)
-			}),
-		)
+func (s *sidebar) sidebarListElement(gtx layout.Context, i int) layout.Dimensions {
+	margins := layout.Inset{Top: unit.Dp(8), Left: unit.Dp(8), Right: unit.Dp(8)}
+	return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		return s.games[i].Layout(gtx, s.gui.theme, i, -1)
 	})
 }
 
@@ -132,4 +116,38 @@ func (s *sidebar) gameExists(id int) bool {
 		}
 	}
 	return false
+}
+
+func (gb *gameButton) Layout(gtx layout.Context, th *chessAnalysisTheme, i, width int) layout.Dimensions {
+	button := material.Button(th.giouiTheme, gb.widget, "")
+	button.CornerRadius = unit.Dp(0)
+	if i%2 == 0 {
+		button.Background = th.chessBoardTheme.bg
+	} else {
+		button.Background = color.NRGBA{0, 0, 0, 0}
+	}
+	button.Inset = layout.UniformInset(unit.Dp(1))
+	height := 40
+	if width == -1 {
+		width = gtx.Constraints.Max.X
+	}
+	return layout.Stack{}.Layout(gtx,
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			gtx.Constraints.Min.Y = height
+			gtx.Constraints.Max.Y = height
+			gtx.Constraints.Min.X = width
+			gtx.Constraints.Max.X = width
+			return button.Layout(gtx)
+		}),
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			margins := layout.Inset{Left: unit.Dp(8), Top: unit.Dp(8)}
+			return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				labelStr := fmt.Sprintf("%d:%s", gb.game.ID, gb.game.ChessdotcomID)
+				gameLabel := material.Label(th.giouiTheme, unit.Sp(16), labelStr)
+				gameLabel.Color = th.chessBoardTheme.text
+				gameLabel.Alignment = text.Start
+				return gameLabel.Layout(gtx)
+			})
+		}),
+	)
 }
