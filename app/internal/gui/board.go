@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/color"
@@ -86,14 +87,7 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 		}
 	}
 	// evaluate the game
-	if g.eng != nil {
-		notations := game.ConvertMovesToUCINotation(gameState.MoveHistory)
-		evals := g.eng.EvalGame(strings.Join(notations, " "))
-		for i, eval := range evals {
-			moves[i].eval = eval
-		}
-	}
-
+	go evaluateGame(g.eng, gameState.MoveHistory, moves)
 	// check if the board should be flipped
 	flipped := true
 	if selectedGame.PlayerIsWhite {
@@ -280,26 +274,9 @@ func (b *Board) drawImage(image image.Image) func(layout.Context) layout.Dimensi
 
 // Draw the evaluation bar
 func (b *Board) drawEvalBar(gtx layout.Context) layout.Dimensions {
-	// produce a score multiplier between 0.1 and 0.9 for eval bar
-	var scoreMult int
-	turn := 1
-	if b.stateNum%2 == 1 {
-		turn = -1
-	}
-	if b.flipped {
-		turn *= -1
-	}
-	if b.moves[b.stateNum].eval.Mate {
-		scoreMult = 0
-		if b.flipped {
-			scoreMult = 1000
-		}
-	} else {
-		score := b.moves[b.stateNum].eval.Score * turn
-		scoreMult = 500 - min(400, max(-400, score))
-	}
 	offset := 50
 	height := b.squareSize.Y * 8
+	scoreMult := b.getScoreMult()
 	rect1 := image.Rectangle{
 		Min: image.Point{
 			X: 0,
@@ -478,4 +455,39 @@ func (b *Board) arrowKeys(e key.Event) {
 		return
 	}
 	b.gameState = newState
+}
+
+func evaluateGame(engine *eval.Engine, moves []game.Move, moveButtons []*MoveButton) error {
+	if engine == nil {
+		return errors.New("no engine")
+	}
+	notations := game.ConvertMovesToUCINotation(moves)
+	evals := engine.EvalGame(strings.Join(notations, " "))
+	for i, eval := range evals {
+		moveButtons[i].eval = eval
+	}
+	return nil
+}
+
+// produce a score multiplier between 100 and 900 for eval bar
+func (b *Board) getScoreMult() int {
+	eval := b.moves[b.stateNum].eval
+	if eval == nil {
+		return 500 // default value
+	}
+	turn := 1
+	if b.stateNum%2 == 1 {
+		turn = -1
+	}
+	if b.flipped {
+		turn *= -1
+	}
+	if eval.Mate {
+		if b.flipped {
+			return 1000
+		}
+		return 0
+	}
+	score := eval.Score * turn
+	return 500 - min(400, max(-400, score))
 }
