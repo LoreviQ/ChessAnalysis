@@ -411,6 +411,48 @@ func TestConvertMovesToLongAlgebraicNotation(t *testing.T) {
 	}
 }
 
+func TestConvertMovesToUCINotation(t *testing.T) {
+	moves := []Move{
+		{
+			Piece:    'R',
+			FromFile: 'a',
+			FromRank: 3,
+			ToFile:   'c',
+			ToRank:   3,
+		},
+		{
+			Piece:    'R',
+			FromFile: 'h',
+			FromRank: 3,
+			ToFile:   'c',
+			ToRank:   3,
+		},
+		{
+			FromFile: 'c',
+			FromRank: 2,
+			ToFile:   'c',
+			ToRank:   3,
+		},
+	}
+	expected := []string{"a3c3", "h3c3", "c2c3"}
+	actual := ConvertMovesToUCINotation(moves)
+	if len(actual) != len(expected) {
+		t.Errorf("Expected %d moves, got %d", len(expected), len(actual))
+	}
+	for _, expectedString := range expected {
+		found := false
+		for _, actualString := range actual {
+			if expectedString == actualString {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Expected move %s not found", expectedString)
+		}
+	}
+}
+
 func TestGetCorrespondingMove(t *testing.T) {
 	tests := []struct {
 		moves    []Move

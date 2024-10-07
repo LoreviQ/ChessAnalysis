@@ -188,6 +188,18 @@ func ConvertMovesToLongAlgebraicNotation(moves []Move) []string {
 	return notations
 }
 
+func ConvertMovesToUCINotation(moves []Move) []string {
+	notations := []string{}
+	for _, move := range moves {
+		uciNotation, err := move.UCInotation()
+		if err != nil {
+			return []string{}
+		}
+		notations = append(notations, uciNotation)
+	}
+	return notations
+}
+
 // Takes a move and a list of possible moves and returns the corresponding move from the list
 // If the move is ambigious it returns an error
 func getCorrespondingMove(move Move, possibleMoves []Move) (Move, error) {
