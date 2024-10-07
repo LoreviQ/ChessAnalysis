@@ -80,3 +80,24 @@ func TestSendCommandReadResponse(t *testing.T) {
 		t.Errorf("ReadResponse() failed: expected %v, got %v", expected, response[len(response)-1])
 	}
 }
+
+func TestEvalPosition(t *testing.T) {
+	eng, err := InitializeStockfish()
+	if err != nil {
+		t.Errorf("InitializeStockfish() failed: %v", err)
+	}
+	eval := eng.EvalPosition("e2e4 e7e5 b1c3 b8c6 f2f4 e5f4 g1f3 f8b4 d2d4 b4c3 b2c3 d7d5 e4e5 f7f6 c1f4")
+	if eval == nil {
+		t.Errorf("EvalPosition() failed: returned nil")
+	} else {
+		if eval.depth == 0 {
+			t.Errorf("EvalPosition() failed: expected depth != 0, got %v", eval.depth)
+		}
+		if eval.score == 0 {
+			t.Errorf("EvalPosition() failed: expected score != 0, got %v", eval.score)
+		}
+		if eval.bestLine == nil {
+			t.Error("EvalPosition() failed: expected bestLine != nil")
+		}
+	}
+}

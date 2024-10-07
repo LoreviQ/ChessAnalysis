@@ -28,13 +28,23 @@ func InitializeStockfish() (*Engine, error) {
 		return nil, err
 	}
 	eng.SendCommand("uci")
-	eng.ReadResponse()
+	for {
+		response := eng.ReadResponse()
+		if response[len(response)-1] == "uciok" {
+			break
+		}
+	}
 	// Set options
 	eng.SendCommand(fmt.Sprintf("setoption name Threads value %v", THREADS))
 	eng.SendCommand(fmt.Sprintf("setoption name Hash value %v", HASH))
 	eng.SendCommand(fmt.Sprintf("setoption name MultiPV value %v", MultiPV))
 	eng.SendCommand("isready")
-	eng.ReadResponse()
+	for {
+		response := eng.ReadResponse()
+		if response[len(response)-1] == "readyok" {
+			break
+		}
+	}
 	return eng, nil
 }
 
@@ -42,6 +52,7 @@ func InitializeStockfish() (*Engine, error) {
 //
 // positionString is a space separated string of the moves in long algebraic notation
 func (e *Engine) EvalPosition(positionString string) *moveEval {
+	e.SendCommand("ucinewgame")
 	e.SendCommand(fmt.Sprintf("position startpos moves %v", positionString))
 	e.SendCommand(fmt.Sprintf("go movetime %v", e.movetime))
 	response := e.ReadResponse()
