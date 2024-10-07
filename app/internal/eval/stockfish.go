@@ -88,11 +88,20 @@ func parseResponse(response []string) (*MoveEval, error) {
 			eval.depth = depth
 		}
 		if word == "score" {
-			score, err := strconv.Atoi(penultimateLine[i+2])
-			if err != nil {
-				return nil, err
+			if penultimateLine[i+1] == "mate" {
+				eval.Mate = true
+				mateIn, err := strconv.Atoi(penultimateLine[i+2])
+				if err != nil {
+					return nil, err
+				}
+				eval.MateIn = mateIn
+			} else {
+				score, err := strconv.Atoi(penultimateLine[i+2])
+				if err != nil {
+					return nil, err
+				}
+				eval.Score = score
 			}
-			eval.score = score
 		}
 		if word == "pv" {
 			eval.bestLine = penultimateLine[i+1:]

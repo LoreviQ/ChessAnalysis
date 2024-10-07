@@ -183,6 +183,14 @@ func (b *Board) drawRows() []layout.FlexChild {
 // Draw a square on the chess board
 func (b *Board) drawSquare(i, j int) layout.FlexChild {
 	return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		row := 7 - i
+		if b.flipped {
+			row = i
+		}
+		col := j
+		if b.flipped {
+			col = 7 - j
+		}
 		return layout.Stack{}.Layout(gtx,
 			// Draw the square
 			layout.Stacked(func(gtx layout.Context) layout.Dimensions {
@@ -197,7 +205,8 @@ func (b *Board) drawSquare(i, j int) layout.FlexChild {
 				if i != 7 {
 					return layout.Dimensions{}
 				}
-				label := material.Label(b.gui.theme.giouiTheme, unit.Sp(30), fmt.Sprintf("%c", 'a'+j))
+
+				label := material.Label(b.gui.theme.giouiTheme, unit.Sp(30), fmt.Sprintf("%c", 'a'+col))
 				label.Color = b.getSquareColour(i+1, j)
 				return layout.SE.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					margins := layout.Inset{
@@ -214,7 +223,7 @@ func (b *Board) drawSquare(i, j int) layout.FlexChild {
 				if j != 0 {
 					return layout.Dimensions{}
 				}
-				label := material.Label(b.gui.theme.giouiTheme, unit.Sp(30), fmt.Sprintf("%d", 8-i))
+				label := material.Label(b.gui.theme.giouiTheme, unit.Sp(30), fmt.Sprintf("%d", row+1))
 				label.Color = b.getSquareColour(i, j-1)
 				return layout.NW.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 					margins := layout.Inset{
@@ -228,11 +237,7 @@ func (b *Board) drawSquare(i, j int) layout.FlexChild {
 			}),
 			// Draw the piece
 			layout.Expanded(func(gtx layout.Context) layout.Dimensions {
-				row := 7 - i
-				if b.flipped {
-					row = i
-				}
-				piece := b.gameState.Board.Squares[row][j]
+				piece := b.gameState.Board.Squares[row][col]
 				if piece == nil {
 					return layout.Dimensions{}
 				}
@@ -275,28 +280,53 @@ func (b *Board) drawImage(image image.Image) func(layout.Context) layout.Dimensi
 
 // Draw the evaluation bar
 func (b *Board) drawEvalBar(gtx layout.Context) layout.Dimensions {
+	// produce a score multiplier between 0.1 and 0.9 for eval bar
+	var scoreMult int
+	turn := 1
+	if b.stateNum%2 == 1 {
+		turn = -1
+	}
+	if b.flipped {
+		turn *= -1
+	}
+	if b.moves[b.stateNum].eval.Mate {
+		scoreMult = 0
+		if b.flipped {
+			scoreMult = 1000
+		}
+	} else {
+		score := b.moves[b.stateNum].eval.Score * turn
+		scoreMult = 500 - min(400, max(-400, score))
+	}
+	offset := 50
+	height := b.squareSize.Y * 8
 	rect1 := image.Rectangle{
 		Min: image.Point{
 			X: 0,
-			Y: 50,
+			Y: offset,
 		},
 		Max: image.Point{
 			X: b.squareSize.Y / 3,
-			Y: b.squareSize.Y*8 + 50,
+			Y: height + offset,
 		},
 	}
 	rect2 := image.Rectangle{
 		Min: image.Point{
 			X: 0,
-			Y: 50,
+			Y: offset,
 		},
 		Max: image.Point{
 			X: b.squareSize.Y / 3,
-			Y: b.squareSize.Y*4 + 50,
+			Y: int(scoreMult*height/1000) + offset,
 		},
 	}
-	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player1, clip.Rect(rect1).Op())
-	paint.FillShape(gtx.Ops, b.gui.theme.chessBoardTheme.player2, clip.Rect(rect2).Op())
+	colour1 := b.gui.theme.chessBoardTheme.player1
+	colour2 := b.gui.theme.chessBoardTheme.player2
+	if b.flipped {
+		colour1, colour2 = colour2, colour1
+	}
+	paint.FillShape(gtx.Ops, colour1, clip.Rect(rect1).Op())
+	paint.FillShape(gtx.Ops, colour2, clip.Rect(rect2).Op())
 	return layout.Dimensions{Size: rect1.Max}
 }
 
@@ -329,9 +359,6 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 
 // Get the colour of a square
 func (b *Board) getSquareColour(i, j int) color.NRGBA {
-	if b.flipped {
-		i++
-	}
 	if (i+j)%2 == 0 {
 		return b.gui.theme.chessBoardTheme.square1
 	}

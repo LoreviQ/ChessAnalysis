@@ -94,8 +94,8 @@ func TestEvalPosition(t *testing.T) {
 		if eval.depth == 0 {
 			t.Errorf("EvalPosition() failed: expected depth != 0, got %v", eval.depth)
 		}
-		if eval.score == 0 {
-			t.Errorf("EvalPosition() failed: expected score != 0, got %v", eval.score)
+		if eval.Score == 0 {
+			t.Errorf("EvalPosition() failed: expected score != 0, got %v", eval.Score)
 		}
 		if eval.bestLine == nil {
 			t.Error("EvalPosition() failed: expected bestLine != nil")
@@ -121,8 +121,8 @@ func TestEvalGame(t *testing.T) {
 			if moveEval.depth == 0 {
 				t.Errorf("EvalPosition() failed: expected depth != 0, got %v", moveEval.depth)
 			}
-			if moveEval.score == 0 {
-				t.Errorf("EvalPosition() failed: expected score != 0, got %v", moveEval.score)
+			if moveEval.Score == 0 {
+				t.Errorf("EvalPosition() failed: expected score != 0, got %v", moveEval.Score)
 			}
 			if moveEval.bestLine == nil {
 				t.Error("EvalPosition() failed: expected bestLine != nil")

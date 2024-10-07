@@ -16,8 +16,10 @@ type Engine struct {
 type MoveEval struct {
 	moves    []string
 	depth    int
-	score    int // centipawns
+	Score    int // centipawns
 	bestLine []string
+	Mate     bool
+	MateIn   int
 }
 
 // NewEngine starts the provided engine and return a struct containing
