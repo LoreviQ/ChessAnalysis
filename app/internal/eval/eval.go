@@ -7,9 +7,10 @@ import (
 )
 
 type Engine struct {
-	cmd     *exec.Cmd
-	writer  *bufio.Writer
-	scanner *bufio.Scanner
+	cmd      *exec.Cmd
+	writer   *bufio.Writer
+	scanner  *bufio.Scanner
+	movetime int // ms spent on each move
 }
 
 // NewEngine starts the provided engine and return a struct containing
@@ -29,7 +30,12 @@ func NewEngine(filepath string) (*Engine, error) {
 	}
 	writer := bufio.NewWriter(stdin)
 	scanner := bufio.NewScanner(stdout)
-	return &Engine{cmd, writer, scanner}, nil
+	return &Engine{
+		cmd:      cmd,
+		writer:   writer,
+		scanner:  scanner,
+		movetime: 1000,
+	}, nil
 }
 
 // SendCommand sends a command to the engine

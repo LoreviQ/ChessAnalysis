@@ -20,6 +20,20 @@ func TestNewEngine(t *testing.T) {
 	}
 }
 
+func TestInitializeEngine(t *testing.T) {
+	eng, err := InitializeStockfish()
+	if err != nil {
+		t.Errorf("InitializeStockfish() failed: %v", err)
+	}
+	if eng == nil {
+		t.Errorf("InitializeStockfish() failed: returned nil")
+	}
+	err = eng.Close()
+	if err != nil {
+		t.Errorf("Engine.Close() failed: %v", err)
+	}
+}
+
 // Tests both SendCommand and ReadResponse checking received response to see if
 // it matches the expected response from sending the command
 func TestSendCommandReadResponse(t *testing.T) {
