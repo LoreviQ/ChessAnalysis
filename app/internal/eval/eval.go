@@ -42,14 +42,25 @@ func (e *Engine) SendCommand(command string) error {
 }
 
 // ReadResponse reads the response from the engine
-func (e *Engine) ReadResponse() string {
-	response := ""
+func (e *Engine) ReadResponse() []string {
+	response := []string{}
+	endStrings := []string{"uciok", "readyok", "bestmove", "Stockfish 17 by the Stockfish developers (see AUTHORS file)"}
 	for e.scanner.Scan() {
 		line := e.scanner.Text()
-		response += line + "\n"
-		if line == "uciok" || line == "readyok" || strings.Contains(line, "bestmove") {
-			break
+		response = append(response, line)
+		for _, str := range endStrings {
+			if strings.Contains(line, str) {
+				return response
+			}
 		}
 	}
 	return response
+}
+
+// Close closes the engine
+func (e *Engine) Close() error {
+	if err := e.SendCommand("quit"); err != nil {
+		return err
+	}
+	return e.cmd.Wait()
 }
