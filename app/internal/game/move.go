@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 	"fmt"
+	"unicode"
 )
 
 var (
@@ -107,6 +108,33 @@ func (m Move) ShortAlgebraicNotation(includeFile, includeRank bool) (string, err
 		m.ToRank,
 		promotion,
 		checkStatus,
+	), nil
+}
+
+// Returns the UCI notation of the move
+func (m Move) UCInotation() (string, error) {
+	var promotion string
+	if m.FromRank == 0 {
+		return "", ErrNotEnoughInfo
+	}
+	if m.Castle == "short" {
+		return fmt.Sprintf("e%dg%d", m.FromRank, m.FromRank), nil
+	} else if m.Castle == "long" {
+		return fmt.Sprintf("e%dc%d", m.FromRank, m.FromRank), nil
+	}
+	if m.FromFile == 0 || m.ToFile == 0 || m.ToRank == 0 {
+		return "", ErrNotEnoughInfo
+	}
+	if m.Promotion != 0 {
+		promotion = string(unicode.ToLower(m.Promotion))
+	}
+	return fmt.Sprintf(
+		"%c%d%c%d%s",
+		m.FromFile,
+		m.FromRank,
+		m.ToFile,
+		m.ToRank,
+		promotion,
 	), nil
 }
 

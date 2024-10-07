@@ -211,6 +211,118 @@ func TestShortAlgebraicNotation(t *testing.T) {
 	}
 }
 
+func TestUCINotation(t *testing.T) {
+	tests := []struct {
+		move     Move
+		expected string
+		err      error
+	}{
+		{
+			move: Move{
+				Piece:    'R',
+				FromFile: 'g',
+				FromRank: 4,
+				ToFile:   'e',
+				ToRank:   4,
+			},
+			expected: "g4e4",
+			err:      nil,
+		},
+		{
+			move: Move{
+				FromFile: 'e',
+				FromRank: 2,
+				ToFile:   'e',
+				ToRank:   4,
+			},
+			expected: "e2e4",
+			err:      nil,
+		},
+		{
+			move: Move{
+				Piece:    'N',
+				FromFile: 'g',
+				FromRank: 1,
+				ToFile:   'f',
+				ToRank:   3,
+			},
+			expected: "g1f3",
+			err:      nil,
+		},
+		{
+			move: Move{
+				FromFile: 'e',
+				FromRank: 4,
+				Capture:  'x',
+				ToFile:   'd',
+				ToRank:   5,
+			},
+			expected: "e4d5",
+			err:      nil,
+		},
+		{
+			move: Move{
+				FromFile:  'e',
+				FromRank:  7,
+				ToFile:    'e',
+				ToRank:    8,
+				Promotion: 'Q',
+			},
+			expected: "e7e8q",
+			err:      nil,
+		},
+		{
+			move: Move{
+				FromRank: 1,
+				Castle:   "long",
+			},
+			expected: "e1c1",
+			err:      nil,
+		},
+		{
+			move: Move{
+				FromRank: 8,
+				Castle:   "short",
+			},
+			expected: "e8g8",
+			err:      nil,
+		},
+		// Failing cases
+		{
+			move: Move{
+				ToFile: 'e',
+			},
+			expected: "",
+			err:      ErrNotEnoughInfo,
+		},
+		{
+			move: Move{
+				Piece:  'R',
+				ToRank: 5,
+			},
+			expected: "",
+			err:      ErrNotEnoughInfo,
+		},
+		{
+			move: Move{
+				Castle: "long",
+			},
+			expected: "",
+			err:      ErrNotEnoughInfo,
+		},
+	}
+
+	for _, tt := range tests {
+		actual, err := tt.move.UCInotation()
+		if err != tt.err {
+			t.Errorf("Unexpected error: %v", err)
+		}
+		if actual != tt.expected {
+			t.Errorf("Expected: %s, got: %s", tt.expected, actual)
+		}
+	}
+}
+
 func TestConvertMovesToShortAlgebraicNotation(t *testing.T) {
 	moves := []Move{
 		{

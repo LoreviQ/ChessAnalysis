@@ -193,7 +193,8 @@ func (g *Game) getPossibleCastles() []Move {
 		king.Color == g.Turn && !king.Moved &&
 		fSquare == nil && gSquare == nil {
 		possibleMoves = append(possibleMoves, Move{
-			Castle: "short",
+			FromRank: homeRank,
+			Castle:   "short",
 		})
 	}
 	// Queenside castle
@@ -219,7 +220,8 @@ func (g *Game) getPossibleCastles() []Move {
 		king.Color == g.Turn && !king.Moved &&
 		bSquare == nil && cSquare == nil && dSquare == nil {
 		possibleMoves = append(possibleMoves, Move{
-			Castle: "long",
+			FromRank: homeRank,
+			Castle:   "long",
 		})
 	}
 	return possibleMoves
