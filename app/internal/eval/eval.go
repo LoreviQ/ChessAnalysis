@@ -13,6 +13,13 @@ type Engine struct {
 	movetime int // ms spent on each move
 }
 
+type MoveEval struct {
+	moves    []string
+	depth    int
+	score    int // centipawns
+	bestLine []string
+}
+
 // NewEngine starts the provided engine and return a struct containing
 // the command handle and input/output pipes
 func NewEngine(filepath string, movetime int) (*Engine, error) {

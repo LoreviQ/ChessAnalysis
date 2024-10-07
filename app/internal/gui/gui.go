@@ -16,7 +16,10 @@ import (
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
 )
+
+var DefaultFilepath = "/home/lorevi/workspace/github.com/LoreviQ/stockfish/stockfish-ubuntu-x86-64-avx2"
 
 type GUI struct {
 	window *app.Window
@@ -30,6 +33,9 @@ type GUI struct {
 
 	// Database
 	db *database.Database
+
+	// Engine
+	eng *eval.Engine
 }
 
 type chessAnalysisTheme struct {
@@ -141,6 +147,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	g.header = newHeader(g)
 	g.sidebar = newSidebar(g)
 	g.board = newBoard(g, &g.sidebar.games[0].game)
+	g.eng, _ = eval.InitializeStockfish(DefaultFilepath, 60)
 
 	return g
 }

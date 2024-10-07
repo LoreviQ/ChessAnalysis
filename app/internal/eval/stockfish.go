@@ -14,13 +14,6 @@ var (
 	// SyzygyPath // ignore for now
 )
 
-type moveEval struct {
-	moves    []string
-	depth    int
-	score    int // centipawns
-	bestLine []string
-}
-
 // Sends the commands to set up stockfish 17 specifically returning the engine
 func InitializeStockfish(filepath string, moveTime int) (*Engine, error) {
 	eng, err := NewEngine(filepath, moveTime)
@@ -51,7 +44,7 @@ func InitializeStockfish(filepath string, moveTime int) (*Engine, error) {
 // Evaluates the position string using the engine
 //
 // positionString is a space separated string of the moves in long algebraic notation
-func (e *Engine) EvalPosition(positionString string) *moveEval {
+func (e *Engine) EvalPosition(positionString string) *MoveEval {
 	e.SendCommand("ucinewgame")
 	return e.queryPosition(positionString)
 }
@@ -59,17 +52,17 @@ func (e *Engine) EvalPosition(positionString string) *moveEval {
 // Evaluates the game using the engine
 //
 // Returns an eval for each move in the game
-func (e *Engine) EvalGame(positionString string) []*moveEval {
+func (e *Engine) EvalGame(positionString string) []*MoveEval {
 	e.SendCommand("ucinewgame")
 	moves := strings.Split(positionString, " ")
-	eval := []*moveEval{}
-	for i := 0; i < len(moves); i++ {
+	eval := []*MoveEval{}
+	for i := 0; i < len(moves)+1; i++ {
 		eval = append(eval, e.queryPosition(strings.Join(moves[:i], " ")))
 	}
 	return eval
 }
 
-func (e *Engine) queryPosition(positionString string) *moveEval {
+func (e *Engine) queryPosition(positionString string) *MoveEval {
 	e.SendCommand(fmt.Sprintf("position startpos moves %v", positionString))
 	e.SendCommand(fmt.Sprintf("go movetime %v", e.movetime))
 	response := e.ReadResponse()
@@ -82,8 +75,8 @@ func (e *Engine) queryPosition(positionString string) *moveEval {
 }
 
 // Parses the response from the engine
-func parseResponse(response []string) (*moveEval, error) {
-	eval := &moveEval{}
+func parseResponse(response []string) (*MoveEval, error) {
+	eval := &MoveEval{}
 	// Penultimate line contains most recent info
 	penultimateLine := strings.Split(response[len(response)-2], " ")
 	for i, word := range penultimateLine {

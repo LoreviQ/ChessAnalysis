@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"strings"
 
 	"gioui.org/io/key"
 	"gioui.org/layout"
@@ -13,6 +14,7 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 )
 
@@ -33,6 +35,7 @@ type MoveButton struct {
 	notation  string
 	widget    *widget.Clickable
 	gameState *game.Game
+	eval      *eval.MoveEval
 }
 
 func newBoard(g *GUI, selectedGame *database.Game) *Board {
@@ -82,6 +85,16 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			gameState: gameState.Clone(),
 		}
 	}
+	// evaluate the game
+	if g.eng != nil {
+		notations := game.ConvertMovesToUCINotation(gameState.MoveHistory)
+		evals := g.eng.EvalGame(strings.Join(notations, " "))
+		for i, eval := range evals {
+			moves[i].eval = eval
+		}
+	}
+
+	// check if the board should be flipped
 	flipped := true
 	if selectedGame.PlayerIsWhite {
 		flipped = false

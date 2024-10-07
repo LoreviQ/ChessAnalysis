@@ -111,8 +111,8 @@ func TestEvalGame(t *testing.T) {
 	positionString := "e2e4 e7e5 b1c3 b8c6 f2f4 e5f4 g1f3 f8b4 d2d4 b4c3 b2c3 d7d5 e4e5 f7f6 c1f4"
 	eval := eng.EvalGame(positionString)
 	expected := strings.Split(positionString, " ")
-	if len(eval) != len(expected) {
-		t.Errorf("EvalGame() failed: expected %v moves, got %v", len(expected), len(eval))
+	if len(eval) != len(expected)+1 {
+		t.Errorf("EvalGame() failed: expected %v moves, got %v", len(expected)+1, len(eval))
 	}
 	for i, moveEval := range eval {
 		if moveEval == nil {
