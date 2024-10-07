@@ -12,8 +12,9 @@ type Engine struct {
 	scanner *bufio.Scanner
 }
 
-// StartStockfish starts the Stockfish engine and returns the command handle and input/output pipes
-func StartStockfish(filepath string) (*Engine, error) {
+// NewEngine starts the provided engine and return a struct containing
+// the command handle and input/output pipes
+func NewEngine(filepath string) (*Engine, error) {
 	cmd := exec.Command(filepath)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -31,7 +32,7 @@ func StartStockfish(filepath string) (*Engine, error) {
 	return &Engine{cmd, writer, scanner}, nil
 }
 
-// SendCommand sends a command to the Stockfish engine
+// SendCommand sends a command to the engine
 func (e *Engine) SendCommand(command string) error {
 	_, err := e.writer.WriteString(command + "\n")
 	if err != nil {
@@ -40,7 +41,7 @@ func (e *Engine) SendCommand(command string) error {
 	return e.writer.Flush()
 }
 
-// ReadResponse reads the response from the Stockfish engine
+// ReadResponse reads the response from the engine
 func (e *Engine) ReadResponse() string {
 	response := ""
 	for e.scanner.Scan() {
