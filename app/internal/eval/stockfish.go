@@ -22,8 +22,8 @@ type moveEval struct {
 }
 
 // Sends the commands to set up stockfish 17 specifically returning the engine
-func InitializeStockfish() (*Engine, error) {
-	eng, err := NewEngine("/home/lorevi/workspace/github.com/LoreviQ/stockfish/stockfish-ubuntu-x86-64-avx2")
+func InitializeStockfish(filepath string, moveTime int) (*Engine, error) {
+	eng, err := NewEngine(filepath, moveTime)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +53,23 @@ func InitializeStockfish() (*Engine, error) {
 // positionString is a space separated string of the moves in long algebraic notation
 func (e *Engine) EvalPosition(positionString string) *moveEval {
 	e.SendCommand("ucinewgame")
+	return e.queryPosition(positionString)
+}
+
+// Evaluates the game using the engine
+//
+// Returns an eval for each move in the game
+func (e *Engine) EvalGame(positionString string) []*moveEval {
+	e.SendCommand("ucinewgame")
+	moves := strings.Split(positionString, " ")
+	eval := []*moveEval{}
+	for i := 0; i < len(moves); i++ {
+		eval = append(eval, e.queryPosition(strings.Join(moves[:i], " ")))
+	}
+	return eval
+}
+
+func (e *Engine) queryPosition(positionString string) *moveEval {
 	e.SendCommand(fmt.Sprintf("position startpos moves %v", positionString))
 	e.SendCommand(fmt.Sprintf("go movetime %v", e.movetime))
 	response := e.ReadResponse()

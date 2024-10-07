@@ -1,13 +1,14 @@
 package eval
 
 import (
+	"strings"
 	"testing"
 )
 
 var FILEPATH = "/home/lorevi/workspace/github.com/LoreviQ/stockfish/stockfish-ubuntu-x86-64-avx2"
 
 func TestNewEngine(t *testing.T) {
-	eng, err := NewEngine(FILEPATH)
+	eng, err := NewEngine(FILEPATH, 1000)
 	if err != nil {
 		t.Errorf("NewEngine(stockfish) failed: %v", err)
 	}
@@ -21,7 +22,7 @@ func TestNewEngine(t *testing.T) {
 }
 
 func TestInitializeEngine(t *testing.T) {
-	eng, err := InitializeStockfish()
+	eng, err := InitializeStockfish(FILEPATH, 1000)
 	if err != nil {
 		t.Errorf("InitializeStockfish() failed: %v", err)
 	}
@@ -37,7 +38,7 @@ func TestInitializeEngine(t *testing.T) {
 // Tests both SendCommand and ReadResponse checking received response to see if
 // it matches the expected response from sending the command
 func TestSendCommandReadResponse(t *testing.T) {
-	eng, err := NewEngine(FILEPATH)
+	eng, err := NewEngine(FILEPATH, 60)
 	if err != nil {
 		t.Errorf("NewEngine(stockfish) failed: %v", err)
 	}
@@ -82,7 +83,7 @@ func TestSendCommandReadResponse(t *testing.T) {
 }
 
 func TestEvalPosition(t *testing.T) {
-	eng, err := InitializeStockfish()
+	eng, err := InitializeStockfish(FILEPATH, 60)
 	if err != nil {
 		t.Errorf("InitializeStockfish() failed: %v", err)
 	}
@@ -98,6 +99,34 @@ func TestEvalPosition(t *testing.T) {
 		}
 		if eval.bestLine == nil {
 			t.Error("EvalPosition() failed: expected bestLine != nil")
+		}
+	}
+}
+
+func TestEvalGame(t *testing.T) {
+	eng, err := InitializeStockfish(FILEPATH, 60)
+	if err != nil {
+		t.Errorf("InitializeStockfish() failed: %v", err)
+	}
+	positionString := "e2e4 e7e5 b1c3 b8c6 f2f4 e5f4 g1f3 f8b4 d2d4 b4c3 b2c3 d7d5 e4e5 f7f6 c1f4"
+	eval := eng.EvalGame(positionString)
+	expected := strings.Split(positionString, " ")
+	if len(eval) != len(expected) {
+		t.Errorf("EvalGame() failed: expected %v moves, got %v", len(expected), len(eval))
+	}
+	for i, moveEval := range eval {
+		if moveEval == nil {
+			t.Errorf("EvalGame() failed: expected moveEval != nil at index %v", i)
+		} else {
+			if moveEval.depth == 0 {
+				t.Errorf("EvalPosition() failed: expected depth != 0, got %v", moveEval.depth)
+			}
+			if moveEval.score == 0 {
+				t.Errorf("EvalPosition() failed: expected score != 0, got %v", moveEval.score)
+			}
+			if moveEval.bestLine == nil {
+				t.Error("EvalPosition() failed: expected bestLine != nil")
+			}
 		}
 	}
 }

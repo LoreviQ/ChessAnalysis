@@ -15,7 +15,7 @@ type Engine struct {
 
 // NewEngine starts the provided engine and return a struct containing
 // the command handle and input/output pipes
-func NewEngine(filepath string) (*Engine, error) {
+func NewEngine(filepath string, movetime int) (*Engine, error) {
 	cmd := exec.Command(filepath)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -34,7 +34,7 @@ func NewEngine(filepath string) (*Engine, error) {
 		cmd:      cmd,
 		writer:   writer,
 		scanner:  scanner,
-		movetime: 1000,
+		movetime: movetime,
 	}, nil
 }
 
