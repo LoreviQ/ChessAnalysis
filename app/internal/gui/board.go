@@ -92,22 +92,23 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			eval := eval.ParseScoreStr(scoreStr)
 			moves[i].eval = eval
 		}
+	} else {
+		// evaluate the game
+		done := make(chan struct{})
+		go evaluateGame(g.eng, gameState.MoveHistory, moves, done)
+		go func() {
+			<-done
+			// Draw a new frame
+			g.window.Invalidate()
+			g.board.evaluated = true
+			// Update the database with the new evals
+			evals := make([]*eval.MoveEval, len(moves))
+			for i, move := range moves {
+				evals[i] = move.eval
+			}
+			g.db.UpdateEval(movesFromDB.ID, evals)
+		}()
 	}
-	// evaluate the game
-	done := make(chan struct{})
-	go evaluateGame(g.eng, gameState.MoveHistory, moves, done)
-	go func() {
-		<-done
-		// Draw a new frame
-		g.window.Invalidate()
-		g.board.evaluated = true
-		// Update the database with the new evals
-		evals := make([]*eval.MoveEval, len(moves))
-		for i, move := range moves {
-			evals[i] = move.eval
-		}
-		g.db.UpdateEval(movesFromDB.ID, evals)
-	}()
 
 	// check if the board should be flipped
 	flipped := true
