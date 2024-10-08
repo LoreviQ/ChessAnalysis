@@ -3,8 +3,10 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
+	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/game"
 )
 
@@ -99,4 +101,26 @@ func standardizeMoves(moves []string) (string, error) {
 	}
 	moveString := strings.Join(standardizedMoves, " ")
 	return moveString, nil
+}
+
+// UpdateEval updates the evaluation of a move in the database
+func (d Database) UpdateEval(moveID int, evals []*eval.MoveEval) error {
+	scores := []string{}
+	depth := 0
+	for _, eval := range evals {
+		if eval == nil {
+			continue
+		}
+		if eval.Depth > depth {
+			depth = eval.Depth
+		}
+		if eval.Mate {
+			scores = append(scores, fmt.Sprintf("M%d", eval.MateIn))
+		} else {
+			scores = append(scores, fmt.Sprintf("%d", eval.Score))
+		}
+	}
+	scoresStr := strings.Join(scores, " ")
+	_, err := d.db.Exec(d.queries["UPDATE_EVAL"], scoresStr, depth, moveID)
+	return err
 }

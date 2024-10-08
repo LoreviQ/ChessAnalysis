@@ -1,6 +1,10 @@
 package database
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
+)
 
 // First tests the InsertMoves method by inserting a list of moves into the database
 // and then tests the GetMoves method by retrieving the moves from the database
@@ -44,6 +48,56 @@ func TestInsertGetMoves(t *testing.T) {
 		if moves.Moves[i] != expectedMoves[i] {
 			t.Errorf("Expected move %s, got %s", expectedMoves[i], moves.Moves[i])
 		}
+	}
+	db.Close()
+}
+
+func TestUpdateEval(t *testing.T) {
+	// Change the working directory to the root of the project
+	restore := changeDirectoryToRoot()
+	defer restore()
+
+	db, err := NewConnection(4)
+	if err != nil {
+		t.Error(err)
+	}
+	movesToInsert := []string{
+		"1", "e4", "g6", "2", "d4", "Bg7", "3", "e5", "d6",
+	}
+	db.InsertMoves(movesToInsert, "123456", true)
+	evals := []*eval.MoveEval{
+		{
+			Depth:  20,
+			Score:  100,
+			Mate:   false,
+			MateIn: 0,
+		},
+		{
+			Depth:  21,
+			Score:  200,
+			Mate:   false,
+			MateIn: 0,
+		},
+		{
+			Depth:  22,
+			Score:  300,
+			Mate:   false,
+			MateIn: 0,
+		},
+	}
+	err = db.UpdateEval(1, evals)
+	if err != nil {
+		t.Error(err)
+	}
+	moves, err := db.GetMovesByChessdotcomID("123456")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(moves.Scores) != 3 {
+		t.Errorf("Expected 3 scores, got %d", len(moves.Scores))
+	}
+	if moves.Depth != 22 {
+		t.Errorf("Expected depth 22, got %d", moves.Depth)
 	}
 	db.Close()
 }
