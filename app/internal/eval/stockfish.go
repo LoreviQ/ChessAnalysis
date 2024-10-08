@@ -8,15 +8,15 @@ import (
 
 // change these for production
 var (
-	THREADS    = "12"                           // CPU Threads used by the engine
-	HASH       = "256"                          // Size of hash table (MB)
-	MultiPV    = "1"                            // Number of best lines found by the engine
+	THREADS    = 12                             // CPU Threads used by the engine
+	HASH       = 256                            // Size of hash table (MB)
+	MultiPV    = 1                              // Number of best lines found by the engine
 	SyzygyPath = "/home/lorevi/workspace/3-4-5" // Path to syzygy tablebases
 )
 
 // Sends the commands to set up stockfish 17 specifically returning the engine
 func InitializeStockfish(filepath string, moveTime int) (*Engine, error) {
-	eng, err := NewEngine(filepath, moveTime)
+	eng, err := NewEngine(filepath, SyzygyPath, moveTime, THREADS, HASH, MultiPV)
 	if err != nil {
 		return nil, err
 	}
@@ -28,9 +28,9 @@ func InitializeStockfish(filepath string, moveTime int) (*Engine, error) {
 		}
 	}
 	// Set options
-	eng.SendCommand(fmt.Sprintf("setoption name Threads value %v", THREADS))
-	eng.SendCommand(fmt.Sprintf("setoption name Hash value %v", HASH))
-	eng.SendCommand(fmt.Sprintf("setoption name MultiPV value %v", MultiPV))
+	eng.SendCommand(fmt.Sprintf("setoption name Threads value %d", THREADS))
+	eng.SendCommand(fmt.Sprintf("setoption name Hash value %d", HASH))
+	eng.SendCommand(fmt.Sprintf("setoption name MultiPV value %d", MultiPV))
 	eng.SendCommand(fmt.Sprintf("setoption name SyzygyPath value %v", SyzygyPath))
 	eng.SendCommand("isready")
 	for {
@@ -65,7 +65,7 @@ func (e *Engine) EvalGame(positionString string) []*MoveEval {
 
 func (e *Engine) queryPosition(positionString string) *MoveEval {
 	e.SendCommand(fmt.Sprintf("position startpos moves %v", positionString))
-	e.SendCommand(fmt.Sprintf("go movetime %v", e.movetime))
+	e.SendCommand(fmt.Sprintf("go movetime %v", e.Movetime))
 	response := e.ReadResponse()
 	eval, err := parseResponse(response)
 	if err != nil {

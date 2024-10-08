@@ -8,7 +8,7 @@ import (
 var FILEPATH = "/home/lorevi/workspace/stockfish/stockfish-ubuntu-x86-64-avx2"
 
 func TestNewEngine(t *testing.T) {
-	eng, err := NewEngine(FILEPATH, 1000)
+	eng, err := NewEngine(FILEPATH, SyzygyPath, 60, THREADS, HASH, MultiPV)
 	if err != nil {
 		t.Errorf("NewEngine(stockfish) failed: %v", err)
 	}
@@ -38,7 +38,7 @@ func TestInitializeEngine(t *testing.T) {
 // Tests both SendCommand and ReadResponse checking received response to see if
 // it matches the expected response from sending the command
 func TestSendCommandReadResponse(t *testing.T) {
-	eng, err := NewEngine(FILEPATH, 60)
+	eng, err := NewEngine(FILEPATH, SyzygyPath, 60, THREADS, HASH, MultiPV)
 	if err != nil {
 		t.Errorf("NewEngine(stockfish) failed: %v", err)
 	}

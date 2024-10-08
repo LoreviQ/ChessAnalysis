@@ -11,7 +11,11 @@ type Engine struct {
 	cmd      *exec.Cmd
 	writer   *bufio.Writer
 	scanner  *bufio.Scanner
-	movetime int // ms spent on each move
+	Movetime int    // ms spent on each move
+	Threads  int    // number of threads to use
+	Hash     int    // hash table size (MB)
+	MultiPV  int    // number of lines to consider
+	Syzygy   string // path to syzygy tablebases
 }
 
 type MoveEval struct {
@@ -25,7 +29,7 @@ type MoveEval struct {
 
 // NewEngine starts the provided engine and return a struct containing
 // the command handle and input/output pipes
-func NewEngine(filepath string, movetime int) (*Engine, error) {
+func NewEngine(filepath, Syzygy string, movetime, threads, hash, multiPV int) (*Engine, error) {
 	cmd := exec.Command(filepath)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -44,7 +48,11 @@ func NewEngine(filepath string, movetime int) (*Engine, error) {
 		cmd:      cmd,
 		writer:   writer,
 		scanner:  scanner,
-		movetime: movetime,
+		Movetime: movetime,
+		Threads:  threads,
+		Hash:     hash,
+		MultiPV:  multiPV,
+		Syzygy:   Syzygy,
 	}, nil
 }
 
