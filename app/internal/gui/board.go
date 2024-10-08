@@ -30,6 +30,7 @@ type Board struct {
 	stateNum     int
 	moves        []*MoveButton
 	flipped      bool
+	evaluated    bool
 }
 
 type MoveButton struct {
@@ -88,7 +89,15 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 		}
 	}
 	// evaluate the game
-	go evaluateGame(g.eng, gameState.MoveHistory, moves)
+	done := make(chan struct{})
+	go evaluateGame(g.eng, gameState.MoveHistory, moves, done)
+	go func() {
+		<-done
+		// Draw a new frame
+		g.window.Invalidate()
+		g.board.evaluated = true
+	}()
+
 	// check if the board should be flipped
 	flipped := true
 	if selectedGame.PlayerIsWhite {
@@ -469,7 +478,7 @@ func (b *Board) arrowKeys(e key.Event) {
 	b.gameState = newState
 }
 
-func evaluateGame(engine *eval.Engine, moves []game.Move, moveButtons []*MoveButton) error {
+func evaluateGame(engine *eval.Engine, moves []game.Move, moveButtons []*MoveButton, done chan struct{}) error {
 	if engine == nil {
 		return errors.New("no engine")
 	}
@@ -478,6 +487,8 @@ func evaluateGame(engine *eval.Engine, moves []game.Move, moveButtons []*MoveBut
 	for i, eval := range evals {
 		moveButtons[i].eval = eval
 	}
+	// signal that the evaluation is done
+	done <- struct{}{}
 	return nil
 }
 
