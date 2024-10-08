@@ -95,7 +95,6 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			eval := eval.ParseScoreStr(scoreStr)
 			moves[i].eval = eval
 		}
-	} else {
 	}
 	// evaluate the game
 	done := make(chan struct{})
