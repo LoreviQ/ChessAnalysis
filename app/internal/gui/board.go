@@ -408,6 +408,7 @@ func button(gtx layout.Context, th *chessAnalysisTheme, text string, i, width in
 		button.Background = color.NRGBA{0, 0, 0, 0}
 	}
 	button.Inset = layout.UniformInset(unit.Dp(1))
+	button.Color = th.text
 	height := 40
 	if width == -1 {
 		width = gtx.Constraints.Max.X

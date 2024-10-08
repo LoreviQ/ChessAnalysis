@@ -19,7 +19,7 @@ import (
 	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
 )
 
-var DefaultFilepath = "/home/lorevi/workspace/github.com/LoreviQ/stockfish/stockfish-ubuntu-x86-64-avx2"
+var DefaultFilepath = "/home/lorevi/workspace/stockfish/stockfish-ubuntu-x86-64-avx2"
 
 type GUI struct {
 	window *app.Window
@@ -60,6 +60,18 @@ type chessBoardTheme struct {
 
 func NewTheme(theme string) *chessAnalysisTheme {
 	switch theme {
+	case "lichess.org":
+		return &chessAnalysisTheme{
+			themeName:       "lichess.org",
+			giouiTheme:      material.NewTheme(),
+			chessBoardTheme: NewChessBoardTheme("lichess.org"),
+			bg:              color.NRGBA{223, 221, 216, 255},
+			fg:              color.NRGBA{90, 90, 90, 255},
+			contrastBg:      color.NRGBA{255, 255, 255, 255},
+			contrastFg:      color.NRGBA{246, 246, 246, 255},
+			text:            color.NRGBA{77, 77, 77, 255},
+			textMuted:       color.NRGBA{90, 90, 90, 122},
+		}
 	case "HotDogStand":
 		return &chessAnalysisTheme{
 			themeName:       "HotDogStand",
@@ -89,6 +101,21 @@ func NewTheme(theme string) *chessAnalysisTheme {
 
 func NewChessBoardTheme(theme string) *chessBoardTheme {
 	switch theme {
+	case "lichess.org":
+		imageMap, err := loadImages(theme)
+		if err != nil {
+			imageMap, err = loadImages("chess.com")
+			if err != nil {
+				panic("Failed to load piece images")
+			}
+		}
+		return &chessBoardTheme{
+			square1: color.NRGBA{235, 218, 183, 255},
+			square2: color.NRGBA{172, 138, 102, 255},
+			player1: color.NRGBA{255, 255, 255, 255},
+			player2: color.NRGBA{0, 0, 0, 255},
+			pieces:  imageMap,
+		}
 	case "HotDogStand":
 		imageMap, err := loadImages(theme)
 		if err != nil {

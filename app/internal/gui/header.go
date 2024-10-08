@@ -36,7 +36,7 @@ type headerDropDownButton struct {
 func newHeader(g *GUI) *header {
 	// Themes header button
 	buttons := make([]*headerButton, 1)
-	themes := []string{"chess.com", "HotDogStand"}
+	themes := []string{"chess.com", "lichess.org", "HotDogStand"}
 	subButtons := make([]*headerDropDownButton, len(themes))
 	for i, theme := range themes {
 		subButtons[i] = &headerDropDownButton{
@@ -102,6 +102,7 @@ func (hb *headerButton) Layout(gtx layout.Context, th *chessAnalysisTheme) layou
 	button := material.Button(th.giouiTheme, hb.widget, hb.name)
 	button.CornerRadius = unit.Dp(0)
 	button.Inset = layout.UniformInset(unit.Dp(1))
+	button.Color = th.text
 	button.Background = color.NRGBA{0, 0, 0, 0}
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
