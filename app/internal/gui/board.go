@@ -83,6 +83,16 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			gameState: gameState.Clone(),
 		}
 	}
+	if movesFromDB.Depth > 0 {
+		// provisionally use scores from the database
+		for i, scoreStr := range movesFromDB.Scores {
+			if i >= len(moves) {
+				break
+			}
+			eval := eval.ParseScoreStr(scoreStr)
+			moves[i].eval = eval
+		}
+	}
 	// evaluate the game
 	done := make(chan struct{})
 	go evaluateGame(g.eng, gameState.MoveHistory, moves, done)
@@ -91,6 +101,12 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 		// Draw a new frame
 		g.window.Invalidate()
 		g.board.evaluated = true
+		// Update the database with the new evals
+		evals := make([]*eval.MoveEval, len(moves))
+		for i, move := range moves {
+			evals[i] = move.eval
+		}
+		g.db.UpdateEval(movesFromDB.ID, evals)
 	}()
 
 	// check if the board should be flipped

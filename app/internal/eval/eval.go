@@ -3,6 +3,7 @@ package eval
 import (
 	"bufio"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -78,4 +79,25 @@ func (e *Engine) Close() error {
 		return err
 	}
 	return e.cmd.Wait()
+}
+
+// Parses a score string and returns a MoveEval struct
+//
+// Expected input: "M#": mate in # moves
+// Expected input: "#": centipawn score
+func ParseScoreStr(scoreStr string) *MoveEval {
+	if scoreStr[0] == 'M' {
+		mateIn, _ := strconv.Atoi(scoreStr[1:])
+		return &MoveEval{
+			Mate:   true,
+			MateIn: mateIn,
+		}
+	}
+	score, err := strconv.Atoi(scoreStr)
+	if err != nil {
+		return &MoveEval{}
+	}
+	return &MoveEval{
+		Score: score,
+	}
 }
