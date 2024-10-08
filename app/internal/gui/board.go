@@ -7,6 +7,7 @@ import (
 	"image/color"
 	"strings"
 
+	"gioui.org/f32"
 	"gioui.org/io/key"
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -276,7 +277,7 @@ func (b *Board) drawImage(image image.Image) func(layout.Context) layout.Dimensi
 func (b *Board) drawEvalBar(gtx layout.Context) layout.Dimensions {
 	offset := 50
 	height := b.squareSize.Y * 8
-	scoreMult := b.getScoreMult()
+	scoreMult := b.getScoreMult(b.stateNum)
 	rect1 := image.Rectangle{
 		Min: image.Point{
 			X: 0,
@@ -326,9 +327,18 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 				Right:  20,
 			}
 			return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				return b.movesList.Layout(gtx, (len(b.moves))/2, func(gtx layout.Context, i int) layout.Dimensions {
-					return b.moveListElement(gtx, i)
-				})
+				return layout.Flex{Axis: layout.Vertical, Spacing: 0}.Layout(gtx,
+					// Eval Graph
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return b.drawEvalGraph(gtx)
+					}),
+					// Move list
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return b.movesList.Layout(gtx, (len(b.moves))/2, func(gtx layout.Context, i int) layout.Dimensions {
+							return b.moveListElement(gtx, i)
+						})
+					}),
+				)
 			})
 		}),
 	)
@@ -470,13 +480,13 @@ func evaluateGame(engine *eval.Engine, moves []game.Move, moveButtons []*MoveBut
 }
 
 // produce a score multiplier between 100 and 900 for eval bar
-func (b *Board) getScoreMult() int {
-	eval := b.moves[b.stateNum].eval
+func (b *Board) getScoreMult(stateNum int) int {
+	eval := b.moves[stateNum].eval
 	if eval == nil {
 		return 500 // default value
 	}
 	turn := 1
-	if b.stateNum%2 == 1 {
+	if stateNum%2 == 1 {
 		turn = -1
 	}
 	if b.flipped {
@@ -490,4 +500,156 @@ func (b *Board) getScoreMult() int {
 	}
 	score := eval.Score * turn
 	return 500 - min(400, max(-400, score))
+}
+
+func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
+	roundness := 10
+	height := b.squareSize.Y * 2
+	player1Colour := b.gui.theme.chessBoardTheme.player1
+	player2Colour := b.gui.theme.chessBoardTheme.player2
+	if b.flipped {
+		player1Colour, player2Colour = player2Colour, player1Colour
+	}
+	return layout.Stack{}.Layout(gtx,
+		//loading message
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			if b.evalComplete() {
+				return layout.Dimensions{}
+			}
+			rect := image.Rectangle{
+				Max: image.Point{
+					X: gtx.Constraints.Max.X,
+					Y: height,
+				},
+			}
+			rr := clip.RRect{
+				Rect: rect,
+				NE:   roundness,
+				NW:   roundness,
+				SE:   roundness,
+				SW:   roundness,
+			}
+			paint.FillShape(gtx.Ops, b.gui.theme.bg, rr.Op(gtx.Ops))
+			return layout.Dimensions{Size: rect.Max}
+		}),
+		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+			label := material.Label(b.gui.theme.giouiTheme, unit.Sp(20), "Evaluating game...")
+			label.Color = b.gui.theme.text
+			return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return label.Layout(gtx)
+			})
+		}),
+		// Fill the background
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			if !b.evalComplete() {
+				return layout.Dimensions{}
+			}
+			rect := image.Rectangle{
+				Max: image.Point{
+					X: gtx.Constraints.Max.X,
+					Y: height,
+				},
+			}
+			rr := clip.RRect{
+				Rect: rect,
+				NE:   roundness,
+				NW:   roundness,
+				SE:   roundness + 20,
+				SW:   roundness + 20,
+			}
+			paint.FillShape(gtx.Ops, player2Colour, rr.Op(gtx.Ops))
+			return layout.Dimensions{Size: rect.Max}
+		}),
+		// lower 10%
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			if !b.evalComplete() {
+				return layout.Dimensions{}
+			}
+			rect2 := image.Rectangle{
+				Min: image.Point{
+					X: 0,
+					Y: int(float32(height) * 0.9),
+				},
+				Max: image.Point{
+					X: gtx.Constraints.Max.X,
+					Y: height,
+				},
+			}
+			rr2 := clip.RRect{
+				Rect: rect2,
+				NE:   0,
+				NW:   0,
+				SE:   roundness,
+				SW:   roundness,
+			}
+			paint.FillShape(gtx.Ops, player1Colour, rr2.Op(gtx.Ops))
+			return layout.Dimensions{}
+		}),
+		// middle 80%
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			if !b.evalComplete() {
+				return layout.Dimensions{}
+			}
+			// Eval graph
+			scores := make([]float32, len(b.moves))
+			for i, move := range b.moves {
+				if move.eval == nil {
+					return layout.Dimensions{}
+				}
+				score := b.getScoreMult(i)
+				scores[i] = float32(score) / 1000
+			}
+			xGap := float32(gtx.Constraints.Max.X) / float32(len(scores)-1)
+			var path clip.Path
+			centres := make([]f32.Point, len(scores)+1)
+			path.Begin(gtx.Ops)
+			evalPoint := f32.Pt(0, float32(b.squareSize.Y))
+			path.MoveTo(evalPoint)
+			centres[0] = evalPoint
+			for i := 1; i < len(scores); i++ {
+				evalPoint = f32.Pt(xGap*float32(i), float32(height)*(scores[i]))
+				path.LineTo(evalPoint)
+				centres[i] = evalPoint
+			}
+			path.LineTo(f32.Pt(float32(gtx.Constraints.Max.X), float32(height)*0.9))
+			path.LineTo(f32.Pt(0, float32(height)*0.9))
+			path.Close()
+			outline := clip.Outline{Path: path.End()}.Op()
+			paint.FillShape(gtx.Ops, player1Colour, outline)
+			// Turn indicator
+			centre := centres[b.stateNum]
+			turnIndicator := image.Rectangle{
+				Min: image.Point{
+					X: int(centre.X) - 1,
+					Y: 0,
+				},
+				Max: image.Point{
+					X: int(centre.X) + 1,
+					Y: height,
+				},
+			}
+			paint.FillShape(gtx.Ops, b.gui.theme.contrastFg, clip.Rect(turnIndicator).Op())
+			// halfway line
+			halfwayLine := image.Rectangle{
+				Min: image.Point{
+					X: 0,
+					Y: height/2 - 1,
+				},
+				Max: image.Point{
+					X: gtx.Constraints.Max.X,
+					Y: height/2 + 1,
+				},
+			}
+			paint.FillShape(gtx.Ops, b.gui.theme.contrastFg, clip.Rect(halfwayLine).Op())
+			return layout.Dimensions{}
+		}),
+	)
+}
+
+// Returns a bool indicating if the game has been evaluated
+func (b *Board) evalComplete() bool {
+	if b.moves == nil {
+		return false
+	}
+	return b.moves[len(b.moves)-1].eval != nil
 }
