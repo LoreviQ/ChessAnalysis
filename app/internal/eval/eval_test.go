@@ -130,3 +130,26 @@ func TestEvalGame(t *testing.T) {
 		}
 	}
 }
+
+func TestMultiPV(t *testing.T) {
+	eng, err := InitializeStockfish(FILEPATH, 60, 3)
+	if err != nil {
+		t.Errorf("InitializeStockfish() failed: %v", err)
+	}
+	positionString := "e2e4 e7e5 b1c3 b8c6 f2f4 e5f4 g1f3 f8b4 d2d4 b4c3 b2c3 d7d5 e4e5 f7f6 c1f4"
+	eval := eng.EvalGame(positionString)
+	for i, moveEval := range eval {
+		if len(moveEval) != 3 {
+			t.Errorf("EvalGame() failed: expected 3 moveEvals, got %v at index %v", len(moveEval), i)
+		}
+		for i, mPV := range moveEval {
+			if mPV == nil {
+				t.Errorf("EvalGame() failed: expected moveEval != nil at index %v", i)
+			} else {
+				if mPV.PVnum != 1 && mPV.PVnum != 2 && mPV.PVnum != 3 {
+					t.Errorf("EvalGame() failed: expected PVnum to be 1, 2, or 3, got %v", mPV.PVnum)
+				}
+			}
+		}
+	}
+}

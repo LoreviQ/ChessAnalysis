@@ -107,6 +107,13 @@ func (e *Engine) parseResponse(response []string) ([]*MoveEval, error) {
 			if word == "pv" {
 				eval.BestLine = dataLine[i+1:]
 			}
+			if word == "multipv" {
+				multiPV, err := strconv.Atoi(dataLine[i+1])
+				if err != nil {
+					return nil, err
+				}
+				eval.PVnum = multiPV
+			}
 		}
 		evals[i] = eval
 	}

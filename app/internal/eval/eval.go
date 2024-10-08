@@ -24,6 +24,7 @@ type MoveEval struct {
 	BestLine []string
 	Mate     bool
 	MateIn   int
+	PVnum    int
 }
 
 // NewEngine starts the provided engine and return a struct containing
