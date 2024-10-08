@@ -19,7 +19,6 @@ type Engine struct {
 }
 
 type MoveEval struct {
-	moves    []string
 	Depth    int
 	Score    int // centipawns
 	BestLine []string

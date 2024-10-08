@@ -178,7 +178,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	} else {
 		g.board = newBoard(g, nil)
 	}
-	g.eng, _ = eval.InitializeStockfish(DefaultFilepath, 60)
+	g.eng, _ = eval.InitializeStockfish(DefaultFilepath, 60, 1)
 
 	return g
 }

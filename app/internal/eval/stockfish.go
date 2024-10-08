@@ -10,12 +10,11 @@ import (
 var (
 	THREADS    = 12                             // CPU Threads used by the engine
 	HASH       = 256                            // Size of hash table (MB)
-	MultiPV    = 1                              // Number of best lines found by the engine
 	SyzygyPath = "/home/lorevi/workspace/3-4-5" // Path to syzygy tablebases
 )
 
 // Sends the commands to set up stockfish 17 specifically returning the engine
-func InitializeStockfish(filepath string, moveTime int) (*Engine, error) {
+func InitializeStockfish(filepath string, moveTime, MultiPV int) (*Engine, error) {
 	eng, err := NewEngine(filepath, SyzygyPath, moveTime, THREADS, HASH, MultiPV)
 	if err != nil {
 		return nil, err
@@ -45,7 +44,7 @@ func InitializeStockfish(filepath string, moveTime int) (*Engine, error) {
 // Evaluates the position string using the engine
 //
 // positionString is a space separated string of the moves in long algebraic notation
-func (e *Engine) EvalPosition(positionString string) *MoveEval {
+func (e *Engine) EvalPosition(positionString string) []*MoveEval {
 	e.SendCommand("ucinewgame")
 	return e.queryPosition(positionString)
 }
@@ -53,60 +52,63 @@ func (e *Engine) EvalPosition(positionString string) *MoveEval {
 // Evaluates the game using the engine
 //
 // Returns an eval for each move in the game
-func (e *Engine) EvalGame(positionString string) []*MoveEval {
+func (e *Engine) EvalGame(positionString string) [][]*MoveEval {
 	e.SendCommand("ucinewgame")
 	moves := strings.Split(positionString, " ")
-	eval := []*MoveEval{}
+	gameEval := make([][]*MoveEval, len(moves)+1)
 	for i := 0; i < len(moves)+1; i++ {
-		eval = append(eval, e.queryPosition(strings.Join(moves[:i], " ")))
+		evals := e.queryPosition(strings.Join(moves[:i], " "))
+		gameEval[i] = evals
 	}
-	return eval
+	return gameEval
 }
 
-func (e *Engine) queryPosition(positionString string) *MoveEval {
+func (e *Engine) queryPosition(positionString string) []*MoveEval {
 	e.SendCommand(fmt.Sprintf("position startpos moves %v", positionString))
 	e.SendCommand(fmt.Sprintf("go movetime %v", e.Movetime))
 	response := e.ReadResponse()
-	eval, err := parseResponse(response)
+	evals, err := e.parseResponse(response)
 	if err != nil {
 		return nil
 	}
-	eval.moves = strings.Split(positionString, " ")
-	return eval
+	return evals
 }
 
 // Parses the response from the engine
-func parseResponse(response []string) (*MoveEval, error) {
-	eval := &MoveEval{}
-	// Penultimate line contains most recent info
-	penultimateLine := strings.Split(response[len(response)-2], " ")
-	for i, word := range penultimateLine {
-		if word == "depth" {
-			depth, err := strconv.Atoi(penultimateLine[i+1])
-			if err != nil {
-				return nil, err
-			}
-			eval.Depth = depth
-		}
-		if word == "score" {
-			if penultimateLine[i+1] == "mate" {
-				eval.Mate = true
-				mateIn, err := strconv.Atoi(penultimateLine[i+2])
+func (e *Engine) parseResponse(response []string) ([]*MoveEval, error) {
+	evals := make([]*MoveEval, e.MultiPV)
+	for i := range e.MultiPV {
+		eval := &MoveEval{}
+		dataLine := strings.Split(response[len(response)-2-i], " ")
+		for i, word := range dataLine {
+			if word == "depth" {
+				depth, err := strconv.Atoi(dataLine[i+1])
 				if err != nil {
 					return nil, err
 				}
-				eval.MateIn = mateIn
-			} else {
-				score, err := strconv.Atoi(penultimateLine[i+2])
-				if err != nil {
-					return nil, err
+				eval.Depth = depth
+			}
+			if word == "score" {
+				if dataLine[i+1] == "mate" {
+					eval.Mate = true
+					mateIn, err := strconv.Atoi(dataLine[i+2])
+					if err != nil {
+						return nil, err
+					}
+					eval.MateIn = mateIn
+				} else {
+					score, err := strconv.Atoi(dataLine[i+2])
+					if err != nil {
+						return nil, err
+					}
+					eval.Score = score
 				}
-				eval.Score = score
+			}
+			if word == "pv" {
+				eval.BestLine = dataLine[i+1:]
 			}
 		}
-		if word == "pv" {
-			eval.BestLine = penultimateLine[i+1:]
-		}
+		evals[i] = eval
 	}
-	return eval, nil
+	return evals, nil
 }

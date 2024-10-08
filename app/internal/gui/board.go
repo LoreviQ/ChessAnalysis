@@ -524,7 +524,7 @@ func evaluateGame(engine *eval.Engine, moves []game.Move, moveButtons []*MoveBut
 	notations := game.ConvertMovesToUCINotation(moves)
 	evals := engine.EvalGame(strings.Join(notations, " "))
 	for i, eval := range evals {
-		moveButtons[i].eval = eval
+		moveButtons[i].eval = eval[0]
 	}
 	// signal that the evaluation is done
 	done <- struct{}{}
