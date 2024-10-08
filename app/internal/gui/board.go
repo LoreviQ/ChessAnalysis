@@ -358,6 +358,8 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					}),
 					// Spacer
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
+					// Spacer
+					layout.Rigid(layout.Spacer{Height: 20}.Layout),
 					// Move list
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						return b.movesList.Layout(gtx, (len(b.moves))/2, func(gtx layout.Context, i int) layout.Dimensions {
@@ -557,6 +559,9 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 			return layout.Dimensions{Size: rect.Max}
 		}),
 		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+			if b.evalComplete() {
+				return layout.Dimensions{}
+			}
 			label := material.Label(b.gui.theme.giouiTheme, unit.Sp(20), "Evaluating game...")
 			label.Color = b.gui.theme.text
 			return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
@@ -626,11 +631,11 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 			halfwayLine := image.Rectangle{
 				Min: image.Point{
 					X: 0,
-					Y: height/2 - 1,
+					Y: int(centre.Y) - 1,
 				},
 				Max: image.Point{
 					X: gtx.Constraints.Max.X,
-					Y: height/2 + 1,
+					Y: int(centre.Y) + 1,
 				},
 			}
 			paint.FillShape(gtx.Ops, b.gui.theme.contrastFg, clip.Rect(halfwayLine).Op())
