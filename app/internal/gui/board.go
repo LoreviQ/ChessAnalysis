@@ -332,6 +332,8 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						return b.drawEvalGraph(gtx)
 					}),
+					// Spacer
+					layout.Rigid(layout.Spacer{Height: 20}.Layout),
 					// Move list
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						return b.movesList.Layout(gtx, (len(b.moves))/2, func(gtx layout.Context, i int) layout.Dimensions {
@@ -503,7 +505,6 @@ func (b *Board) getScoreMult(stateNum int) int {
 }
 
 func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
-	roundness := 10
 	height := b.squareSize.Y * 2
 	player1Colour := b.gui.theme.chessBoardTheme.player1
 	player2Colour := b.gui.theme.chessBoardTheme.player2
@@ -522,14 +523,7 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 					Y: height,
 				},
 			}
-			rr := clip.RRect{
-				Rect: rect,
-				NE:   roundness,
-				NW:   roundness,
-				SE:   roundness,
-				SW:   roundness,
-			}
-			paint.FillShape(gtx.Ops, b.gui.theme.bg, rr.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, b.gui.theme.bg, clip.Rect(rect).Op())
 			return layout.Dimensions{Size: rect.Max}
 		}),
 		layout.Expanded(func(gtx layout.Context) layout.Dimensions {
@@ -550,47 +544,15 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 					Y: height,
 				},
 			}
-			rr := clip.RRect{
-				Rect: rect,
-				NE:   roundness,
-				NW:   roundness,
-				SE:   roundness + 20,
-				SW:   roundness + 20,
-			}
-			paint.FillShape(gtx.Ops, player2Colour, rr.Op(gtx.Ops))
+			paint.FillShape(gtx.Ops, player2Colour, clip.Rect(rect).Op())
 			return layout.Dimensions{Size: rect.Max}
 		}),
-		// lower 10%
+		// Eval graph
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
 			if !b.evalComplete() {
 				return layout.Dimensions{}
 			}
-			rect2 := image.Rectangle{
-				Min: image.Point{
-					X: 0,
-					Y: int(float32(height) * 0.9),
-				},
-				Max: image.Point{
-					X: gtx.Constraints.Max.X,
-					Y: height,
-				},
-			}
-			rr2 := clip.RRect{
-				Rect: rect2,
-				NE:   0,
-				NW:   0,
-				SE:   roundness,
-				SW:   roundness,
-			}
-			paint.FillShape(gtx.Ops, player1Colour, rr2.Op(gtx.Ops))
-			return layout.Dimensions{}
-		}),
-		// middle 80%
-		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
-			if !b.evalComplete() {
-				return layout.Dimensions{}
-			}
-			// Eval graph
+			// Get Scores
 			scores := make([]float32, len(b.moves))
 			for i, move := range b.moves {
 				if move.eval == nil {
@@ -600,6 +562,7 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 				scores[i] = float32(score) / 1000
 			}
 			xGap := float32(gtx.Constraints.Max.X) / float32(len(scores)-1)
+			// Draw path
 			var path clip.Path
 			centres := make([]f32.Point, len(scores)+1)
 			path.Begin(gtx.Ops)
@@ -611,8 +574,8 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 				path.LineTo(evalPoint)
 				centres[i] = evalPoint
 			}
-			path.LineTo(f32.Pt(float32(gtx.Constraints.Max.X), float32(height)*0.9))
-			path.LineTo(f32.Pt(0, float32(height)*0.9))
+			path.LineTo(f32.Pt(float32(gtx.Constraints.Max.X), float32(height)))
+			path.LineTo(f32.Pt(0, float32(height)))
 			path.Close()
 			outline := clip.Outline{Path: path.End()}.Op()
 			paint.FillShape(gtx.Ops, player1Colour, outline)
