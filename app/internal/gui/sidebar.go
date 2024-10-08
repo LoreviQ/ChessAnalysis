@@ -31,7 +31,7 @@ type gameButton struct {
 func newSidebar(g *GUI) *sidebar {
 	var gameId int
 	games, err := g.db.GetGames()
-	if err == nil {
+	if err == nil && len(games) > 0 {
 		// default to last game
 		gameId = games[len(games)-1].ID
 	}
@@ -68,6 +68,11 @@ func (s *sidebar) Layout(gtx layout.Context) layout.Dimensions {
 	}
 	paint.FillShape(gtx.Ops, s.gui.theme.contrastBg, clip.Rect(rect).Op())
 
+	if len(s.games) == 0 {
+		label := material.Label(s.gui.theme.giouiTheme, unit.Sp(16), "No games found")
+		label.Color = s.gui.theme.text
+		return layout.Center.Layout(gtx, label.Layout)
+	}
 	err := s.updateState(gtx)
 	if err != nil {
 		return layout.Dimensions{Size: sidebarSize}

@@ -11,5 +11,7 @@ CREATE TABLE IF NOT EXISTS moves (
     game_id INTEGER NOT NULL,
     move_data TEXT NOT NULL,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    scores TEXT,
+    depth INTEGER,
     FOREIGN KEY (game_id) REFERENCES games(id)
 );

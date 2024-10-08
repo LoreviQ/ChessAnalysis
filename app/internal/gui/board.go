@@ -44,13 +44,8 @@ type MoveButton struct {
 func newBoard(g *GUI, selectedGame *database.Game) *Board {
 	// default board if no game is selected
 	errBoard := &Board{
-		gui:          g,
-		activeGameID: 0,
-		movesList:    &widget.List{},
-		gameState:    game.NewGame(),
-		stateNum:     0,
-		moves:        nil,
-		flipped:      false,
+		gui:       g,
+		gameState: game.NewGame(),
 	}
 	if selectedGame == nil {
 		return errBoard
@@ -329,6 +324,9 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 			return layout.Dimensions{Size: rect.Max}
 		}),
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			if b.moves == nil {
+				return layout.Dimensions{}
+			}
 			margins := layout.Inset{
 				Top:    20,
 				Bottom: 20,
@@ -495,6 +493,9 @@ func evaluateGame(engine *eval.Engine, moves []game.Move, moveButtons []*MoveBut
 
 // produce a score multiplier between 100 and 900 for eval bar
 func (b *Board) getScoreMult(stateNum int) int {
+	if b.moves == nil {
+		return 500
+	}
 	eval := b.moves[stateNum].eval
 	if eval == nil {
 		return 500 // default value
