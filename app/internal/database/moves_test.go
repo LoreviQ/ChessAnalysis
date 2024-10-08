@@ -37,12 +37,12 @@ func TestInsertGetMoves(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if len(moves) != len(expectedMoves) {
-		t.Errorf("Expected %d moves, got %d", len(expectedMoves), len(moves))
+	if len(moves.Moves) != len(expectedMoves) {
+		t.Errorf("Expected %d moves, got %d", len(expectedMoves), len(moves.Moves))
 	}
-	for i := range moves {
-		if moves[i] != expectedMoves[i] {
-			t.Errorf("Expected move %s, got %s", expectedMoves[i], moves[i])
+	for i := range moves.Moves {
+		if moves.Moves[i] != expectedMoves[i] {
+			t.Errorf("Expected move %s, got %s", expectedMoves[i], moves.Moves[i])
 		}
 	}
 	db.Close()

@@ -15,7 +15,7 @@ type Engine struct {
 
 type MoveEval struct {
 	moves    []string
-	depth    int
+	Depth    int
 	Score    int // centipawns
 	bestLine []string
 	Mate     bool

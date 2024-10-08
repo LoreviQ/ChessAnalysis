@@ -51,27 +51,27 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 		return errBoard
 	}
 	// Get the moves for the active game
-	moveStrs, err := g.db.GetMovesByID(selectedGame.ID)
+	movesFromDB, err := g.db.GetMovesByID(selectedGame.ID)
 	if err != nil {
 		return errBoard
 	}
 	// Get the board state for the active game
 	gameState := game.NewGame()
 	// check if the move string is valid
-	err = gameState.Moves(moveStrs)
+	err = gameState.Moves(movesFromDB.Moves)
 	if err != nil {
 		return errBoard
 	}
 	// turn the move strings into moves
 	gameState.NewGame()
-	moves := make([]*MoveButton, len(moveStrs)+1)
+	moves := make([]*MoveButton, len(movesFromDB.Moves)+1)
 	moves[0] = &MoveButton{
 		move:      nil,
 		notation:  "",
 		widget:    &widget.Clickable{},
 		gameState: gameState.Clone(),
 	}
-	for i, moveStr := range moveStrs {
+	for i, moveStr := range movesFromDB.Moves {
 		move, err := gameState.Move(moveStr)
 		if err != nil {
 			break

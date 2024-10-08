@@ -86,7 +86,7 @@ func parseResponse(response []string) (*MoveEval, error) {
 			if err != nil {
 				return nil, err
 			}
-			eval.depth = depth
+			eval.Depth = depth
 		}
 		if word == "score" {
 			if penultimateLine[i+1] == "mate" {

@@ -12,6 +12,13 @@ var (
 	ErrNoMoves = errors.New("game has no moves")
 )
 
+type Move struct {
+	ID     int
+	Moves  []string
+	Scores []string
+	Depth  int
+}
+
 // InsertMoves inserts a list of moves into the database
 func (d Database) InsertMoves(moves []string, chessdotcomID string, playerIsWhite bool) error {
 	chessdotcomID_NullString := sql.NullString{String: chessdotcomID, Valid: chessdotcomID != ""}
@@ -39,7 +46,7 @@ func (d Database) InsertMoves(moves []string, chessdotcomID string, playerIsWhit
 }
 
 // GetMovesByChessdotcomID returns the latest moves of a game with the given chess.com id
-func (d Database) GetMovesByChessdotcomID(chessdotcomID string) ([]string, error) {
+func (d Database) GetMovesByChessdotcomID(chessdotcomID string) (*Move, error) {
 	var gameID int
 	err := d.db.QueryRow(d.queries["GET_LATEST_GAME_ID"], chessdotcomID).Scan(&gameID)
 	if err != nil {
@@ -49,13 +56,29 @@ func (d Database) GetMovesByChessdotcomID(chessdotcomID string) ([]string, error
 }
 
 // GetMoves returns the latest moves of a game with the given id
-func (d Database) GetMovesByID(id int) ([]string, error) {
+func (d Database) GetMovesByID(id int) (*Move, error) {
 	var moves string
-	err := d.db.QueryRow(d.queries["GET_LATEST_MOVES"], id).Scan(&moves)
+	var scores sql.NullString
+	var moves_id int
+	var depth sql.NullInt64
+	err := d.db.QueryRow(d.queries["GET_LATEST_MOVES"], id).Scan(&moves_id, &moves, &scores, &depth)
 	if err != nil {
 		return nil, ErrNoMoves
 	}
-	return strings.Split(moves, " "), nil
+	scoresOut := []string{}
+	if scores.Valid {
+		scoresOut = strings.Split(scores.String, " ")
+	}
+	depthOut := 0
+	if depth.Valid {
+		depthOut = int(depth.Int64)
+	}
+	return &Move{
+		ID:     moves_id,
+		Moves:  strings.Split(moves, " "),
+		Scores: scoresOut,
+		Depth:  depthOut,
+	}, nil
 }
 
 // Converts moves to the format used in the database

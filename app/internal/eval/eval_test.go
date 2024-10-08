@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var FILEPATH = "/home/lorevi/workspace/github.com/LoreviQ/stockfish/stockfish-ubuntu-x86-64-avx2"
+var FILEPATH = "/home/lorevi/workspace/stockfish/stockfish-ubuntu-x86-64-avx2"
 
 func TestNewEngine(t *testing.T) {
 	eng, err := NewEngine(FILEPATH, 1000)
@@ -91,8 +91,8 @@ func TestEvalPosition(t *testing.T) {
 	if eval == nil {
 		t.Errorf("EvalPosition() failed: returned nil")
 	} else {
-		if eval.depth == 0 {
-			t.Errorf("EvalPosition() failed: expected depth != 0, got %v", eval.depth)
+		if eval.Depth == 0 {
+			t.Errorf("EvalPosition() failed: expected depth != 0, got %v", eval.Depth)
 		}
 		if eval.Score == 0 {
 			t.Errorf("EvalPosition() failed: expected score != 0, got %v", eval.Score)
@@ -118,8 +118,8 @@ func TestEvalGame(t *testing.T) {
 		if moveEval == nil {
 			t.Errorf("EvalGame() failed: expected moveEval != nil at index %v", i)
 		} else {
-			if moveEval.depth == 0 {
-				t.Errorf("EvalPosition() failed: expected depth != 0, got %v", moveEval.depth)
+			if moveEval.Depth == 0 {
+				t.Errorf("EvalPosition() failed: expected depth != 0, got %v", moveEval.Depth)
 			}
 			if moveEval.Score == 0 {
 				t.Errorf("EvalPosition() failed: expected score != 0, got %v", moveEval.Score)

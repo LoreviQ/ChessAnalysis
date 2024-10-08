@@ -46,7 +46,7 @@ func NewConnection(test int) (*Database, error) {
 		"INSERT_MOVES":       "INSERT INTO moves (game_id, move_data) VALUES (?, ?)",
 		"INSERT_GAME":        "INSERT INTO games (chessdotcom_id, playerIsWhite) VALUES (?, ?) RETURNING id",
 		"GET_LATEST_GAME_ID": "SELECT id FROM games WHERE chessdotcom_id = ? ORDER BY created_at DESC LIMIT 1",
-		"GET_LATEST_MOVES":   "SELECT move_data FROM moves WHERE game_id = ? ORDER BY created_at DESC LIMIT 1",
+		"GET_LATEST_MOVES":   "SELECT id, move_data, scores, depth FROM moves WHERE game_id = ? ORDER BY created_at DESC LIMIT 1",
 		"GET_GAMES":          "SELECT id, created_at, chessdotcom_id, playerIsWhite FROM games",
 	}
 

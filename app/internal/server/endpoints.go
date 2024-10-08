@@ -61,12 +61,12 @@ func (cfg *serverCfg) getLatestMoves(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get moves from database
-	moves, err := cfg.db.GetMovesByChessdotcomID(id)
+	movesFromDB, err := cfg.db.GetMovesByChessdotcomID(id)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error getting moves from db")
 		return
 	}
 
 	// Response
-	respondWithJSON(w, http.StatusOK, getLatestMoveResponse{Moves: moves})
+	respondWithJSON(w, http.StatusOK, getLatestMoveResponse{Moves: movesFromDB.Moves})
 }
