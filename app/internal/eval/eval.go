@@ -18,7 +18,7 @@ type MoveEval struct {
 	moves    []string
 	Depth    int
 	Score    int // centipawns
-	bestLine []string
+	BestLine []string
 	Mate     bool
 	MateIn   int
 }

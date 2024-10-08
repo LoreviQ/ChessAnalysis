@@ -105,7 +105,7 @@ func parseResponse(response []string) (*MoveEval, error) {
 			}
 		}
 		if word == "pv" {
-			eval.bestLine = penultimateLine[i+1:]
+			eval.BestLine = penultimateLine[i+1:]
 		}
 	}
 	return eval, nil

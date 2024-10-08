@@ -97,7 +97,7 @@ func TestEvalPosition(t *testing.T) {
 		if eval.Score == 0 {
 			t.Errorf("EvalPosition() failed: expected score != 0, got %v", eval.Score)
 		}
-		if eval.bestLine == nil {
+		if eval.BestLine == nil {
 			t.Error("EvalPosition() failed: expected bestLine != nil")
 		}
 	}
@@ -124,7 +124,7 @@ func TestEvalGame(t *testing.T) {
 			if moveEval.Score == 0 {
 				t.Errorf("EvalPosition() failed: expected score != 0, got %v", moveEval.Score)
 			}
-			if moveEval.bestLine == nil {
+			if moveEval.BestLine == nil {
 				t.Error("EvalPosition() failed: expected bestLine != nil")
 			}
 		}

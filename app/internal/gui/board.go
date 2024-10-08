@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"math"
 	"strings"
 
 	"gioui.org/f32"
@@ -21,16 +22,18 @@ import (
 )
 
 type Board struct {
-	gui          *GUI
-	squares      [][]layout.FlexChild
-	squareSize   image.Point
-	activeGameID int
-	movesList    *widget.List
-	gameState    *game.Game
-	stateNum     int
-	moves        []*MoveButton
-	flipped      bool
-	evaluated    bool
+	gui           *GUI
+	squares       [][]layout.FlexChild
+	squareSize    image.Point
+	activeGameID  int
+	movesList     *widget.List
+	gameState     *game.Game
+	stateNum      int
+	moves         []*MoveButton
+	flipped       bool
+	evaluated     bool
+	bestLines     *widget.List
+	BestLineLists []*widget.List
 }
 
 type MoveButton struct {
@@ -93,27 +96,34 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			moves[i].eval = eval
 		}
 	} else {
-		// evaluate the game
-		done := make(chan struct{})
-		go evaluateGame(g.eng, gameState.MoveHistory, moves, done)
-		go func() {
-			<-done
-			// Draw a new frame
-			g.window.Invalidate()
-			g.board.evaluated = true
-			// Update the database with the new evals
-			evals := make([]*eval.MoveEval, len(moves))
-			for i, move := range moves {
-				evals[i] = move.eval
-			}
-			g.db.UpdateEval(movesFromDB.ID, evals)
-		}()
 	}
+	// evaluate the game
+	done := make(chan struct{})
+	go evaluateGame(g.eng, gameState.MoveHistory, moves, done)
+	go func() {
+		<-done
+		// Draw a new frame
+		g.window.Invalidate()
+		g.board.evaluated = true
+		// Update the database with the new evals
+		evals := make([]*eval.MoveEval, len(moves))
+		for i, move := range moves {
+			evals[i] = move.eval
+		}
+		g.db.UpdateEval(movesFromDB.ID, evals)
+	}()
 
 	// check if the board should be flipped
 	flipped := true
 	if selectedGame.PlayerIsWhite {
 		flipped = false
+	}
+	// create lists for best lines
+	BestLineLists := make([]*widget.List, 1)
+	BestLineLists[0] = &widget.List{
+		List: layout.List{
+			Axis: layout.Horizontal,
+		},
 	}
 	return &Board{
 		gui:          g,
@@ -128,6 +138,12 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 		stateNum:  len(moves) - 1,
 		moves:     moves,
 		flipped:   flipped,
+		bestLines: &widget.List{
+			List: layout.List{
+				Axis: layout.Vertical,
+			},
+		},
+		BestLineLists: BestLineLists,
 	}
 }
 
@@ -358,6 +374,12 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					}),
 					// Spacer
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
+					// Best lines
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return b.BestLineLists[0].Layout(gtx, len(b.moves[b.stateNum].eval.BestLine), func(gtx layout.Context, i int) layout.Dimensions {
+							return b.drawBestLineSegment(gtx, i)
+						})
+					}),
 					// Spacer
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
 					// Move list
@@ -536,6 +558,28 @@ func (b *Board) getScoreMult(stateNum int) int {
 	return 500 - min(400, max(-400, score))
 }
 
+func (b *Board) getScoreStr(stateNum int) string {
+	if b.moves == nil {
+		return ""
+	}
+	eval := b.moves[stateNum].eval
+	if eval == nil {
+		return "" // default value
+	}
+	turn := 1
+	if stateNum%2 == 1 {
+		turn = -1
+	}
+	if b.flipped {
+		turn *= -1
+	}
+	if eval.Mate {
+		return fmt.Sprintf("M%d", int(math.Abs(float64(eval.MateIn))))
+	}
+	score := eval.Score * turn
+	return fmt.Sprintf("%.1f", float32(score)/100)
+}
+
 func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 	height := b.squareSize.Y * 2
 	player1Colour := b.gui.theme.chessBoardTheme.player1
@@ -650,4 +694,34 @@ func (b *Board) evalComplete() bool {
 		return false
 	}
 	return b.moves[len(b.moves)-1].eval != nil
+}
+
+// Draw a segment of the best line
+func (b *Board) drawBestLineSegment(gtx layout.Context, i int) layout.Dimensions {
+	th := b.gui.theme
+	eval := b.moves[b.stateNum].eval
+	var label string
+	bestLine := eval.BestLine
+	if i == 0 {
+		label = b.getScoreStr(b.stateNum)
+	} else {
+		label = bestLine[i-1]
+	}
+	button := material.Button(th.giouiTheme, &widget.Clickable{}, label)
+	button.CornerRadius = unit.Dp(5)
+	button.Background = th.bg
+	button.Inset = layout.UniformInset(unit.Dp(10))
+	button.Color = th.text
+	return layout.Stack{}.Layout(gtx,
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			margins := layout.Inset{
+				Right: 5,
+			}
+			gtx.Constraints.Min.Y = 40
+			gtx.Constraints.Max.Y = 40
+			return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return button.Layout(gtx)
+			})
+		}),
+	)
 }
