@@ -27,9 +27,10 @@ type GUI struct {
 	theme  *chessAnalysisTheme
 
 	// Components
-	header  *header
-	sidebar *sidebar
-	board   *Board
+	header       *header
+	sidebar      *sidebar
+	board        *Board
+	settingsMenu *settingsMenu
 
 	// Database
 	db *database.Database
@@ -175,6 +176,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	g.header = newHeader(g)
 	g.board = newBoard(g, nil)
 	g.sidebar = newSidebar(g)
+	g.settingsMenu = newSettingsMenu(g)
 
 	return g
 }
@@ -242,8 +244,10 @@ func (g *GUI) Layout(gtx layout.Context) layout.Dimensions {
 					menu.SurfaceStyle.Fill = g.theme.contrastFg
 					return menu.Layout(gtx)
 				})
-
 			})
+		}),
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			return g.settingsMenu.Layout(gtx)
 		}),
 	)
 }

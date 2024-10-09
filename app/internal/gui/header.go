@@ -35,7 +35,7 @@ type headerDropDownButton struct {
 
 func newHeader(g *GUI) *header {
 	// Themes header button
-	buttons := make([]*headerButton, 1)
+	buttons := make([]*headerButton, 2)
 	themes := []string{"chess.com", "lichess.org", "HotDogStand"}
 	subButtons := make([]*headerDropDownButton, len(themes))
 	for i, theme := range themes {
@@ -55,6 +55,15 @@ func newHeader(g *GUI) *header {
 		subButtons: subButtons,
 		show:       false,
 	}
+	// Settings header button
+	buttons[1] = &headerButton{
+		name:       "Settings",
+		widget:     &widget.Clickable{},
+		menu:       &component.MenuState{},
+		subButtons: nil,
+		show:       false,
+	}
+
 	// Add more buttons here
 	return &header{
 		gui:     g,
