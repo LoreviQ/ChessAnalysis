@@ -104,20 +104,21 @@ func standardizeMoves(moves []string) (string, error) {
 }
 
 // UpdateEval updates the evaluation of a move in the database
-func (d Database) UpdateEval(moveID int, evals []*eval.MoveEval) error {
+func (d Database) UpdateEval(moveID int, evalss [][]*eval.MoveEval) error {
 	scores := []string{}
 	depth := 0
-	for _, eval := range evals {
-		if eval == nil {
+	for _, evals := range evalss {
+		e := eval.GetMainEval(evals)
+		if e == nil {
 			continue
 		}
-		if eval.Depth > depth {
-			depth = eval.Depth
+		if e.Depth > depth {
+			depth = e.Depth
 		}
-		if eval.Mate {
-			scores = append(scores, fmt.Sprintf("M%d", eval.MateIn))
+		if e.Mate {
+			scores = append(scores, fmt.Sprintf("M%d", e.MateIn))
 		} else {
-			scores = append(scores, fmt.Sprintf("%d", eval.Score))
+			scores = append(scores, fmt.Sprintf("%d", e.Score))
 		}
 	}
 	scoresStr := strings.Join(scores, " ")

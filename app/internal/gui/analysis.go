@@ -13,6 +13,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
 )
 
 // Draw the evaluation bar
@@ -82,7 +83,7 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
 					// Best lines
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						return b.BestLineLists[0].Layout(gtx, len(b.moves[b.stateNum].eval.BestLine), func(gtx layout.Context, i int) layout.Dimensions {
+						return b.BestLineLists[0].Layout(gtx, len(b.moves[b.stateNum].evals[0].BestLine), func(gtx layout.Context, i int) layout.Dimensions {
 							return b.drawBestLineSegment(gtx, i)
 						})
 					}),
@@ -154,7 +155,7 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 			// Get Scores
 			scores := make([]float32, len(b.moves))
 			for i, move := range b.moves {
-				if move.eval == nil {
+				if move.evals[0] == nil {
 					return layout.Dimensions{}
 				}
 				score := b.getScoreMult(i)
@@ -211,7 +212,7 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 // Draw a segment of the best line
 func (b *Board) drawBestLineSegment(gtx layout.Context, i int) layout.Dimensions {
 	th := b.gui.theme
-	eval := b.moves[b.stateNum].eval
+	eval := b.moves[b.stateNum].evals[0]
 	var label string
 	bestLine := eval.BestLine
 	if i == 0 {
@@ -304,8 +305,8 @@ func (b *Board) getScoreMult(stateNum int) int {
 	if b.moves == nil {
 		return 500
 	}
-	eval := b.moves[stateNum].eval
-	if eval == nil {
+	e := eval.GetMainEval(b.moves[stateNum].evals)
+	if e == nil {
 		return 500 // default value
 	}
 	turn := 1
@@ -315,13 +316,13 @@ func (b *Board) getScoreMult(stateNum int) int {
 	if b.flipped {
 		turn *= -1
 	}
-	if eval.Mate {
+	if e.Mate {
 		if b.flipped {
 			return 1000
 		}
 		return 0
 	}
-	score := eval.Score * turn
+	score := e.Score * turn
 	return 500 - min(400, max(-400, score))
 }
 
@@ -330,8 +331,8 @@ func (b *Board) getScoreStr(stateNum int) string {
 	if b.moves == nil {
 		return ""
 	}
-	eval := b.moves[stateNum].eval
-	if eval == nil {
+	e := eval.GetMainEval(b.moves[stateNum].evals)
+	if e == nil {
 		return "" // default value
 	}
 	turn := 1
@@ -341,10 +342,10 @@ func (b *Board) getScoreStr(stateNum int) string {
 	if b.flipped {
 		turn *= -1
 	}
-	if eval.Mate {
-		return fmt.Sprintf("M%d", int(math.Abs(float64(eval.MateIn))))
+	if e.Mate {
+		return fmt.Sprintf("M%d", int(math.Abs(float64(e.MateIn))))
 	}
-	score := eval.Score * turn
+	score := e.Score * turn
 	return fmt.Sprintf("%.1f", float32(score)/100)
 }
 
@@ -353,5 +354,5 @@ func (b *Board) evalComplete() bool {
 	if b.moves == nil {
 		return false
 	}
-	return b.moves[len(b.moves)-1].eval != nil
+	return b.moves[len(b.moves)-1].evals[0] != nil
 }

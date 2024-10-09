@@ -107,5 +107,15 @@ func ParseScoreStr(scoreStr string) *MoveEval {
 	}
 	return &MoveEval{
 		Score: score,
+		PVnum: 1,
 	}
+}
+
+func GetMainEval(evals []*MoveEval) *MoveEval {
+	for _, eval := range evals {
+		if eval.PVnum == 1 {
+			return eval
+		}
+	}
+	return evals[0]
 }

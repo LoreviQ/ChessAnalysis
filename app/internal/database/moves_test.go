@@ -65,7 +65,7 @@ func TestUpdateEval(t *testing.T) {
 		"1", "e4", "g6", "2", "d4", "Bg7", "3", "e5", "d6",
 	}
 	db.InsertMoves(movesToInsert, "123456", true)
-	evals := []*eval.MoveEval{
+	evals := [][]*eval.MoveEval{{
 		{
 			Depth:  20,
 			Score:  100,
@@ -84,7 +84,7 @@ func TestUpdateEval(t *testing.T) {
 			Mate:   false,
 			MateIn: 0,
 		},
-	}
+	}}
 	err = db.UpdateEval(1, evals)
 	if err != nil {
 		t.Error(err)

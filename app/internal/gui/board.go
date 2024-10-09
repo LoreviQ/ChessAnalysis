@@ -39,7 +39,7 @@ type MoveButton struct {
 	notation  string
 	widget    *widget.Clickable
 	gameState *game.Game
-	eval      *eval.MoveEval
+	evals     []*eval.MoveEval
 }
 
 func newBoard(g *GUI, selectedGame *database.Game) *Board {
@@ -82,6 +82,7 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			notation:  moveStr,
 			widget:    &widget.Clickable{},
 			gameState: gameState.Clone(),
+			evals:     []*eval.MoveEval{},
 		}
 	}
 	if movesFromDB.Depth > 0 {
@@ -91,7 +92,7 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 				break
 			}
 			eval := eval.ParseScoreStr(scoreStr)
-			moves[i].eval = eval
+			moves[i].evals = append(moves[i].evals, eval)
 		}
 	}
 	// evaluate the game
@@ -100,12 +101,12 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 	go func() {
 		<-done
 		// Draw a new frame
-		g.window.Invalidate()
 		g.board.evaluated = true
+		g.window.Invalidate()
 		// Update the database with the new evals
-		evals := make([]*eval.MoveEval, len(moves))
+		evals := make([][]*eval.MoveEval, len(moves))
 		for i, move := range moves {
-			evals[i] = move.eval
+			evals[i] = move.evals
 		}
 		g.db.UpdateEval(movesFromDB.ID, evals)
 	}()
@@ -378,9 +379,9 @@ func evaluateGame(engine *eval.Engine, moves []game.Move, moveButtons []*MoveBut
 		return errors.New("no engine")
 	}
 	notations := game.ConvertMovesToUCINotation(moves)
-	evals := engine.EvalGame(strings.Join(notations, " "))
-	for i, eval := range evals {
-		moveButtons[i].eval = eval[0]
+	evalss := engine.EvalGame(strings.Join(notations, " "))
+	for i, evals := range evalss {
+		moveButtons[i].evals = evals
 	}
 	// signal that the evaluation is done
 	done <- struct{}{}
