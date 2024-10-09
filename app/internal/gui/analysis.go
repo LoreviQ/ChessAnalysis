@@ -305,7 +305,7 @@ func (b *Board) getScoreMult(stateNum int) int {
 	if b.moves == nil {
 		return 500
 	}
-	e := eval.GetMainEval(b.moves[stateNum].evals)
+	e := eval.GetEvalNum(b.moves[stateNum].evals, 1)
 	if e == nil {
 		return 500 // default value
 	}
@@ -331,7 +331,7 @@ func (b *Board) getScoreStr(stateNum int) string {
 	if b.moves == nil {
 		return ""
 	}
-	e := eval.GetMainEval(b.moves[stateNum].evals)
+	e := eval.GetEvalNum(b.moves[stateNum].evals, 1)
 	if e == nil {
 		return "" // default value
 	}

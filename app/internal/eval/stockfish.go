@@ -79,6 +79,9 @@ func (e *Engine) parseResponse(response []string) ([]*MoveEval, error) {
 	evals := make([]*MoveEval, e.MultiPV)
 	for i := range e.MultiPV {
 		eval := &MoveEval{}
+		if len(response) < 2+i {
+			return nil, fmt.Errorf("not enough responses")
+		}
 		dataLine := strings.Split(response[len(response)-2-i], " ")
 		for i, word := range dataLine {
 			if word == "depth" {

@@ -171,7 +171,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 		theme:  th,
 		db:     db,
 	}
-	g.eng, _ = eval.InitializeStockfish(DefaultFilepath, 60, 1)
+	g.eng, _ = eval.InitializeStockfish(DefaultFilepath, 60, 3)
 	g.header = newHeader(g)
 	g.sidebar = newSidebar(g)
 	if len(g.sidebar.games) > 0 {

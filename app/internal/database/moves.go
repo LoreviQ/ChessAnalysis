@@ -108,7 +108,7 @@ func (d Database) UpdateEval(moveID int, evalss [][]*eval.MoveEval) error {
 	scores := []string{}
 	depth := 0
 	for _, evals := range evalss {
-		e := eval.GetMainEval(evals)
+		e := eval.GetEvalNum(evals, 1)
 		if e == nil {
 			continue
 		}
