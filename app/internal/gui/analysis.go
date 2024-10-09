@@ -83,8 +83,8 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
 					// Best lines
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						return b.BestLineLists[0].Layout(gtx, len(b.moves[b.stateNum].evals[0].BestLine), func(gtx layout.Context, i int) layout.Dimensions {
-							return b.drawBestLineSegment(gtx, i)
+						return b.bestLines.Layout(gtx, len(b.moves[b.stateNum].evals), func(gtx layout.Context, i int) layout.Dimensions {
+							return b.drawBestLine(gtx, i)
 						})
 					}),
 					// Spacer
@@ -210,11 +210,11 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 }
 
 // Draw a segment of the best line
-func (b *Board) drawBestLineSegment(gtx layout.Context, i int) layout.Dimensions {
+func (b *Board) drawBestLineSegment(gtx layout.Context, i int, PV int) layout.Dimensions {
 	th := b.gui.theme
-	eval := b.moves[b.stateNum].evals[0]
+	e := eval.GetEvalNum(b.moves[b.stateNum].evals, PV)
 	var label string
-	bestLine := eval.BestLine
+	bestLine := e.BestLine
 	if i == 0 {
 		label = b.getScoreStr(b.stateNum)
 	} else {
@@ -355,4 +355,11 @@ func (b *Board) evalComplete() bool {
 		return false
 	}
 	return b.moves[len(b.moves)-1].evals[0] != nil
+}
+
+func (b *Board) drawBestLine(gtx layout.Context, lineNum int) layout.Dimensions {
+	e := eval.GetEvalNum(b.moves[b.stateNum].evals, lineNum+1)
+	return b.BestLineLists[0].Layout(gtx, len(e.BestLine), func(gtx layout.Context, i int) layout.Dimensions {
+		return b.drawBestLineSegment(gtx, i, lineNum+1)
+	})
 }

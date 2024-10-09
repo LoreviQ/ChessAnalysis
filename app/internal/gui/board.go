@@ -117,11 +117,13 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 		flipped = false
 	}
 	// create lists for best lines
-	BestLineLists := make([]*widget.List, 1)
-	BestLineLists[0] = &widget.List{
-		List: layout.List{
-			Axis: layout.Horizontal,
-		},
+	BestLineLists := make([]*widget.List, g.eng.MultiPV)
+	for i := range BestLineLists {
+		BestLineLists[i] = &widget.List{
+			List: layout.List{
+				Axis: layout.Horizontal,
+			},
+		}
 	}
 	return &Board{
 		gui:          g,
