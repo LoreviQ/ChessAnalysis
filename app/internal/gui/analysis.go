@@ -83,9 +83,29 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
 					// Best lines
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						if b.moves[b.stateNum].evals[0].Mate && b.moves[b.stateNum].evals[0].MateIn == 0 {
+							return layout.Dimensions{}
+						}
 						return b.bestLines.Layout(gtx, len(b.moves[b.stateNum].evals), func(gtx layout.Context, i int) layout.Dimensions {
 							return b.drawBestLine(gtx, i)
 						})
+					}),
+					// Checkmate notification
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+							layout.Flexed(1, layout.Spacer{}.Layout),
+							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+								if b.moves[b.stateNum].evals[0].Mate && b.moves[b.stateNum].evals[0].MateIn == 0 {
+									label := material.Label(b.gui.theme.giouiTheme, unit.Sp(20), "Checkmate!")
+									label.Color = b.gui.theme.text
+									return layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+										return label.Layout(gtx)
+									})
+								}
+								return layout.Dimensions{}
+							}),
+							layout.Flexed(1, layout.Spacer{}.Layout),
+						)
 					}),
 					// Spacer
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
