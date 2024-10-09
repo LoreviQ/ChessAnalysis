@@ -155,7 +155,7 @@ func (b *Board) drawEvalGraph(gtx layout.Context) layout.Dimensions {
 			// Get Scores
 			scores := make([]float32, len(b.moves))
 			for i, move := range b.moves {
-				if move.evals[0] == nil {
+				if len(move.evals) == 0 || move.evals[0] == nil {
 					return layout.Dimensions{}
 				}
 				score := b.getScoreMult(i)
@@ -305,16 +305,10 @@ func (b *Board) getScoreMult(stateNum int) int {
 	if b.moves == nil {
 		return 500
 	}
-	e := eval.GetEvalNum(b.moves[stateNum].evals, 1)
+	move := b.moves[stateNum]
+	e := eval.GetEvalNum(move.evals, 1)
 	if e == nil {
 		return 500 // default value
-	}
-	turn := 1
-	if stateNum%2 == 1 {
-		turn = -1
-	}
-	if b.flipped {
-		turn *= -1
 	}
 	if e.Mate {
 		if b.flipped {
@@ -322,7 +316,10 @@ func (b *Board) getScoreMult(stateNum int) int {
 		}
 		return 0
 	}
-	score := e.Score * turn
+	score := e.Score
+	if b.flipped {
+		score = -score
+	}
 	return 500 - min(400, max(-400, score))
 }
 
@@ -331,27 +328,27 @@ func (b *Board) getScoreStr(stateNum int) string {
 	if b.moves == nil {
 		return ""
 	}
-	e := eval.GetEvalNum(b.moves[stateNum].evals, 1)
+	move := b.moves[stateNum]
+	e := eval.GetEvalNum(move.evals, 1)
 	if e == nil {
 		return "" // default value
-	}
-	turn := 1
-	if stateNum%2 == 1 {
-		turn = -1
-	}
-	if b.flipped {
-		turn *= -1
 	}
 	if e.Mate {
 		return fmt.Sprintf("M%d", int(math.Abs(float64(e.MateIn))))
 	}
-	score := e.Score * turn
+	score := e.Score
+	if b.flipped {
+		score = -score
+	}
 	return fmt.Sprintf("%.1f", float32(score)/100)
 }
 
 // Returns a bool indicating if the game has been evaluated
 func (b *Board) evalComplete() bool {
 	if b.moves == nil {
+		return false
+	}
+	if len(b.moves[len(b.moves)-1].evals) == 0 {
 		return false
 	}
 	return b.moves[len(b.moves)-1].evals[0] != nil

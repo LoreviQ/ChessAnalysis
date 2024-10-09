@@ -173,12 +173,8 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	}
 	g.eng, _ = eval.InitializeStockfish(DefaultFilepath, 60, 3)
 	g.header = newHeader(g)
+	g.board = newBoard(g, nil)
 	g.sidebar = newSidebar(g)
-	if len(g.sidebar.games) > 0 {
-		g.board = newBoard(g, &g.sidebar.games[0].game)
-	} else {
-		g.board = newBoard(g, nil)
-	}
 
 	return g
 }

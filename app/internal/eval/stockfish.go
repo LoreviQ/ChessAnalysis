@@ -31,6 +31,7 @@ func InitializeStockfish(filepath string, moveTime, MultiPV int) (*Engine, error
 	eng.SendCommand(fmt.Sprintf("setoption name Hash value %d", HASH))
 	eng.SendCommand(fmt.Sprintf("setoption name MultiPV value %d", MultiPV))
 	eng.SendCommand(fmt.Sprintf("setoption name SyzygyPath value %v", SyzygyPath))
+	eng.SendCommand("setoption name UCI_ShowWDL value true")
 	eng.SendCommand("isready")
 	for {
 		response := eng.ReadResponse()
@@ -66,8 +67,12 @@ func (e *Engine) EvalGame(positionString string) [][]*MoveEval {
 func (e *Engine) queryPosition(positionString string) []*MoveEval {
 	e.SendCommand(fmt.Sprintf("position startpos moves %v", positionString))
 	e.SendCommand(fmt.Sprintf("go movetime %v", e.Movetime))
+	turnMult := 1
+	if len(strings.Split(positionString, " "))%2 == 1 && positionString != "" {
+		turnMult = -1
+	}
 	response := e.ReadResponse()
-	evals, err := e.parseResponse(response)
+	evals, err := e.parseResponse(response, turnMult)
 	if err != nil {
 		return nil
 	}
@@ -75,7 +80,7 @@ func (e *Engine) queryPosition(positionString string) []*MoveEval {
 }
 
 // Parses the response from the engine
-func (e *Engine) parseResponse(response []string) ([]*MoveEval, error) {
+func (e *Engine) parseResponse(response []string, turnMult int) ([]*MoveEval, error) {
 	evals := make([]*MoveEval, e.MultiPV)
 	for i := range e.MultiPV {
 		eval := &MoveEval{}
@@ -104,7 +109,7 @@ func (e *Engine) parseResponse(response []string) ([]*MoveEval, error) {
 					if err != nil {
 						return nil, err
 					}
-					eval.Score = score
+					eval.Score = score * turnMult
 				}
 			}
 			if word == "pv" {

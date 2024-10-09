@@ -40,6 +40,7 @@ type MoveButton struct {
 	widget    *widget.Clickable
 	gameState *game.Game
 	evals     []*eval.MoveEval
+	player    string
 }
 
 func newBoard(g *GUI, selectedGame *database.Game) *Board {
@@ -71,11 +72,16 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 		notation:  "",
 		widget:    &widget.Clickable{},
 		gameState: gameState.Clone(),
+		player:    "",
 	}
 	for i, moveStr := range movesFromDB.Moves {
 		move, err := gameState.Move(moveStr)
 		if err != nil {
 			break
+		}
+		player := "White"
+		if i%2 == 0 {
+			player = "black"
 		}
 		moves[i+1] = &MoveButton{
 			move:      &move,
@@ -83,6 +89,7 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			widget:    &widget.Clickable{},
 			gameState: gameState.Clone(),
 			evals:     []*eval.MoveEval{},
+			player:    player,
 		}
 	}
 	if movesFromDB.Depth > 0 {
