@@ -81,11 +81,16 @@ func (sm *settingsMenu) Menu(gtx layout.Context) layout.Dimensions {
 		X: width,
 		Y: height,
 	}
-	margins := layout.UniformInset(unit.Dp(10))
+	margins := layout.UniformInset(unit.Dp(20))
 
 	// labels
 	title := material.Label(sm.gui.theme.giouiTheme, unit.Sp(32), "Settings")
 	title.Color = sm.gui.theme.text
+	children := make([]layout.FlexChild, len(sm.settings)+1)
+	children[0] = layout.Rigid(title.Layout)
+	for i, setting := range sm.settings {
+		children[i+1] = setting.Layout(gtx, sm.gui.theme)
+	}
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
 			// Maintain the existing dimensions
@@ -93,11 +98,25 @@ func (sm *settingsMenu) Menu(gtx layout.Context) layout.Dimensions {
 		}),
 		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
 			return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				// Layout the labels
 				return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-					layout.Rigid(title.Layout),
+					// Layout the settings
+					children...,
 				)
 			})
 		}),
 	)
+}
+
+func (s *setting) Layout(gtx layout.Context, th *chessAnalysisTheme) layout.FlexChild {
+	return layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+		name := material.Label(th.giouiTheme, unit.Sp(16), s.name)
+		name.Color = th.text
+		margin := layout.Inset{
+			Top:    unit.Dp(10),
+			Bottom: unit.Dp(10),
+		}
+		return margin.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+			return name.Layout(gtx)
+		})
+	})
 }
