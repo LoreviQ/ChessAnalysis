@@ -15,6 +15,9 @@ var (
 
 // Sends the commands to set up stockfish 17 specifically returning the engine
 func InitializeStockfish(filepath string, moveTime, MultiPV int) (*Engine, error) {
+	if filepath == "" {
+		return nil, fmt.Errorf("no engine path provided")
+	}
 	eng, err := NewEngine(filepath, SyzygyPath, moveTime, THREADS, HASH, MultiPV)
 	if err != nil {
 		return nil, err

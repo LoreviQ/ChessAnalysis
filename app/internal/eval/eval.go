@@ -2,6 +2,7 @@ package eval
 
 import (
 	"bufio"
+	"errors"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ type Engine struct {
 	cmd      *exec.Cmd
 	writer   *bufio.Writer
 	scanner  *bufio.Scanner
+	Path     string
 	Movetime int    // ms spent on each move
 	Threads  int    // number of threads to use
 	Hash     int    // hash table size (MB)
@@ -30,6 +32,9 @@ type MoveEval struct {
 // NewEngine starts the provided engine and return a struct containing
 // the command handle and input/output pipes
 func NewEngine(filepath, Syzygy string, movetime, threads, hash, multiPV int) (*Engine, error) {
+	if filepath == "" {
+		return nil, errors.New("no engine path provided")
+	}
 	cmd := exec.Command(filepath)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -48,6 +53,7 @@ func NewEngine(filepath, Syzygy string, movetime, threads, hash, multiPV int) (*
 		cmd:      cmd,
 		writer:   writer,
 		scanner:  scanner,
+		Path:     filepath,
 		Movetime: movetime,
 		Threads:  threads,
 		Hash:     hash,

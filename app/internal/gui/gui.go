@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"encoding/json"
 	"image"
 	"image/color"
 	"os"
@@ -18,8 +19,6 @@ import (
 	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
 )
-
-var DefaultFilepath = "/home/lorevi/workspace/stockfish/stockfish-ubuntu-x86-64-avx2"
 
 type GUI struct {
 	window *app.Window
@@ -57,6 +56,10 @@ type chessBoardTheme struct {
 	player1 color.NRGBA
 	player2 color.NRGBA
 	pieces  map[string]*image.Image
+}
+
+type config struct {
+	StockfishPath string `json:"StockfishPath"`
 }
 
 func NewTheme(theme string) *chessAnalysisTheme {
@@ -165,6 +168,14 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	ops := new(op.Ops)
 	th := NewTheme("")
 
+	// load settings
+	settings, err := loadConfig()
+	if err != nil {
+		settings = &config{
+			StockfishPath: "",
+		}
+	}
+
 	// define components
 	g := &GUI{
 		window: w,
@@ -172,7 +183,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 		theme:  th,
 		db:     db,
 	}
-	g.eng, _ = eval.InitializeStockfish(DefaultFilepath, 60, 3)
+	g.eng, _ = eval.InitializeStockfish(settings.StockfishPath, 60, 3)
 	g.header = newHeader(g)
 	g.board = newBoard(g, nil)
 	g.sidebar = newSidebar(g)
@@ -288,4 +299,21 @@ func loadImage(filename string) (*image.Image, error) {
 	}
 
 	return &img, nil
+}
+
+func loadConfig() (*config, error) {
+	file, err := os.Open("config.json")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	config := &config{}
+	err = decoder.Decode(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return config, nil
 }

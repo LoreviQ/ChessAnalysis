@@ -83,6 +83,9 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
 					// Best lines
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						if b.bestLines == nil {
+							return layout.Dimensions{}
+						}
 						if b.moves[b.stateNum].evals[0].Mate && b.moves[b.stateNum].evals[0].MateIn == 0 {
 							return layout.Dimensions{}
 						}
@@ -92,6 +95,9 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					}),
 					// Checkmate notification
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						if b.bestLines == nil {
+							return layout.Dimensions{}
+						}
 						return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
 							layout.Flexed(1, layout.Spacer{}.Layout),
 							layout.Rigid(func(gtx layout.Context) layout.Dimensions {
@@ -108,7 +114,12 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 						)
 					}),
 					// Spacer
-					layout.Rigid(layout.Spacer{Height: 20}.Layout),
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						if b.bestLines == nil {
+							return layout.Dimensions{}
+						}
+						return layout.Spacer{Height: 20}.Layout(gtx)
+					}),
 					// Move list
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						return b.movesList.Layout(gtx, (len(b.moves))/2, func(gtx layout.Context, i int) layout.Dimensions {

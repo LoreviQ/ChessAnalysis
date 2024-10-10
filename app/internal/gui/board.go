@@ -92,6 +92,11 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			player:    player,
 		}
 	}
+	// check if the board should be flipped
+	flipped := true
+	if selectedGame.PlayerIsWhite {
+		flipped = false
+	}
 	if movesFromDB.Depth > 0 {
 		// provisionally use scores from the database
 		for i, scoreStr := range movesFromDB.Scores {
@@ -100,6 +105,23 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			}
 			eval := eval.ParseScoreStr(scoreStr)
 			moves[i].evals = append(moves[i].evals, eval)
+		}
+	}
+	// If no engine is loaded, don't proceed to evaluation steps
+	if g.eng == nil {
+		return &Board{
+			gui:          g,
+			activeGameID: selectedGame.ID,
+			movesList: &widget.List{
+				List: layout.List{
+					Axis:        layout.Vertical,
+					ScrollToEnd: true,
+				},
+			},
+			gameState: gameState,
+			stateNum:  len(moves) - 1,
+			moves:     moves,
+			flipped:   flipped,
 		}
 	}
 	// evaluate the game
@@ -118,11 +140,6 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 		g.db.UpdateEval(movesFromDB.ID, evals)
 	}()
 
-	// check if the board should be flipped
-	flipped := true
-	if selectedGame.PlayerIsWhite {
-		flipped = false
-	}
 	// create lists for best lines
 	BestLineLists := make([]*widget.List, g.eng.MultiPV)
 	for i := range BestLineLists {
