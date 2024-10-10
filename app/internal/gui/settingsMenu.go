@@ -9,6 +9,8 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
+	"github.com/ncruces/zenity"
 )
 
 type settingsMenu struct {
@@ -46,6 +48,7 @@ func newSettingsMenu(g *GUI) *settingsMenu {
 }
 
 func (sm *settingsMenu) Layout(gtx layout.Context) layout.Dimensions {
+	sm.updateState(gtx)
 	if !sm.gui.header.buttons[1].show {
 		return layout.Dimensions{}
 	}
@@ -142,4 +145,35 @@ func (s *setting) Layout(gtx layout.Context, th *chessAnalysisTheme) layout.Flex
 			)
 		})
 	})
+}
+
+func (sm *settingsMenu) updateState(gtx layout.Context) {
+	for _, setting := range sm.settings {
+		switch setting.settingType {
+		case "button":
+			if setting.button.Clicked(gtx) {
+				switch setting.name {
+				case "Engine Path":
+					// Get the file path
+					filePath, err := zenity.SelectFile()
+					if err != nil {
+						continue
+					}
+					// Save the file path
+					setting.data = filePath
+					settings, err := loadConfig()
+					if err != nil {
+						settings = &config{}
+					}
+					settings.EnginePath = filePath
+					err = saveConfig(settings)
+					if err != nil {
+						continue
+					}
+					// Apply the new engine path
+					sm.gui.eng, _ = eval.InitializeStockfish(filePath, 60, 3)
+				}
+			}
+		}
+	}
 }

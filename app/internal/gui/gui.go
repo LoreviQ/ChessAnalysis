@@ -2,6 +2,7 @@ package gui
 
 import (
 	"encoding/json"
+	"fmt"
 	"image"
 	"image/color"
 	"os"
@@ -59,7 +60,7 @@ type chessBoardTheme struct {
 }
 
 type config struct {
-	StockfishPath string `json:"StockfishPath"`
+	EnginePath string `json:"EnginePath"`
 }
 
 func NewTheme(theme string) *chessAnalysisTheme {
@@ -172,7 +173,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	settings, err := loadConfig()
 	if err != nil {
 		settings = &config{
-			StockfishPath: "",
+			EnginePath: "",
 		}
 	}
 
@@ -183,7 +184,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 		theme:  th,
 		db:     db,
 	}
-	g.eng, _ = eval.InitializeStockfish(settings.StockfishPath, 60, 3)
+	g.eng, _ = eval.InitializeStockfish(settings.EnginePath, 60, 3)
 	g.header = newHeader(g)
 	g.board = newBoard(g, nil)
 	g.sidebar = newSidebar(g)
@@ -316,4 +317,19 @@ func loadConfig() (*config, error) {
 	}
 
 	return config, nil
+}
+
+// saveConfig function to save the current settings to the JSON file
+func saveConfig(cfg *config) error {
+	filePath := "config.json"
+	// Marshal the config map into JSON
+	JSON, err := json.Marshal(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON: %v", err)
+	}
+	// Write the updated JSON back to the file
+	if err := os.WriteFile(filePath, JSON, 0644); err != nil {
+		return fmt.Errorf("failed to write file: %v", err)
+	}
+	return nil
 }
