@@ -112,11 +112,34 @@ func (s *setting) Layout(gtx layout.Context, th *chessAnalysisTheme) layout.Flex
 		name := material.Label(th.giouiTheme, unit.Sp(16), s.name)
 		name.Color = th.text
 		margin := layout.Inset{
-			Top:    unit.Dp(10),
-			Bottom: unit.Dp(10),
+			Top:    unit.Dp(30),
+			Bottom: unit.Dp(30),
 		}
 		return margin.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-			return name.Layout(gtx)
+			return layout.Stack{}.Layout(gtx,
+				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+					offset := layout.Inset{
+						Top: unit.Dp(7),
+					}
+					return offset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+						return name.Layout(gtx)
+					})
+				}),
+				layout.Expanded(func(gtx layout.Context) layout.Dimensions {
+					offset := layout.Inset{
+						Left: unit.Dp(200),
+					}
+					switch s.settingType {
+					case "button":
+						button := material.Button(th.giouiTheme, s.button, s.data)
+						button.Background = th.bg
+						return offset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+							return button.Layout(gtx)
+						})
+					}
+					return layout.Dimensions{}
+				}),
+			)
 		})
 	})
 }
