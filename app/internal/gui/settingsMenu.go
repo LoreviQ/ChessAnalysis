@@ -171,7 +171,7 @@ func (sm *settingsMenu) updateState(gtx layout.Context) {
 						continue
 					}
 					// Apply the new engine path
-					sm.gui.eng, _ = eval.InitializeStockfish(filePath, 60, 3)
+					sm.gui.eng, _ = eval.InitializeStockfish(filePath, 60, sm.gui.eng.Threads, 3)
 				}
 			}
 		}

@@ -7,18 +7,17 @@ import (
 )
 
 // change these for production
-var (
-	THREADS    = 12                             // CPU Threads used by the engine
+var ( // CPU Threads used by the engine
 	HASH       = 256                            // Size of hash table (MB)
 	SyzygyPath = "/home/lorevi/workspace/3-4-5" // Path to syzygy tablebases
 )
 
 // Sends the commands to set up stockfish 17 specifically returning the engine
-func InitializeStockfish(filepath string, moveTime, MultiPV int) (*Engine, error) {
+func InitializeStockfish(filepath string, moveTime, threads, MultiPV int) (*Engine, error) {
 	if filepath == "" {
 		return nil, fmt.Errorf("no engine path provided")
 	}
-	eng, err := NewEngine(filepath, SyzygyPath, moveTime, THREADS, HASH, MultiPV)
+	eng, err := NewEngine(filepath, SyzygyPath, moveTime, threads, HASH, MultiPV)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +29,7 @@ func InitializeStockfish(filepath string, moveTime, MultiPV int) (*Engine, error
 		}
 	}
 	// Set options
-	eng.SendCommand(fmt.Sprintf("setoption name Threads value %d", THREADS))
+	eng.SendCommand(fmt.Sprintf("setoption name Threads value %d", threads))
 	eng.SendCommand(fmt.Sprintf("setoption name Hash value %d", HASH))
 	eng.SendCommand(fmt.Sprintf("setoption name MultiPV value %d", MultiPV))
 	eng.SendCommand(fmt.Sprintf("setoption name SyzygyPath value %v", SyzygyPath))

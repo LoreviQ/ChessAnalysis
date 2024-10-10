@@ -61,6 +61,7 @@ type chessBoardTheme struct {
 
 type config struct {
 	EnginePath string `json:"EnginePath"`
+	Threads    int    `json:"Threads"`
 }
 
 func NewTheme(theme string) *chessAnalysisTheme {
@@ -174,6 +175,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	if err != nil {
 		settings = &config{
 			EnginePath: "",
+			Threads:    4,
 		}
 	}
 
@@ -184,7 +186,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 		theme:  th,
 		db:     db,
 	}
-	g.eng, _ = eval.InitializeStockfish(settings.EnginePath, 60, 3)
+	g.eng, _ = eval.InitializeStockfish(settings.EnginePath, 60, settings.Threads, 3)
 	g.header = newHeader(g)
 	g.board = newBoard(g, nil)
 	g.sidebar = newSidebar(g)
