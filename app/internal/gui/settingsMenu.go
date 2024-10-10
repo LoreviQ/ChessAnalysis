@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"image"
 
 	"gioui.org/layout"
@@ -9,7 +10,6 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
 	"github.com/ncruces/zenity"
 )
 
@@ -38,6 +38,18 @@ func newSettingsMenu(g *GUI) *settingsMenu {
 					return ""
 				}
 				return g.eng.Path
+			}(),
+		},
+		{
+			name:        "Threads",
+			settingType: "editor",
+			editor:      &widget.Editor{},
+			button:      nil,
+			data: func() string {
+				if g.eng == nil {
+					return ""
+				}
+				return fmt.Sprintf("%d", g.eng.Threads)
 			}(),
 		},
 	}
@@ -115,14 +127,16 @@ func (s *setting) Layout(gtx layout.Context, th *chessAnalysisTheme) layout.Flex
 		name := material.Label(th.giouiTheme, unit.Sp(16), s.name)
 		name.Color = th.text
 		margin := layout.Inset{
-			Top:    unit.Dp(30),
-			Bottom: unit.Dp(30),
+			Top: unit.Dp(30),
 		}
 		return margin.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 			return layout.Stack{}.Layout(gtx,
 				layout.Stacked(func(gtx layout.Context) layout.Dimensions {
 					offset := layout.Inset{
 						Top: unit.Dp(7),
+					}
+					if s.settingType == "editor" {
+						offset.Top = unit.Dp(0)
 					}
 					return offset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 						return name.Layout(gtx)
@@ -138,6 +152,13 @@ func (s *setting) Layout(gtx layout.Context, th *chessAnalysisTheme) layout.Flex
 						button.Background = th.bg
 						return offset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 							return button.Layout(gtx)
+						})
+					case "editor":
+						editor := material.Editor(th.giouiTheme, s.editor, s.data)
+						editor.Color = th.text
+						editor.HintColor = th.text
+						return offset.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+							return editor.Layout(gtx)
 						})
 					}
 					return layout.Dimensions{}
@@ -155,23 +176,11 @@ func (sm *settingsMenu) updateState(gtx layout.Context) {
 				switch setting.name {
 				case "Engine Path":
 					// Get the file path
-					filePath, err := zenity.SelectFile()
-					if err != nil {
-						continue
-					}
+					filePath, _ := zenity.SelectFile()
 					// Save the file path
-					setting.data = filePath
-					settings, err := loadConfig()
-					if err != nil {
-						settings = &config{}
+					if filePath != "" {
+						setting.data = filePath
 					}
-					settings.EnginePath = filePath
-					err = saveConfig(settings)
-					if err != nil {
-						continue
-					}
-					// Apply the new engine path
-					sm.gui.eng, _ = eval.InitializeStockfish(filePath, 60, sm.gui.eng.Threads, 3)
 				}
 			}
 		}
