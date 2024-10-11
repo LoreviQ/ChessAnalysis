@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 	"image"
+	"strconv"
 
 	"gioui.org/layout"
 	"gioui.org/op/clip"
@@ -10,6 +11,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
+	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
 	"github.com/ncruces/zenity"
 )
 
@@ -182,6 +184,7 @@ func (s *setting) Layout(gtx layout.Context, th *chessAnalysisTheme) layout.Flex
 }
 
 func (sm *settingsMenu) updateState(gtx layout.Context) {
+	// change settings
 	for _, setting := range sm.settings {
 		switch setting.settingType {
 		case "button":
@@ -198,4 +201,40 @@ func (sm *settingsMenu) updateState(gtx layout.Context) {
 			}
 		}
 	}
+	if sm.submitButton.Clicked(gtx) {
+		sm.submitSettings()
+	}
+
+}
+
+func (sm *settingsMenu) submitSettings() error {
+	// submit settings
+	settings := map[string]string{}
+	for _, setting := range sm.settings {
+		settings[setting.name] = setting.data
+	}
+
+	// check if new engine needs to be loaded
+	if settings["Engine Path"] != sm.gui.eng.Path {
+		// load engine
+		threads, err := strconv.Atoi(settings["Threads"])
+		if err != nil {
+			return err
+		}
+		newEngine, err := eval.InitializeStockfish(
+			settings["Engine Path"],
+			60,
+			threads,
+			1,
+		)
+		if err != nil {
+			return err
+		}
+		sm.gui.eng = newEngine
+	} else {
+		// change the settings of current engine (TODO)
+	}
+
+	sm.gui.header.buttons[1].show = false
+	return nil
 }
