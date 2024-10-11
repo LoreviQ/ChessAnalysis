@@ -16,16 +16,19 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
+	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"gioui.org/x/component"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/database"
 	"github.com/LoreviQ/ChessAnalysis/app/internal/eval"
+	"golang.org/x/exp/shiny/materialdesign/icons"
 )
 
 type GUI struct {
 	window *app.Window
 	ops    *op.Ops
 	theme  *chessAnalysisTheme
+	icons  *myIcons
 
 	// Components
 	header       *header
@@ -58,6 +61,10 @@ type chessBoardTheme struct {
 	player1 color.NRGBA
 	player2 color.NRGBA
 	pieces  map[string]*image.Image
+}
+
+type myIcons struct {
+	refreshIcon *widget.Icon
 }
 
 type config struct {
@@ -175,6 +182,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	w.Option(app.Title("Chess Analysis"))
 	ops := new(op.Ops)
 	th := NewTheme("")
+	icons := loadIcons()
 
 	// load settings
 	defaultSettings := &config{
@@ -197,6 +205,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 		window: w,
 		ops:    ops,
 		theme:  th,
+		icons:  icons,
 		db:     db,
 	}
 	g.eng, _ = eval.InitializeStockfish(settings.EnginePath, settings.SyzygyPath, settings.Movetime, settings.Depth, settings.Threads, settings.Hash, settings.MultiPV)
@@ -365,4 +374,11 @@ func setDefaults(settings, defaultSettings *config) *config {
 
 func isZeroValue(v reflect.Value) bool {
 	return v.Interface() == reflect.Zero(v.Type()).Interface()
+}
+
+func loadIcons() *myIcons {
+	refreshIcon, _ := widget.NewIcon(icons.NavigationRefresh)
+	return &myIcons{
+		refreshIcon: refreshIcon,
+	}
 }
