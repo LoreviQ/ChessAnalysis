@@ -14,8 +14,9 @@ import (
 )
 
 type settingsMenu struct {
-	gui      *GUI
-	settings []*setting
+	gui          *GUI
+	settings     []*setting
+	submitButton *widget.Clickable
 }
 
 type setting struct {
@@ -54,8 +55,9 @@ func newSettingsMenu(g *GUI) *settingsMenu {
 		},
 	}
 	return &settingsMenu{
-		gui:      g,
-		settings: settings,
+		gui:          g,
+		settings:     settings,
+		submitButton: &widget.Clickable{},
 	}
 }
 
@@ -118,6 +120,17 @@ func (sm *settingsMenu) Menu(gtx layout.Context) layout.Dimensions {
 					children...,
 				)
 			})
+		}),
+		layout.Stacked(func(gtx layout.Context) layout.Dimensions {
+			offset := layout.Inset{
+				Top:  unit.Dp(bounds.Y - 100),
+				Left: unit.Dp(bounds.X - 200),
+			}
+			submit := material.Button(sm.gui.theme.giouiTheme, sm.submitButton, "Submit")
+			submit.Background = sm.gui.theme.bg
+			submit.Color = sm.gui.theme.text
+			submit.TextSize = unit.Sp(32)
+			return offset.Layout(gtx, submit.Layout)
 		}),
 	)
 }
