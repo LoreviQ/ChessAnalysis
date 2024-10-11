@@ -26,7 +26,9 @@ func InitializeStockfish(filepath, SyzygyPath string, moveTime, threads, hash, M
 	eng.SendCommand(fmt.Sprintf("setoption name Threads value %d", threads))
 	eng.SendCommand(fmt.Sprintf("setoption name Hash value %d", hash))
 	eng.SendCommand(fmt.Sprintf("setoption name MultiPV value %d", MultiPV))
-	eng.SendCommand(fmt.Sprintf("setoption name SyzygyPath value %v", SyzygyPath))
+	if SyzygyPath != "" {
+		eng.SendCommand(fmt.Sprintf("setoption name SyzygyPath value %v", SyzygyPath))
+	}
 	eng.SendCommand("setoption name UCI_ShowWDL value true")
 	eng.SendCommand("isready")
 	for {
