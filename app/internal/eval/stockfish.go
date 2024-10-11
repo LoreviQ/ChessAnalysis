@@ -64,7 +64,7 @@ func (e *Engine) EvalGame(positionString string) [][]*MoveEval {
 
 func (e *Engine) queryPosition(positionString string) []*MoveEval {
 	e.SendCommand(fmt.Sprintf("position startpos moves %v", positionString))
-	e.SendCommand(fmt.Sprintf("go movetime %v", e.Movetime))
+	e.SendCommand(fmt.Sprintf("go depth %v movetime %v", e.Depth, e.Movetime))
 	turnMult := 1
 	if len(strings.Split(positionString, " "))%2 == 1 && positionString != "" {
 		turnMult = -1
