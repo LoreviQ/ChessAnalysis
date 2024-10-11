@@ -130,18 +130,35 @@ func (e *Engine) parseResponse(response []string, turnMult int) ([]*MoveEval, er
 	return evals, nil
 }
 
-func (e *Engine) changeOption(option, value string) {
-	e.SendCommand(fmt.Sprintf("setoption name %v value %v", option, value))
+func (e *Engine) ChangeOption(option, value string) error {
 	switch option {
 	case "MoveTime":
-		e.Movetime, _ = strconv.Atoi(value)
+		moveTime, err := strconv.Atoi(value)
+		if err != nil {
+			return err
+		}
+		e.Movetime = moveTime
 	case "Threads":
-		e.Threads, _ = strconv.Atoi(value)
+		threads, err := strconv.Atoi(value)
+		if err != nil {
+			return err
+		}
+		e.Threads = threads
 	case "Hash":
-		e.Hash, _ = strconv.Atoi(value)
+		hash, err := strconv.Atoi(value)
+		if err != nil {
+			return err
+		}
+		e.Hash = hash
 	case "MultiPV":
-		e.MultiPV, _ = strconv.Atoi(value)
+		multiPV, err := strconv.Atoi(value)
+		if err != nil {
+			return err
+		}
+		e.MultiPV = multiPV
 	case "SyzygyPath":
 		e.SyzygyPath = value
 	}
+	e.SendCommand(fmt.Sprintf("setoption name %v value %v", option, value))
+	return nil
 }

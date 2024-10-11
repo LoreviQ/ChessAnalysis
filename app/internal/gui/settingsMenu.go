@@ -203,6 +203,7 @@ func (sm *settingsMenu) updateState(gtx layout.Context) {
 	}
 	if sm.submitButton.Clicked(gtx) {
 		sm.submitSettings()
+		sm.gui.header.buttons[1].show = false
 	}
 
 }
@@ -237,7 +238,10 @@ func (sm *settingsMenu) submitSettings() error {
 		}
 		sm.gui.eng = newEngine
 	} else {
-		sm.gui.eng.SendCommand(fmt.Sprintf("setoption name Threads value %d", threads))
+		err := sm.gui.eng.ChangeOption("Threads", settings["Threads"])
+		if err != nil {
+			return err
+		}
 	}
 
 	// save to config.json
@@ -246,6 +250,5 @@ func (sm *settingsMenu) submitSettings() error {
 		Threads:    threads,
 	})
 
-	sm.gui.header.buttons[1].show = false
 	return nil
 }
