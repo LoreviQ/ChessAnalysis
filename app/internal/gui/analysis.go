@@ -81,6 +81,12 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					}),
 					// Spacer
 					layout.Rigid(layout.Spacer{Height: 20}.Layout),
+					// Eval info
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return b.evalInfo(gtx)
+					}),
+					// Spacer
+					layout.Rigid(layout.Spacer{Height: 20}.Layout),
 					// Best lines
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						if b.bestLines == nil {
@@ -122,6 +128,9 @@ func (b *Board) drawAnalysis(gtx layout.Context) layout.Dimensions {
 					}),
 					// Move list
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						if b.activeGameID == 0 {
+							return layout.Dimensions{}
+						}
 						return b.movesList.Layout(gtx, (len(b.moves))/2, func(gtx layout.Context, i int) layout.Dimensions {
 							return b.moveListElement(gtx, i)
 						})
@@ -390,4 +399,18 @@ func (b *Board) drawBestLine(gtx layout.Context, lineNum int) layout.Dimensions 
 	return b.BestLineLists[0].Layout(gtx, len(e.BestLine), func(gtx layout.Context, i int) layout.Dimensions {
 		return b.drawBestLineSegment(gtx, i, lineNum+1)
 	})
+}
+
+func (b *Board) evalInfo(gtx layout.Context) layout.Dimensions {
+	return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+		layout.Flexed(1, layout.Spacer{}.Layout),
+		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+			iButton := material.IconButton(b.gui.theme.giouiTheme, b.refreshButton, b.gui.icons.refreshIcon, "Refresh")
+			iButton.Background = color.NRGBA{0, 0, 0, 0}
+			iButton.Size = unit.Dp(30)
+			iButton.Inset = layout.UniformInset(unit.Dp(5))
+			iButton.Color = b.gui.theme.fg
+			return iButton.Layout(gtx)
+		}),
+	)
 }

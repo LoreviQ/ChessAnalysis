@@ -32,6 +32,7 @@ type Board struct {
 	evaluated     bool
 	bestLines     *widget.List
 	BestLineLists []*widget.List
+	refreshButton *widget.Clickable
 }
 
 type MoveButton struct {
@@ -118,10 +119,11 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 					ScrollToEnd: true,
 				},
 			},
-			gameState: gameState,
-			stateNum:  len(moves) - 1,
-			moves:     moves,
-			flipped:   flipped,
+			gameState:     gameState,
+			stateNum:      len(moves) - 1,
+			moves:         moves,
+			flipped:       flipped,
+			refreshButton: &widget.Clickable{},
 		}
 	}
 	// evaluate the game
@@ -168,6 +170,7 @@ func newBoard(g *GUI, selectedGame *database.Game) *Board {
 			},
 		},
 		BestLineLists: BestLineLists,
+		refreshButton: &widget.Clickable{},
 	}
 }
 
