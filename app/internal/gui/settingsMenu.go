@@ -44,6 +44,30 @@ func newSettingsMenu(g *GUI) *settingsMenu {
 			}(),
 		},
 		{
+			name:        "SyzygyPath",
+			settingType: "button",
+			editor:      nil,
+			button:      &widget.Clickable{},
+			data: func() string {
+				if g.eng == nil {
+					return ""
+				}
+				return g.eng.SyzygyPath
+			}(),
+		},
+		{
+			name:        "Movetime",
+			settingType: "editor",
+			editor:      &widget.Editor{},
+			button:      nil,
+			data: func() string {
+				if g.eng == nil {
+					return ""
+				}
+				return fmt.Sprintf("%d", g.eng.Movetime)
+			}(),
+		},
+		{
 			name:        "Threads",
 			settingType: "editor",
 			editor:      &widget.Editor{},
@@ -53,6 +77,30 @@ func newSettingsMenu(g *GUI) *settingsMenu {
 					return ""
 				}
 				return fmt.Sprintf("%d", g.eng.Threads)
+			}(),
+		},
+		{
+			name:        "Hash",
+			settingType: "editor",
+			editor:      &widget.Editor{},
+			button:      nil,
+			data: func() string {
+				if g.eng == nil {
+					return ""
+				}
+				return fmt.Sprintf("%d", g.eng.Hash)
+			}(),
+		},
+		{
+			name:        "MultiPV",
+			settingType: "editor",
+			editor:      &widget.Editor{},
+			button:      nil,
+			data: func() string {
+				if g.eng == nil {
+					return ""
+				}
+				return fmt.Sprintf("%d", g.eng.MultiPV)
 			}(),
 		},
 	}
@@ -197,6 +245,14 @@ func (sm *settingsMenu) updateState(gtx layout.Context) {
 					if filePath != "" {
 						setting.data = filePath
 					}
+				case "SyzygyPath":
+					dir, _ := zenity.SelectFile(
+						zenity.Filename(""),
+						zenity.Directory(),
+					)
+					if dir != "" {
+						setting.data = dir
+					}
 				}
 			}
 		}
@@ -214,12 +270,34 @@ func (sm *settingsMenu) submitSettings() error {
 	for _, setting := range sm.settings {
 		switch setting.settingType {
 		case "editor":
-			settings[setting.name] = setting.editor.Text()
+			data := setting.editor.Text()
+			if data != "" {
+				settings[setting.name] = data
+			} else {
+				settings[setting.name] = setting.data
+			}
 		case "button":
 			settings[setting.name] = setting.data
 		}
 	}
-	threads, err := strconv.Atoi(settings["Threads"])
+	var moveTime, threads, hash, multiPV int
+	var err error
+	moveTime, err = strconv.Atoi(settings["Movetime"])
+	if err != nil {
+		return err
+	}
+
+	threads, err = strconv.Atoi(settings["Threads"])
+	if err != nil {
+		return err
+	}
+
+	hash, err = strconv.Atoi(settings["Hash"])
+	if err != nil {
+		return err
+	}
+
+	multiPV, err = strconv.Atoi(settings["MultiPV"])
 	if err != nil {
 		return err
 	}
@@ -229,18 +307,35 @@ func (sm *settingsMenu) submitSettings() error {
 		// load engine TODO Change these settings
 		newEngine, err := eval.InitializeStockfish(
 			settings["Engine Path"],
-			"/home/lorevi/workspace/3-4-5",
-			60,
+			settings["SyzygyPath"],
+			moveTime,
 			threads,
-			256,
-			1,
+			hash,
+			multiPV,
 		)
 		if err != nil {
 			return err
 		}
 		sm.gui.eng = newEngine
 	} else {
-		err := sm.gui.eng.ChangeOption("Threads", settings["Threads"])
+		// change engine settings
+		err := sm.gui.eng.ChangeOption("SyzygyPath", settings["SyzygyPath"])
+		if err != nil {
+			return err
+		}
+		err = sm.gui.eng.ChangeOption("Threads", settings["Threads"])
+		if err != nil {
+			return err
+		}
+		err = sm.gui.eng.ChangeOption("MoveTime", settings["Movetime"])
+		if err != nil {
+			return err
+		}
+		err = sm.gui.eng.ChangeOption("Hash", settings["Hash"])
+		if err != nil {
+			return err
+		}
+		err = sm.gui.eng.ChangeOption("MultiPV", settings["MultiPV"])
 		if err != nil {
 			return err
 		}
@@ -249,7 +344,11 @@ func (sm *settingsMenu) submitSettings() error {
 	// save to config.json
 	saveConfig(&config{
 		EnginePath: settings["Engine Path"],
+		SyzygyPath: settings["SyzygyPath"],
+		Movetime:   moveTime,
 		Threads:    threads,
+		Hash:       hash,
+		MultiPV:    multiPV,
 	})
 
 	return nil

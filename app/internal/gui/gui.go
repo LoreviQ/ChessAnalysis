@@ -181,7 +181,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 		SyzygyPath: "",
 		Threads:    4,
 		Movetime:   1000,
-		Hash:       16,
+		Hash:       128,
 		MultiPV:    1,
 	}
 	settings, err := loadConfig()
