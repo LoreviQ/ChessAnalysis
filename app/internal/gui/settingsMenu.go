@@ -207,20 +207,25 @@ func (sm *settingsMenu) updateState(gtx layout.Context) {
 
 }
 
+// submitSettings saves the settings to the config file and updates the engine
 func (sm *settingsMenu) submitSettings() error {
-	// submit settings
 	settings := map[string]string{}
 	for _, setting := range sm.settings {
-		settings[setting.name] = setting.data
+		switch setting.settingType {
+		case "editor":
+			settings[setting.name] = setting.editor.Text()
+		case "button":
+			settings[setting.name] = setting.data
+		}
+	}
+	threads, err := strconv.Atoi(settings["Threads"])
+	if err != nil {
+		return err
 	}
 
 	// check if new engine needs to be loaded
 	if settings["Engine Path"] != sm.gui.eng.Path {
 		// load engine
-		threads, err := strconv.Atoi(settings["Threads"])
-		if err != nil {
-			return err
-		}
 		newEngine, err := eval.InitializeStockfish(
 			settings["Engine Path"],
 			60,
@@ -234,6 +239,12 @@ func (sm *settingsMenu) submitSettings() error {
 	} else {
 		// change the settings of current engine (TODO)
 	}
+
+	// save to config.json
+	saveConfig(&config{
+		EnginePath: settings["Engine Path"],
+		Threads:    threads,
+	})
 
 	sm.gui.header.buttons[1].show = false
 	return nil
