@@ -237,7 +237,7 @@ func (sm *settingsMenu) submitSettings() error {
 		}
 		sm.gui.eng = newEngine
 	} else {
-		// change the settings of current engine (TODO)
+		sm.gui.eng.SendCommand(fmt.Sprintf("setoption name Threads value %d", threads))
 	}
 
 	// save to config.json

@@ -9,15 +9,15 @@ import (
 )
 
 type Engine struct {
-	cmd      *exec.Cmd
-	writer   *bufio.Writer
-	scanner  *bufio.Scanner
-	Path     string
-	Movetime int    // ms spent on each move
-	Threads  int    // number of threads to use
-	Hash     int    // hash table size (MB)
-	MultiPV  int    // number of lines to consider
-	Syzygy   string // path to syzygy tablebases
+	cmd        *exec.Cmd
+	writer     *bufio.Writer
+	scanner    *bufio.Scanner
+	Path       string
+	Movetime   int    // ms spent on each move
+	Threads    int    // number of threads to use
+	Hash       int    // hash table size (MB)
+	MultiPV    int    // number of lines to consider
+	SyzygyPath string // path to syzygy tablebases
 }
 
 type MoveEval struct {
@@ -50,15 +50,15 @@ func NewEngine(filepath, Syzygy string, movetime, threads, hash, multiPV int) (*
 	writer := bufio.NewWriter(stdin)
 	scanner := bufio.NewScanner(stdout)
 	return &Engine{
-		cmd:      cmd,
-		writer:   writer,
-		scanner:  scanner,
-		Path:     filepath,
-		Movetime: movetime,
-		Threads:  threads,
-		Hash:     hash,
-		MultiPV:  multiPV,
-		Syzygy:   Syzygy,
+		cmd:        cmd,
+		writer:     writer,
+		scanner:    scanner,
+		Path:       filepath,
+		Movetime:   movetime,
+		Threads:    threads,
+		Hash:       hash,
+		MultiPV:    multiPV,
+		SyzygyPath: Syzygy,
 	}, nil
 }
 

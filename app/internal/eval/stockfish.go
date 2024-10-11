@@ -132,4 +132,16 @@ func (e *Engine) parseResponse(response []string, turnMult int) ([]*MoveEval, er
 
 func (e *Engine) changeOption(option, value string) {
 	e.SendCommand(fmt.Sprintf("setoption name %v value %v", option, value))
+	switch option {
+	case "MoveTime":
+		e.Movetime, _ = strconv.Atoi(value)
+	case "Threads":
+		e.Threads, _ = strconv.Atoi(value)
+	case "Hash":
+		e.Hash, _ = strconv.Atoi(value)
+	case "MultiPV":
+		e.MultiPV, _ = strconv.Atoi(value)
+	case "SyzygyPath":
+		e.SyzygyPath = value
+	}
 }
