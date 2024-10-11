@@ -68,6 +68,18 @@ func newSettingsMenu(g *GUI) *settingsMenu {
 			}(),
 		},
 		{
+			name:        "Depth",
+			settingType: "editor",
+			editor:      &widget.Editor{},
+			button:      nil,
+			data: func() string {
+				if g.eng == nil {
+					return ""
+				}
+				return fmt.Sprintf("%d", g.eng.Depth)
+			}(),
+		},
+		{
 			name:        "Threads",
 			settingType: "editor",
 			editor:      &widget.Editor{},
@@ -280,23 +292,24 @@ func (sm *settingsMenu) submitSettings() error {
 			settings[setting.name] = setting.data
 		}
 	}
-	var moveTime, threads, hash, multiPV int
+	var moveTime, depth, threads, hash, multiPV int
 	var err error
 	moveTime, err = strconv.Atoi(settings["Movetime"])
 	if err != nil {
 		return err
 	}
-
+	depth, err = strconv.Atoi(settings["Depth"])
+	if err != nil {
+		return err
+	}
 	threads, err = strconv.Atoi(settings["Threads"])
 	if err != nil {
 		return err
 	}
-
 	hash, err = strconv.Atoi(settings["Hash"])
 	if err != nil {
 		return err
 	}
-
 	multiPV, err = strconv.Atoi(settings["MultiPV"])
 	if err != nil {
 		return err
@@ -309,6 +322,7 @@ func (sm *settingsMenu) submitSettings() error {
 			settings["Engine Path"],
 			settings["SyzygyPath"],
 			moveTime,
+			depth,
 			threads,
 			hash,
 			multiPV,

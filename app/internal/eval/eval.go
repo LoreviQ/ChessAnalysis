@@ -14,6 +14,7 @@ type Engine struct {
 	scanner    *bufio.Scanner
 	Path       string
 	Movetime   int    // ms spent on each move
+	Depth      int    // max depth to search
 	Threads    int    // number of threads to use
 	Hash       int    // hash table size (MB)
 	MultiPV    int    // number of lines to consider
@@ -31,7 +32,7 @@ type MoveEval struct {
 
 // NewEngine starts the provided engine and return a struct containing
 // the command handle and input/output pipes
-func NewEngine(filepath, Syzygy string, movetime, threads, hash, multiPV int) (*Engine, error) {
+func NewEngine(filepath, Syzygy string, movetime, depth, threads, hash, multiPV int) (*Engine, error) {
 	if filepath == "" {
 		return nil, errors.New("no engine path provided")
 	}
@@ -55,6 +56,7 @@ func NewEngine(filepath, Syzygy string, movetime, threads, hash, multiPV int) (*
 		scanner:    scanner,
 		Path:       filepath,
 		Movetime:   movetime,
+		Depth:      depth,
 		Threads:    threads,
 		Hash:       hash,
 		MultiPV:    multiPV,

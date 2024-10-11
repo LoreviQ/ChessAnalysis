@@ -7,11 +7,11 @@ import (
 )
 
 // Sends the commands to set up stockfish 17 specifically returning the engine
-func InitializeStockfish(filepath, SyzygyPath string, moveTime, threads, hash, MultiPV int) (*Engine, error) {
+func InitializeStockfish(filepath, SyzygyPath string, moveTime, depth, threads, hash, MultiPV int) (*Engine, error) {
 	if filepath == "" {
 		return nil, fmt.Errorf("no engine path provided")
 	}
-	eng, err := NewEngine(filepath, SyzygyPath, moveTime, threads, hash, MultiPV)
+	eng, err := NewEngine(filepath, SyzygyPath, moveTime, depth, threads, hash, MultiPV)
 	if err != nil {
 		return nil, err
 	}

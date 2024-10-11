@@ -9,13 +9,14 @@ var (
 	FILEPATH   = "/home/lorevi/workspace/stockfish/stockfish-ubuntu-x86-64-avx2"
 	SYZYGYPATH = "/home/lorevi/workspace/3-4-5"
 	MOVETIME   = 60
+	DEPTH      = 20
 	THREADS    = 12
 	HASH       = 256
 	MULTIPV    = 1
 )
 
 func TestNewEngine(t *testing.T) {
-	eng, err := NewEngine(FILEPATH, SYZYGYPATH, MOVETIME, THREADS, HASH, MULTIPV)
+	eng, err := NewEngine(FILEPATH, SYZYGYPATH, MOVETIME, DEPTH, THREADS, HASH, MULTIPV)
 	if err != nil {
 		t.Errorf("NewEngine(stockfish) failed: %v", err)
 	}
@@ -29,7 +30,7 @@ func TestNewEngine(t *testing.T) {
 }
 
 func TestInitializeEngine(t *testing.T) {
-	eng, err := InitializeStockfish(FILEPATH, SYZYGYPATH, MOVETIME, THREADS, HASH, MULTIPV)
+	eng, err := InitializeStockfish(FILEPATH, SYZYGYPATH, MOVETIME, DEPTH, THREADS, HASH, MULTIPV)
 	if err != nil {
 		t.Errorf("InitializeStockfish() failed: %v", err)
 	}
@@ -45,7 +46,7 @@ func TestInitializeEngine(t *testing.T) {
 // Tests both SendCommand and ReadResponse checking received response to see if
 // it matches the expected response from sending the command
 func TestSendCommandReadResponse(t *testing.T) {
-	eng, err := NewEngine(FILEPATH, SYZYGYPATH, MOVETIME, THREADS, HASH, MULTIPV)
+	eng, err := NewEngine(FILEPATH, SYZYGYPATH, MOVETIME, DEPTH, THREADS, HASH, MULTIPV)
 	if err != nil {
 		t.Errorf("NewEngine(stockfish) failed: %v", err)
 	}
@@ -90,7 +91,7 @@ func TestSendCommandReadResponse(t *testing.T) {
 }
 
 func TestEvalPosition(t *testing.T) {
-	eng, err := InitializeStockfish(FILEPATH, SYZYGYPATH, MOVETIME, THREADS, HASH, MULTIPV)
+	eng, err := InitializeStockfish(FILEPATH, SYZYGYPATH, MOVETIME, DEPTH, THREADS, HASH, MULTIPV)
 	if err != nil {
 		t.Errorf("InitializeStockfish() failed: %v", err)
 	}
@@ -111,7 +112,7 @@ func TestEvalPosition(t *testing.T) {
 }
 
 func TestEvalGame(t *testing.T) {
-	eng, err := InitializeStockfish(FILEPATH, SYZYGYPATH, MOVETIME, THREADS, HASH, MULTIPV)
+	eng, err := InitializeStockfish(FILEPATH, SYZYGYPATH, MOVETIME, DEPTH, THREADS, HASH, MULTIPV)
 	if err != nil {
 		t.Errorf("InitializeStockfish() failed: %v", err)
 	}
@@ -139,7 +140,7 @@ func TestEvalGame(t *testing.T) {
 }
 
 func TestMultiPV(t *testing.T) {
-	eng, err := InitializeStockfish(FILEPATH, SYZYGYPATH, MOVETIME, THREADS, HASH, 3)
+	eng, err := InitializeStockfish(FILEPATH, SYZYGYPATH, MOVETIME, DEPTH, THREADS, HASH, 3)
 	if err != nil {
 		t.Errorf("InitializeStockfish() failed: %v", err)
 	}

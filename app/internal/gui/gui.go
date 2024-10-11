@@ -64,6 +64,7 @@ type config struct {
 	EnginePath string `json:"EnginePath"`
 	SyzygyPath string `json:"SyzygyPath"`
 	Movetime   int    `json:"Movetime"`
+	Depth      int    `json:"Depth"`
 	Threads    int    `json:"Threads"`
 	Hash       int    `json:"Hash"`
 	MultiPV    int    `json:"MultiPV"`
@@ -179,8 +180,9 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	defaultSettings := &config{
 		EnginePath: "",
 		SyzygyPath: "",
-		Threads:    4,
 		Movetime:   1000,
+		Depth:      20,
+		Threads:    4,
 		Hash:       128,
 		MultiPV:    1,
 	}
@@ -197,7 +199,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 		theme:  th,
 		db:     db,
 	}
-	g.eng, _ = eval.InitializeStockfish(settings.EnginePath, settings.SyzygyPath, settings.Movetime, settings.Threads, settings.Hash, settings.MultiPV)
+	g.eng, _ = eval.InitializeStockfish(settings.EnginePath, settings.SyzygyPath, settings.Movetime, settings.Depth, settings.Threads, settings.Hash, settings.MultiPV)
 	g.header = newHeader(g)
 	g.board = newBoard(g, nil)
 	g.sidebar = newSidebar(g)
