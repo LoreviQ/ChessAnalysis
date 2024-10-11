@@ -226,11 +226,13 @@ func (sm *settingsMenu) submitSettings() error {
 
 	// check if new engine needs to be loaded
 	if settings["Engine Path"] != sm.gui.eng.Path {
-		// load engine
+		// load engine TODO Change these settings
 		newEngine, err := eval.InitializeStockfish(
 			settings["Engine Path"],
+			"/home/lorevi/workspace/3-4-5",
 			60,
 			threads,
+			256,
 			1,
 		)
 		if err != nil {

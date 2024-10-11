@@ -7,6 +7,7 @@ import (
 	"image/color"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"gioui.org/app"
@@ -61,7 +62,11 @@ type chessBoardTheme struct {
 
 type config struct {
 	EnginePath string `json:"EnginePath"`
+	SyzygyPath string `json:"SyzygyPath"`
+	Movetime   int    `json:"Movetime"`
 	Threads    int    `json:"Threads"`
+	Hash       int    `json:"Hash"`
+	MultiPV    int    `json:"MultiPV"`
 }
 
 func NewTheme(theme string) *chessAnalysisTheme {
@@ -171,13 +176,19 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 	th := NewTheme("")
 
 	// load settings
+	defaultSettings := &config{
+		EnginePath: "",
+		SyzygyPath: "",
+		Threads:    4,
+		Movetime:   1000,
+		Hash:       16,
+		MultiPV:    1,
+	}
 	settings, err := loadConfig()
 	if err != nil {
-		settings = &config{
-			EnginePath: "",
-			Threads:    4,
-		}
+		settings = defaultSettings
 	}
+	settings = setDefaults(settings, defaultSettings)
 
 	// define components
 	g := &GUI{
@@ -186,7 +197,7 @@ func NewGUI(width, height int, db *database.Database) *GUI {
 		theme:  th,
 		db:     db,
 	}
-	g.eng, _ = eval.InitializeStockfish(settings.EnginePath, 60, settings.Threads, 3)
+	g.eng, _ = eval.InitializeStockfish(settings.EnginePath, settings.SyzygyPath, settings.Movetime, settings.Threads, settings.Hash, settings.MultiPV)
 	g.header = newHeader(g)
 	g.board = newBoard(g, nil)
 	g.sidebar = newSidebar(g)
@@ -334,4 +345,22 @@ func saveConfig(cfg *config) error {
 		return fmt.Errorf("failed to write file: %v", err)
 	}
 	return nil
+}
+
+func setDefaults(settings, defaultSettings *config) *config {
+	settingsValue := reflect.ValueOf(settings).Elem()
+	defaultSettingsValue := reflect.ValueOf(defaultSettings).Elem()
+
+	for i := 0; i < settingsValue.NumField(); i++ {
+		field := settingsValue.Field(i)
+		if isZeroValue(field) {
+			field.Set(defaultSettingsValue.Field(i))
+		}
+	}
+
+	return settings
+}
+
+func isZeroValue(v reflect.Value) bool {
+	return v.Interface() == reflect.Zero(v.Type()).Interface()
 }
