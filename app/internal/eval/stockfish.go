@@ -129,3 +129,7 @@ func (e *Engine) parseResponse(response []string, turnMult int) ([]*MoveEval, er
 	}
 	return evals, nil
 }
+
+func (e *Engine) changeOption(option, value string) {
+	e.SendCommand(fmt.Sprintf("setoption name %v value %v", option, value))
+}
